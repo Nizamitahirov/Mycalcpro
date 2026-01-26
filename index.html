@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BirCalc</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <style>
+        :root {
+            --bir-red: #ff2d55;
+            --bir-orange: #ff4b2b;
+            --bir-gradient: linear-gradient(135deg, #ff4b2b 0%, #ff2d55 100%);
+            --bg-body: #f4f7f9;
+            --bg-card: #ffffff;
+            --text-main: #1a1a1a;
+            --text-muted: #6b7280;
+            --border: #eef1f4;
+            --radius-lg: 18px;
+            --radius-md: 10px;
+        }
+
+        body { font-family: 'Montserrat', sans-serif; background: var(--bg-body); color: var(--text-main); margin: 0; font-size: 13px; overflow-x: hidden; }
+        * { box-sizing: border-box; }
+
+        /* Modern Navbar */
+        .navbar {
+            background: var(--bg-card); padding: 0 25px; height: 65px;
+            display: flex; align-items: center; justify-content: space-between;
+            position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        }
+        .logo { font-weight: 900; font-size: 1.3rem; background: var(--bir-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -1px; }
+
+        /* System Switcher (General/Recruitment) */
+        .system-switch { display: flex; background: #f1f3f5; padding: 4px; border-radius: 12px; gap: 4px; }
+        .sw-btn {
+            padding: 8px 16px; font-size: 0.72rem; font-weight: 800; border-radius: 10px;
+            cursor: pointer; border: none; background: none; transition: 0.3s; font-family: 'Montserrat'; color: #888;
+        }
+        .sw-btn.active { background: #333; color: white; }
+
+        /* Company Nav */
+        .company-nav { display: flex; background: #f1f3f5; padding: 4px; border-radius: 12px; gap: 4px; }
+        .comp-btn {
+            padding: 8px 16px; font-size: 0.75rem; font-weight: 700; color: #666;
+            border-radius: 10px; cursor: pointer; transition: 0.2s; border: none; background: none; font-family: 'Montserrat';
+        }
+        .comp-btn.active { background: white; color: var(--bir-red); box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+        .comp-btn.active.birbank { background: var(--bir-gradient); color: white; }
+
+        /* Nav Tabs (Individual/Bulk) */
+        .nav-tabs { display: flex; gap: 8px; background: #f1f3f5; padding: 4px; border-radius: 12px; }
+        .tab-btn {
+            padding: 8px 18px; font-size: 0.75rem; font-weight: 800; border-radius: 10px;
+            cursor: pointer; border: none; background: none; transition: 0.3s; font-family: 'Montserrat'; color: #777;
+        }
+        .tab-btn.active { background: var(--bir-gradient); color: white; box-shadow: 0 4px 10px rgba(255, 45, 85, 0.2); }
+
+        .container { max-width: 1350px; margin: 15px auto; padding: 0 15px; }
+
+        /* Base Card Styling */
+        .card { 
+            background: var(--bg-card); border-radius: var(--radius-lg); border: 1px solid var(--border); 
+            padding: 18px; margin-bottom: 18px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); 
+            position: relative; overflow: hidden;
+        }
+        .card::before {
+            content: ''; position: absolute; top: -35px; right: -35px; width: 100px; height: 100px;
+            background: linear-gradient(135deg, rgba(255, 75, 43, 0.04) 0%, rgba(255, 45, 85, 0.04) 100%);
+            border-radius: 50%; z-index: 0;
+        }
+
+        /* Salary Alert Styling */
+        #salaryAlert {
+            display: none; background: #fff5f5; border: 1px solid #fed7d7;
+            padding: 12px 20px; border-radius: 14px; margin-bottom: 15px;
+            color: #c53030; font-size: 0.8rem; font-weight: 700;
+            align-items: center; justify-content: space-between; gap: 15px;
+            animation: slideIn 0.3s ease; position: relative; z-index: 2;
+        }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .alert-btns { display: flex; gap: 8px; }
+        .alert-btn {
+            background: var(--bir-red); color: white; border: none; padding: 8px 14px;
+            border-radius: 8px; cursor: pointer; font-weight: 800; font-size: 0.65rem; transition: 0.2s;
+        }
+        .alert-btn.alt { background: #333; }
+
+        /* Controls row */
+        .controls-row {
+            display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end;
+            border-bottom: 1px solid #f1f3f5; padding-bottom: 18px; margin-bottom: 18px;
+            position: relative; z-index: 1;
+        }
+        .form-group { display: flex; flex-direction: column; gap: 5px; }
+        .form-group label { font-size: 0.6rem; font-weight: 800; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px; }
+        
+        .w-salary { width: 150px; }
+        .w-mode { width: 175px; }
+        .w-year { width: 90px; }
+        .w-sector { width: 200px; }
+        .w-workplace { width: 150px; }
+        .w-union { width: 90px; }
+
+        select, .salary-input {
+            padding: 9px 12px; border: 1px solid #e2e8f0; border-radius: 8px;
+            font-size: 0.82rem; font-weight: 700; outline: none; transition: 0.2s; background: #fafbfc;
+            font-family: 'Montserrat'; color: #333; width: 100%;
+        }
+        .salary-input { border: 2px solid var(--bir-red); background: #fffafa; color: var(--bir-red); }
+
+        /* Horizontal Benefit Grid */
+        .benefit-grid { 
+            display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; position: relative; z-index: 1; 
+        }
+        .benefit-item {
+            border: 1px solid #edf2f7; padding: 10px; border-radius: 12px;
+            display: flex; align-items: flex-start; gap: 8px; cursor: pointer; background: #fcfdfe; transition: 0.3s;
+            height: 100%; min-height: 80px;
+        }
+        .benefit-item.active { border-color: var(--bir-red); background: #fff8f9; box-shadow: 0 4px 10px rgba(255, 45, 85, 0.05); }
+        .benefit-item input { margin-top: 2px; width: 15px; height: 15px; accent-color: var(--bir-red); }
+        .benefit-text { font-size: 0.62rem; font-weight: 600; line-height: 1.3; color: #444; }
+        .benefit-text b { color: var(--bir-red); display: block; font-size: 0.78rem; margin-bottom: 2px; }
+
+        /* Dashboard Results */
+        .result-layout { display: grid; grid-template-columns: 1fr 330px; gap: 20px; }
+        .kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .kpi-card { 
+            padding: 15px 20px; border-radius: 16px; color: white;
+            background: var(--bir-gradient); box-shadow: 0 5px 15px rgba(255, 45, 85, 0.1);
+            position: relative; overflow: hidden;
+        }
+        .kpi-card::before { content: ''; position: absolute; top: -20px; right: -20px; width: 65px; height: 65px; background: rgba(255,255,255,0.15); border-radius: 50%; }
+        .kpi-card.dark { background: #1e293b; }
+        .kpi-card.light { background: white; color: #1a1a1a; border: 1px solid #eef1f4; box-shadow: none; }
+        .kpi-card.light::before { background: rgba(255, 45, 85, 0.04); }
+        
+        .kpi-label { font-size: 0.58rem; font-weight: 800; text-transform: uppercase; opacity: 0.8; margin-bottom: 4px; }
+        .kpi-val { font-size: 1.35rem; font-weight: 800; }
+
+        .details-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; position: relative; z-index: 1; }
+        .details-table td { padding: 10px 0; border-bottom: 1px solid #f1f5f9; }
+        .details-table .lbl { color: #64748b; font-weight: 600; }
+        .details-table .val { text-align: right; font-weight: 800; color: #1e293b; }
+        .total-row { border-top: 2px solid #1e293b; margin-top: 8px; }
+        .total-row .val { color: var(--bir-red); font-size: 1.2rem; }
+        .subtotal-row { background: #f8fafc; font-weight: 700; }
+        .subtotal-row td { padding: 8px; }
+
+        /* Bulk Section Styling */
+        .upload-zone {
+            border: 2px dashed #cbd5e1; padding: 50px 20px; border-radius: var(--radius-lg);
+            text-align: center; cursor: pointer; transition: 0.3s; background: #fcfdfe;
+        }
+        .upload-zone:hover { border-color: var(--bir-red); background: #fffafa; }
+        .upload-icon { font-size: 45px; color: #ccc; margin-bottom: 15px; }
+        
+        .bulk-table-wrap { overflow-x: auto; max-height: 400px; margin-top: 20px; border: 1px solid #e2e8f0; border-radius: 12px; }
+        .bulk-table { width: 100%; border-collapse: collapse; font-size: 0.72rem; }
+        .bulk-table th { background: #f8fafc; padding: 12px; text-align: left; position: sticky; top: 0; border-bottom: 2px solid #e2e8f0; font-weight: 800; color: #64748b; }
+        .bulk-table td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; font-weight: 600; }
+
+        .btn-action {
+            width: 100%; padding: 12px; border-radius: 12px; border: none;
+            background: var(--bir-gradient); color: white; font-weight: 800; font-size: 0.85rem;
+            cursor: pointer; transition: 0.3s; font-family: 'Montserrat';
+        }
+
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        @media (max-width: 1100px) {
+            .benefit-grid { grid-template-columns: repeat(3, 1fr); }
+            .result-layout { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="logo"><i class="fa-solid fa-bolt-lightning"></i> BirCalc</div>
+        
+        <!-- System Toggle -->
+        <div class="system-switch">
+            <button class="sw-btn active" id="swGeneral" onclick="setSystem('general', this)">General</button>
+            <button class="sw-btn" id="swRecruitment" onclick="setSystem('recruitment', this)">Recruitment</button>
+        </div>
+
+        <!-- Tab Buttons -->
+        <div class="nav-tabs">
+            <button class="tab-btn active" id="tabInd" onclick="switchTab('individual', this)">Fərdi</button>
+            <button class="tab-btn" id="tabBulk" onclick="switchTab('bulk', this)">Toplu</button>
+        </div>
+
+        <!-- Company Toggle -->
+        <div class="company-nav">
+            <button class="comp-btn active birbank" onclick="setCompany('Birbank', this)">Birbank</button>
+            <button class="comp-btn" onclick="setCompany('Pashapay', this)">Pashapay</button>
+            <button class="comp-btn" onclick="setCompany('Birmarket', this)">Birmarket</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Salary Notification (Recruitment Only) -->
+        <div id="salaryAlert">
+            <span id="alertText">Məbləğ bu aralıqda ola bilməz.</span>
+            <div class="alert-btns">
+                <button class="alert-btn" id="btn1" onclick="applyFix(1)">TƏTBİQ ET</button>
+                <button class="alert-btn alt" id="btn2" onclick="applyFix(2)">TƏTBİQ ET</button>
+            </div>
+        </div>
+        
+        <div class="card">
+            <!-- Controls Grid -->
+            <div class="controls-row">
+                <div class="form-group w-salary">
+                    <label id="inputLabelSalary">Məbləğ (AZN)</label>
+                    <input type="number" id="salaryInput" value="1000" class="salary-input" oninput="handleManualInput()">
+                </div>
+                <div class="form-group w-mode">
+                    <label>Hesablama Rejimi</label>
+                    <select id="mode" onchange="toggleMode()">
+                        <option value="g2n">GROSS → NETT</option>
+                        <option value="n2g" selected>NETT → GROSS</option>
+                    </select>
+                </div>
+                <div class="form-group w-year">
+                    <label>İl</label>
+                    <select id="year" onchange="calc()">
+                        <option value="2026">2026</option>
+                        <option value="2025">2025</option>
+                    </select>
+                </div>
+                <div class="form-group w-sector">
+                    <label>Sektor</label>
+                    <select id="sector" onchange="calc()">
+                        <option value="private">Özəl (Qeyri-neft)</option>
+                        <option value="state">Dövlət / Neft-Qaz</option>
+                    </select>
+                </div>
+                <div class="form-group w-workplace">
+                    <label>İş Yeri</label>
+                    <select id="workplace" onchange="calc()">
+                        <option value="main">Əsas iş yeri</option>
+                        <option value="secondary">Əlavə iş yeri</option>
+                    </select>
+                </div>
+                <div class="form-group w-union">
+                    <label>Həmkar</label>
+                    <select id="union" onchange="calc()">
+                        <option value="0">0%</option>
+                        <option value="1" selected>1%</option>
+                        <option value="2">2%</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Benefits Horizontal List -->
+            <div class="benefit-section">
+                <label>Vergi Güzəştləri (VM Maddə 102)</label>
+                <div class="benefit-grid">
+                    <div class="benefit-item active" id="item_b0" onclick="selectBenefit('b0')">
+                        <input type="radio" name="benefit" id="b0" value="0" checked onchange="calc()">
+                        <div class="benefit-text"><b>Güzəşt yoxdur</b>Standart qayda</div>
+                    </div>
+                    <div class="benefit-item" id="item_b800" onclick="selectBenefit('b800')">
+                        <input type="radio" name="benefit" id="b800" value="800" onchange="calc()">
+                        <div class="benefit-text"><b>800 AZN</b>Şəhid, AR Qəhrəmanı</div>
+                    </div>
+                    <div class="benefit-item" id="item_b400" onclick="selectBenefit('b400')">
+                        <input type="radio" name="benefit" id="b400" value="400" onchange="calc()">
+                        <div class="benefit-text"><b>400 AZN</b>I və II qrup əlil</div>
+                    </div>
+                    <div class="benefit-item" id="item_b200" onclick="selectBenefit('b200')">
+                        <input type="radio" name="benefit" id="b200" value="200" onchange="calc()">
+                        <div class="benefit-text"><b>200 AZN</b>Veteran, Çernobıl</div>
+                    </div>
+                    <div class="benefit-item" id="item_b100" onclick="selectBenefit('b100')">
+                        <input type="radio" name="benefit" id="b100" value="100" onchange="calc()">
+                        <div class="benefit-text"><b>100 AZN</b>Məcburi köçkün</div>
+                    </div>
+                    <div class="benefit-item" id="item_b50" onclick="selectBenefit('b50')">
+                        <input type="radio" name="benefit" id="b50" value="50" onchange="calc()">
+                        <div class="benefit-text"><b>50 AZN</b>Himayə (2+ nəfər)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB CONTENT: INDIVIDUAL -->
+        <div id="individual" class="tab-pane active">
+            <div class="result-layout">
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-label">NETT</div>
+                        <div class="kpi-val" id="k-nett">0.00</div>
+                    </div>
+                    <div class="kpi-card dark">
+                        <div class="kpi-label" id="label-gross">GROSS</div>
+                        <div class="kpi-val" id="k-gross">0.00</div>
+                    </div>
+                    <div class="kpi-card light dyn-kpi-1">
+                        <div class="kpi-label" id="label-k1">Cəmi Tutulmalar</div>
+                        <div class="kpi-val" id="val-k1">0.00</div>
+                    </div>
+                    <div class="kpi-card light dyn-kpi-2">
+                        <div class="kpi-label" id="label-k2">Vergiyə cəlb olunan</div>
+                        <div class="kpi-val" id="val-k2">0.00</div>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-bottom:0; padding: 20px;">
+                    <label style="font-size:0.6rem; font-weight:800; color:#aaa; margin-bottom:10px; display:block;">HESABLANMIŞ DETALLAR</label>
+                    <table class="details-table" id="reportTable"></table>
+                    <button class="btn-action" onclick="window.print()">ÇAP ET</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB CONTENT: BULK -->
+        <div id="bulk" class="tab-pane">
+            <div class="card">
+                <div class="upload-zone" onclick="document.getElementById('fileIn').click()">
+                    <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
+                    <h3 style="margin:0; font-size:1.1rem; font-weight:800;">Faylı bura sürükləyin və ya seçin</h3>
+                    <p style="color:#94a3b8; font-size:0.85rem; margin-top:8px;">Format: Excel (.xlsx) | Sütunlar: "Employee badge" və "Salary"</p>
+                    <input type="file" id="fileIn" accept=".xlsx, .csv" style="display:none" onchange="handleFile(event)">
+                </div>
+                
+                <div id="bulk-results" style="display:none; margin-top:25px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                        <span style="font-weight:800; font-size:0.9rem; color:#64748b;">NƏTİCƏ: <span id="bk-count" style="color:var(--bir-red)">0</span> İŞÇİ HESABLANDI</span>
+                        <button class="btn-action" style="width:auto; padding: 10px 25px; background:#00c853; margin:0;" onclick="exportResults()">
+                            <i class="fa-solid fa-download"></i> EXCEL-Ə ÇIXAR
+                        </button>
+                    </div>
+                    <div class="bulk-table-wrap">
+                        <table class="bulk-table">
+                            <thead><tr id="bulk-head"></tr></thead>
+                            <tbody id="bulk-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+    let currentSystem = 'general';
+    let currentCompany = 'Birbank';
+    let alertSkipped = false;
+
+    function setSystem(sys, el) {
+        currentSystem = sys;
+        document.querySelectorAll('.sw-btn').forEach(b => b.classList.remove('active'));
+        el.classList.add('active');
+        alertSkipped = false;
+        calc();
+    }
+
+    function switchTab(id, el) {
+        document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(l => l.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        el.classList.add('active');
+    }
+
+    function setCompany(name, el) {
+        currentCompany = name;
+        document.querySelectorAll('.comp-btn').forEach(b => b.classList.remove('active', 'birbank'));
+        el.classList.add('active');
+        if(name === 'Birbank') el.classList.add('birbank');
+        document.getElementById('union').value = (name === 'Birbank') ? "1" : "0";
+        alertSkipped = false;
+        calc();
+    }
+
+    function handleManualInput() { alertSkipped = false; calc(); }
+    function toggleMode() { alertSkipped = false; calc(); }
+    function selectBenefit(id) { document.getElementById(id).checked = true; calc(); }
+
+    function getBaseRef(workplace) {
+        const isMain = workplace === 'main';
+        if (currentCompany === 'Birbank') return isMain ? 354 : 348;
+        return isMain ? 358 : 352;
+    }
+
+    function applyFix(type) {
+        const workplace = document.getElementById('workplace').value;
+        const base = getBaseRef(workplace);
+        document.getElementById('salaryInput').value = (type === 1) ? base : base + 10;
+        alertSkipped = true;
+        calc();
+    }
+
+    function getDeductions(gross, benefit, unionPct, workplace, sector, year) {
+        let tax = 0, dsmf = 0, unemp = 0, med = 0, union = 0;
+        let taxable = Math.max(0, gross - benefit);
+
+        if (sector === 'private' && year === '2026') {
+            if (workplace === 'main') {
+                if (taxable <= 200) tax = 0;
+                else if (taxable <= 2500) tax = (taxable - 200) * 0.03;
+                else if (taxable <= 8000) tax = 75 + (taxable - 2500) * 0.10;
+                else tax = 625 + (taxable - 8000) * 0.14;
+            } else {
+                if (taxable <= 2500) tax = taxable * 0.03;
+                else if (taxable <= 8000) tax = 75 + (taxable - 2500) * 0.10;
+                else tax = 625 + (taxable - 8000) * 0.14;
+            }
+            dsmf = (gross <= 200) ? gross * 0.03 : (6 + (gross - 200) * 0.10);
+            unemp = gross * 0.005;
+            med = (gross <= 2500) ? gross * 0.02 : (50 + (gross - 2500) * 0.005);
+        } else if (sector === 'private') {
+            tax = (taxable > 8000) ? (taxable * 0.14) : 0;
+            dsmf = (gross <= 200) ? gross * 0.03 : (6 + (gross - 200) * 0.10);
+            unemp = gross * 0.005;
+            med = (gross <= 8000) ? gross * 0.02 : (160 + (gross - 8000) * 0.005);
+        } else {
+            let bt = (workplace === 'main') ? Math.max(0, taxable - 200) : taxable;
+            if (bt <= 2500) tax = bt * 0.14;
+            else tax = 350 + (bt - 2500) * 0.25;
+            dsmf = gross * 0.03; unemp = gross * 0.005;
+            med = (gross <= 8000) ? gross * 0.02 : (160 + (gross - 8000) * 0.005);
+        }
+        union = gross * (unionPct / 100);
+        return { tax, dsmf, unemp, med, union, taxable, total: tax + dsmf + unemp + med + union };
+    }
+
+    function solveGross(targetNett, b, u, w, s, y) {
+        let low = targetNett, high = targetNett * 3, iter = 0;
+        while (iter < 38) {
+            let mid = (low + high) / 2;
+            let res = getDeductions(mid, b, u, w, s, y);
+            if (mid - res.total < targetNett) low = mid;
+            else high = mid;
+            iter++;
+        }
+        return high;
+    }
+
+    function calc() {
+        const year = document.getElementById('year').value;
+        const sector = document.getElementById('sector').value;
+        const workplace = document.getElementById('workplace').value;
+        const mode = document.getElementById('mode').value;
+        const val = parseFloat(document.getElementById('salaryInput').value) || 0;
+        const benefit = parseFloat(document.querySelector('input[name="benefit"]:checked').value);
+        const unionPct = parseFloat(document.getElementById('union').value);
+
+        const isN2G = mode === 'n2g';
+        const isRecruitmentN2G = isN2G && currentSystem === 'recruitment';
+        
+        let finalGross, finalNett, res, meal = 0, baseNet = 0;
+
+        if (isRecruitmentN2G) {
+            const minRef = getBaseRef(workplace);
+            const maxRef = minRef + 10;
+            if (val > minRef && val < maxRef && !alertSkipped) {
+                document.getElementById('salaryAlert').style.display = 'flex';
+                document.getElementById('alertText').innerText = `Məbləğ ${minRef}-${maxRef} aralığında ola bilməz.`;
+                document.getElementById('btn1').innerText = `${minRef} tətbiq et`;
+                document.getElementById('btn2').innerText = `${maxRef} tətbiq et`;
+            } else { document.getElementById('salaryAlert').style.display = 'none'; }
+
+            meal = Math.max(0, val - minRef);
+            if (meal > 0 && meal < 10) meal = 10;
+            if (meal > 100) meal = 100;
+            baseNet = val - meal;
+
+            finalGross = solveGross(baseNet, benefit, unionPct, workplace, sector, year);
+            res = getDeductions(finalGross, benefit, unionPct, workplace, sector, year);
+            finalNett = val;
+        } else {
+            document.getElementById('salaryAlert').style.display = 'none';
+            if(isN2G) {
+                finalGross = solveGross(val, benefit, unionPct, workplace, sector, year);
+                res = getDeductions(finalGross, benefit, unionPct, workplace, sector, year);
+                finalNett = val;
+            } else {
+                finalGross = val;
+                res = getDeductions(finalGross, benefit, unionPct, workplace, sector, year);
+                finalNett = finalGross - res.total;
+            }
+        }
+
+        document.getElementById('k-nett').innerText = finalNett.toFixed(2);
+        document.getElementById('k-gross').innerText = finalGross.toFixed(2);
+        document.getElementById('label-gross').innerText = isRecruitmentN2G ? "GROSS (Baza)" : "GROSS";
+
+        if (isRecruitmentN2G) {
+            document.getElementById('label-k1').innerText = "Yemək Pulu";
+            document.getElementById('val-k1').innerText = meal.toFixed(2);
+            document.getElementById('val-k1').style.color = "#ed8936";
+            document.getElementById('label-k2').innerText = "Baza Net";
+            document.getElementById('val-k2').innerText = baseNet.toFixed(2);
+            document.getElementById('val-k2').style.color = "#48bb78";
+        } else {
+            document.getElementById('label-k1').innerText = "Cəmi Tutulmalar";
+            document.getElementById('val-k1').innerText = res.total.toFixed(2);
+            document.getElementById('val-k1').style.color = "var(--bir-red)";
+            document.getElementById('label-k2').innerText = "Vergiyə cəlb olunan";
+            document.getElementById('val-k2').innerText = res.taxable.toFixed(2);
+            document.getElementById('val-k2').style.color = "#1e293b";
+        }
+
+        const table = document.getElementById('reportTable');
+        let html = `<tr><td class="lbl">GROSS ${isRecruitmentN2G?'(Baza)':''}</td><td class="val">${finalGross.toFixed(2)}</td></tr>`;
+        html += `<tr><td class="lbl">Gəlir Vergisi</td><td class="val">${res.tax.toFixed(2)}</td></tr>`;
+        html += `<tr><td class="lbl">Sosial (DSMF)</td><td class="val">${res.dsmf.toFixed(2)}</td></tr>`;
+        html += `<tr><td class="lbl">İşsizlik (0.5%)</td><td class="val">${res.unemp.toFixed(2)}</td></tr>`;
+        html += `<tr><td class="lbl">İTS</td><td class="val">${res.med.toFixed(2)}</td></tr>`;
+        html += `<tr><td class="lbl">Həmkar İttifaqı</td><td class="val">${res.union.toFixed(2)}</td></tr>`;
+        if(isRecruitmentN2G) {
+            html += `<tr class="subtotal-row"><td class="lbl">BAZA NET</td><td class="val">${baseNet.toFixed(2)}</td></tr>`;
+            html += `<tr><td class="lbl">+ Yemək Pulu</td><td class="val">${meal.toFixed(2)}</td></tr>`;
+            html += `<tr class="total-row"><td class="lbl">NETT (Cəm)</td><td class="val">${finalNett.toFixed(2)}</td></tr>`;
+        } else {
+            html += `<tr class="total-row"><td class="lbl">NETT</td><td class="val">${finalNett.toFixed(2)}</td></tr>`;
+        }
+        table.innerHTML = html;
+
+        document.querySelectorAll('.benefit-item').forEach(i => i.classList.remove('active'));
+        document.querySelector('input[name="benefit"]:checked').closest('.benefit-item').classList.add('active');
+    }
+
+    let bulkData = [];
+    function handleFile(e) {
+        const reader = new FileReader();
+        reader.onload = evt => {
+            const json = XLSX.utils.sheet_to_json(XLSX.read(new Uint8Array(evt.target.result), {type: 'array'}).Sheets[XLSX.read(new Uint8Array(evt.target.result), {type: 'array'}).SheetNames[0]]);
+            const year = document.getElementById('year').value;
+            const sector = document.getElementById('sector').value;
+            const workplace = document.getElementById('workplace').value;
+            const mode = document.getElementById('mode').value;
+            const benefit = parseFloat(document.querySelector('input[name="benefit"]:checked').value);
+            const unionPct = parseFloat(document.getElementById('union').value);
+            
+            const body = document.getElementById('bulk-body');
+            body.innerHTML = ''; bulkData = [];
+            
+            json.forEach(row => {
+                const badge = row['Employee badge'] || 'N/A';
+                const val = parseFloat(row['Salary']) || 0;
+                if(val === 0) return;
+                let g, n, res;
+                if(mode === 'n2g') {
+                    g = solveGross(val, benefit, unionPct, workplace, sector, year);
+                    res = getDeductions(g, benefit, unionPct, workplace, sector, year);
+                    n = val;
+                } else {
+                    g = val; res = getDeductions(g, benefit, unionPct, workplace, sector, year); n = g - res.total;
+                }
+                body.innerHTML += `<tr><td>${badge}</td><td>${g.toFixed(2)}</td><td>${n.toFixed(2)}</td><td>${res.dsmf.toFixed(2)}</td><td>${res.med.toFixed(2)}</td><td>${res.tax.toFixed(2)}</td></tr>`;
+                bulkData.push({Badge: badge, Gross: g.toFixed(2), Nett: n.toFixed(2)});
+            });
+            document.getElementById('bk-count').innerText = json.length;
+            document.getElementById('bulk-results').style.display = 'block';
+        };
+        reader.readAsArrayBuffer(e.target.files[0]);
+    }
+
+    function exportResults() {
+        if(bulkData.length === 0) return;
+        const ws = XLSX.utils.json_to_sheet(bulkData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Maaşlar");
+        XLSX.writeFile(wb, "BirCalc_Bulk.xlsx");
+    }
+
+    calc();
+</script>
+</body>
+</html>
