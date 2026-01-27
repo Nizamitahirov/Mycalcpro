@@ -225,14 +225,14 @@
                 <div class="form-group w-mode">
                     <label>Hesablama Rejimi</label>
                     <select id="mode" onchange="toggleMode()">
-                        <option value="g2n">GROSS → NETT</option>
-                        <option value="n2g" selected>NETT → GROSS</option>
+                        <option value="g2n" selected>GROSS → NETT</option>
+                        <option value="n2g">NETT → GROSS</option>
                     </select>
                 </div>
                 <div class="form-group w-year">
                     <label>İl</label>
                     <select id="year" onchange="calc()">
-                        <option value="2026">2026</option>
+                        <option value="2026" selected>2026</option>
                         <option value="2025">2025</option>
                     </select>
                 </div>
@@ -417,16 +417,28 @@
             unemp = gross * 0.005;
             med = (gross <= 2500) ? gross * 0.02 : (50 + (gross - 2500) * 0.005);
         } else if (sector === 'private') {
-            tax = (taxable > 8000) ? (taxable * 0.14) : 0;
+            // 2025: Özəl sektorda 8000 AZN-ə qədər vergidən azad (ƏSAS VƏ ƏLAVƏ İŞ YERİ FERQI YOX)
+            tax = (taxable > 8000) ? (taxable - 8000) * 0.14 : 0;
             dsmf = (gross <= 200) ? gross * 0.03 : (6 + (gross - 200) * 0.10);
             unemp = gross * 0.005;
             med = (gross <= 8000) ? gross * 0.02 : (160 + (gross - 8000) * 0.005);
         } else {
+            // Dövlət/Neft sektoru (2025 və 2026)
+            // 2025-də də 2026-da da əsas iş yerində 200 AZN güzəşt var
             let bt = (workplace === 'main') ? Math.max(0, taxable - 200) : taxable;
             if (bt <= 2500) tax = bt * 0.14;
             else tax = 350 + (bt - 2500) * 0.25;
-            dsmf = gross * 0.03; unemp = gross * 0.005;
-            med = (gross <= 8000) ? gross * 0.02 : (160 + (gross - 8000) * 0.005);
+            
+            // DSMF və İTS 2025 və 2026-da fərqlidir
+            if (year === '2026') {
+                dsmf = gross * 0.03;
+                med = (gross <= 2500) ? gross * 0.02 : (50 + (gross - 2500) * 0.005);
+            } else {
+                // 2025
+                dsmf = (gross <= 200) ? gross * 0.03 : (6 + (gross - 200) * 0.10);
+                med = (gross <= 8000) ? gross * 0.02 : (160 + (gross - 8000) * 0.005);
+            }
+            unemp = gross * 0.005;
         }
         union = gross * (unionPct / 100);
         return { tax, dsmf, unemp, med, union, taxable, total: tax + dsmf + unemp + med + union };
