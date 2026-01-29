@@ -206,15 +206,6 @@
     </nav>
 
     <div class="container">
-        <!-- Salary Notification (Recruitment Only) -->
-        <div id="salaryAlert">
-            <span id="alertText">Məbləğ bu aralıqda ola bilməz.</span>
-            <div class="alert-btns">
-                <button class="alert-btn" id="btn1" onclick="applyFix(1)">TƏTBİQ ET</button>
-                <button class="alert-btn alt" id="btn2" onclick="applyFix(2)">TƏTBİQ ET</button>
-            </div>
-        </div>
-        
         <div class="card">
             <!-- Controls Grid -->
             <div class="controls-row">
@@ -353,13 +344,11 @@
 <script>
     let currentSystem = 'general';
     let currentCompany = 'Birbank';
-    let alertSkipped = false;
 
     function setSystem(sys, el) {
         currentSystem = sys;
         document.querySelectorAll('.sw-btn').forEach(b => b.classList.remove('active'));
         el.classList.add('active');
-        alertSkipped = false;
         calc();
     }
 
@@ -376,27 +365,12 @@
         el.classList.add('active');
         if(name === 'Birbank') el.classList.add('birbank');
         document.getElementById('union').value = (name === 'Birbank') ? "1" : "0";
-        alertSkipped = false;
         calc();
     }
 
-    function handleManualInput() { alertSkipped = false; calc(); }
-    function toggleMode() { alertSkipped = false; calc(); }
+    function handleManualInput() { calc(); }
+    function toggleMode() { calc(); }
     function selectBenefit(id) { document.getElementById(id).checked = true; calc(); }
-
-    function getBaseRef(workplace) {
-        const isMain = workplace === 'main';
-        if (currentCompany === 'Birbank') return isMain ? 354 : 348;
-        return isMain ? 358 : 352;
-    }
-
-    function applyFix(type) {
-        const workplace = document.getElementById('workplace').value;
-        const base = getBaseRef(workplace);
-        document.getElementById('salaryInput').value = (type === 1) ? base : base + 10;
-        alertSkipped = true;
-        calc();
-    }
 
     function getDeductions(gross, benefit, unionPct, workplace, sector, year) {
         let tax = 0, dsmf = 0, unemp = 0, med = 0, union = 0;
@@ -469,27 +443,31 @@
         const isRecruitmentN2G = isN2G && currentSystem === 'recruitment';
         
         let finalGross, finalNett, res, meal = 0, baseNet = 0;
+        let mealMessage = '';
 
         if (isRecruitmentN2G) {
-            const minRef = getBaseRef(workplace);
-            const maxRef = minRef + 10;
-            if (val > minRef && val < maxRef && !alertSkipped) {
-                document.getElementById('salaryAlert').style.display = 'flex';
-                document.getElementById('alertText').innerText = `Məbləğ ${minRef}-${maxRef} aralığında ola bilməz.`;
-                document.getElementById('btn1').innerText = `${minRef} tətbiq et`;
-                document.getElementById('btn2').innerText = `${maxRef} tətbiq et`;
-            } else { document.getElementById('salaryAlert').style.display = 'none'; }
-
+            // Birbank üçün: əsas 354, əlavə 348
+            // Digər şirkətlər üçün: əsas 358, əlavə 352
+            const isMain = workplace === 'main';
+            const minRef = (currentCompany === 'Birbank') ? (isMain ? 354 : 348) : (isMain ? 358 : 352);
+            
             meal = Math.max(0, val - minRef);
-            if (meal > 0 && meal < 10) meal = 10;
-            if (meal > 100) meal = 100;
-            baseNet = val - meal;
+            
+            // Yemək pulu 50 AZN-dən az olarsa, təyin etmə
+            if (meal > 0 && meal < 50) {
+                meal = 0;
+                mealMessage = 'Məbləğ 50 AZN-dən az olduğu üçün yemək pulu təyin edilmir';
+                baseNet = val;
+            } else {
+                if (meal > 0 && meal < 10) meal = 10;
+                if (meal > 100) meal = 100;
+                baseNet = val - meal;
+            }
 
             finalGross = solveGross(baseNet, benefit, unionPct, workplace, sector, year);
             res = getDeductions(finalGross, benefit, unionPct, workplace, sector, year);
             finalNett = val;
         } else {
-            document.getElementById('salaryAlert').style.display = 'none';
             if(isN2G) {
                 finalGross = solveGross(val, benefit, unionPct, workplace, sector, year);
                 res = getDeductions(finalGross, benefit, unionPct, workplace, sector, year);
@@ -507,8 +485,13 @@
 
         if (isRecruitmentN2G) {
             document.getElementById('label-k1').innerText = "Yemək Pulu";
-            document.getElementById('val-k1').innerText = meal.toFixed(2);
-            document.getElementById('val-k1').style.color = "#ed8936";
+            if (mealMessage) {
+                document.getElementById('val-k1').innerHTML = `<span style="font-size:0.75rem; line-height:1.3; font-weight:700;">${mealMessage}</span>`;
+                document.getElementById('val-k1').style.color = "#718096";
+            } else {
+                document.getElementById('val-k1').innerText = meal.toFixed(2);
+                document.getElementById('val-k1').style.color = "#ed8936";
+            }
             document.getElementById('label-k2').innerText = "Baza Net";
             document.getElementById('val-k2').innerText = baseNet.toFixed(2);
             document.getElementById('val-k2').style.color = "#48bb78";
@@ -530,7 +513,11 @@
         html += `<tr><td class="lbl">Həmkar İttifaqı</td><td class="val">${res.union.toFixed(2)}</td></tr>`;
         if(isRecruitmentN2G) {
             html += `<tr class="subtotal-row"><td class="lbl">BAZA NET</td><td class="val">${baseNet.toFixed(2)}</td></tr>`;
-            html += `<tr><td class="lbl">+ Yemək Pulu</td><td class="val">${meal.toFixed(2)}</td></tr>`;
+            if (mealMessage) {
+                html += `<tr><td class="lbl">+ Yemək Pulu</td><td class="val" style="font-size:0.65rem; color:#718096;">${mealMessage}</td></tr>`;
+            } else {
+                html += `<tr><td class="lbl">+ Yemək Pulu</td><td class="val">${meal.toFixed(2)}</td></tr>`;
+            }
             html += `<tr class="total-row"><td class="lbl">NETT (Cəm)</td><td class="val">${finalNett.toFixed(2)}</td></tr>`;
         } else {
             html += `<tr class="total-row"><td class="lbl">NETT</td><td class="val">${finalNett.toFixed(2)}</td></tr>`;
