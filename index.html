@@ -174,6 +174,14 @@
         .tab-pane.active { display: block; animation: fadeIn 0.4s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
+        /* Toggle Recruitment Bulk */
+        .bulk-toggle {
+            display: flex; align-items: center; gap: 10px; margin-bottom: 15px;
+            padding: 10px; background: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0;
+        }
+        .bulk-toggle input { width: 18px; height: 18px; cursor: pointer; accent-color: var(--bir-red); }
+        .bulk-toggle label { font-weight: 700; font-size: 0.75rem; color: #444; cursor: pointer; }
+
         @media (max-width: 1100px) {
             .benefit-grid { grid-template-columns: repeat(3, 1fr); }
             .result-layout { grid-template-columns: 1fr; }
@@ -325,6 +333,11 @@
         <!-- TAB CONTENT: BULK -->
         <div id="bulk" class="tab-pane">
             <div class="card">
+                <div class="bulk-toggle">
+                    <input type="checkbox" id="bulkRecruitmentMode">
+                    <label for="bulkRecruitmentMode">Recruitment Rejimi (Yemək pulu məntiqini aktivləşdir)</label>
+                </div>
+
                 <div class="upload-zone" onclick="document.getElementById('fileIn').click()">
                     <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
                     <h3 style="margin:0; font-size:1.1rem; font-weight:800;">Faylı bura sürükləyin və ya seçin</h3>
@@ -417,24 +430,19 @@
             unemp = gross * 0.005;
             med = (gross <= 2500) ? gross * 0.02 : (50 + (gross - 2500) * 0.005);
         } else if (sector === 'private') {
-            // 2025: Özəl sektorda 8000 AZN-ə qədər vergidən azad (ƏSAS VƏ ƏLAVƏ İŞ YERİ FERQI YOX)
             tax = (taxable > 8000) ? (taxable - 8000) * 0.14 : 0;
             dsmf = (gross <= 200) ? gross * 0.03 : (6 + (gross - 200) * 0.10);
             unemp = gross * 0.005;
             med = (gross <= 8000) ? gross * 0.02 : (160 + (gross - 8000) * 0.005);
         } else {
-            // Dövlət/Neft sektoru (2025 və 2026)
-            // 2025-də də 2026-da da əsas iş yerində 200 AZN güzəşt var
             let bt = (workplace === 'main') ? Math.max(0, taxable - 200) : taxable;
             if (bt <= 2500) tax = bt * 0.14;
             else tax = 350 + (bt - 2500) * 0.25;
             
-            // DSMF və İTS 2025 və 2026-da fərqlidir
             if (year === '2026') {
                 dsmf = gross * 0.03;
                 med = (gross <= 2500) ? gross * 0.02 : (50 + (gross - 2500) * 0.005);
             } else {
-                // 2025
                 dsmf = (gross <= 200) ? gross * 0.03 : (6 + (gross - 200) * 0.10);
                 med = (gross <= 8000) ? gross * 0.02 : (160 + (gross - 8000) * 0.005);
             }
@@ -545,31 +553,61 @@
     function handleFile(e) {
         const reader = new FileReader();
         reader.onload = evt => {
-            const json = XLSX.utils.sheet_to_json(XLSX.read(new Uint8Array(evt.target.result), {type: 'array'}).Sheets[XLSX.read(new Uint8Array(evt.target.result), {type: 'array'}).SheetNames[0]]);
+            const workbook = XLSX.read(new Uint8Array(evt.target.result), {type: 'array'});
+            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+            const json = XLSX.utils.sheet_to_json(firstSheet);
+            
             const year = document.getElementById('year').value;
             const sector = document.getElementById('sector').value;
             const workplace = document.getElementById('workplace').value;
             const mode = document.getElementById('mode').value;
             const benefit = parseFloat(document.querySelector('input[name="benefit"]:checked').value);
             const unionPct = parseFloat(document.getElementById('union').value);
+            const useBulkRec = document.getElementById('bulkRecruitmentMode').checked;
             
             const body = document.getElementById('bulk-body');
-            body.innerHTML = ''; bulkData = [];
+            const head = document.getElementById('bulk-head');
+            body.innerHTML = ''; 
+            bulkData = [];
+
+            // Dinamik başlıqlar
+            if (useBulkRec && mode === 'n2g') {
+                head.innerHTML = `<th>Badge</th><th>Gross (Baza)</th><th>Baza Net</th><th>Yemək</th><th>Nett (Cəm)</th><th>DSMF</th><th>İTS</th><th>Vergi</th>`;
+            } else {
+                head.innerHTML = `<th>Badge</th><th>Gross</th><th>Nett</th><th>DSMF</th><th>İTS</th><th>Vergi</th>`;
+            }
             
             json.forEach(row => {
                 const badge = row['Employee badge'] || 'N/A';
                 const val = parseFloat(row['Salary']) || 0;
                 if(val === 0) return;
-                let g, n, res;
-                if(mode === 'n2g') {
-                    g = solveGross(val, benefit, unionPct, workplace, sector, year);
+                
+                let g, n, res, meal = 0, baseNet = 0;
+
+                if (useBulkRec && mode === 'n2g') {
+                    const minRef = getBaseRef(workplace);
+                    meal = Math.max(0, val - minRef);
+                    if (meal > 0 && meal < 10) meal = 10;
+                    if (meal > 100) meal = 100;
+                    baseNet = val - meal;
+                    
+                    g = solveGross(baseNet, benefit, unionPct, workplace, sector, year);
                     res = getDeductions(g, benefit, unionPct, workplace, sector, year);
                     n = val;
+
+                    body.innerHTML += `<tr><td>${badge}</td><td>${g.toFixed(2)}</td><td>${baseNet.toFixed(2)}</td><td>${meal.toFixed(2)}</td><td>${n.toFixed(2)}</td><td>${res.dsmf.toFixed(2)}</td><td>${res.med.toFixed(2)}</td><td>${res.tax.toFixed(2)}</td></tr>`;
+                    bulkData.push({Badge: badge, Gross_Baza: g.toFixed(2), Baza_Net: baseNet.toFixed(2), Yemek_Pulu: meal.toFixed(2), Nett_Cem: n.toFixed(2)});
                 } else {
-                    g = val; res = getDeductions(g, benefit, unionPct, workplace, sector, year); n = g - res.total;
+                    if(mode === 'n2g') {
+                        g = solveGross(val, benefit, unionPct, workplace, sector, year);
+                        res = getDeductions(g, benefit, unionPct, workplace, sector, year);
+                        n = val;
+                    } else {
+                        g = val; res = getDeductions(g, benefit, unionPct, workplace, sector, year); n = g - res.total;
+                    }
+                    body.innerHTML += `<tr><td>${badge}</td><td>${g.toFixed(2)}</td><td>${n.toFixed(2)}</td><td>${res.dsmf.toFixed(2)}</td><td>${res.med.toFixed(2)}</td><td>${res.tax.toFixed(2)}</td></tr>`;
+                    bulkData.push({Badge: badge, Gross: g.toFixed(2), Nett: n.toFixed(2)});
                 }
-                body.innerHTML += `<tr><td>${badge}</td><td>${g.toFixed(2)}</td><td>${n.toFixed(2)}</td><td>${res.dsmf.toFixed(2)}</td><td>${res.med.toFixed(2)}</td><td>${res.tax.toFixed(2)}</td></tr>`;
-                bulkData.push({Badge: badge, Gross: g.toFixed(2), Nett: n.toFixed(2)});
             });
             document.getElementById('bk-count').innerText = json.length;
             document.getElementById('bulk-results').style.display = 'block';
