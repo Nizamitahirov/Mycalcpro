@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="az">
 <head>
@@ -8,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
         :root {
@@ -143,6 +145,32 @@
         
         .kpi-label { font-size: 0.58rem; font-weight: 800; text-transform: uppercase; opacity: 0.8; margin-bottom: 4px; }
         .kpi-val { font-size: 1.35rem; font-weight: 800; }
+
+        /* Modern KPI Notice Styling - REDESIGNED & BIGGER */
+        .kpi-mini-notice {
+            margin-top: 15px;
+            padding: 12px 14px;
+            background: rgba(255, 45, 85, 0.06);
+            border-radius: 12px;
+            border-left: 4px solid var(--bir-red);
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+            animation: fadeIn 0.5s ease;
+        }
+        .kpi-mini-notice i {
+            color: var(--bir-red);
+            margin-top: 2px;
+            width: 18px;
+            height: 18px;
+        }
+        .kpi-mini-notice span {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #c53030;
+            line-height: 1.5;
+        }
 
         .details-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; position: relative; z-index: 1; }
         .details-table td { padding: 10px 0; border-bottom: 1px solid #f1f5f9; }
@@ -446,6 +474,11 @@
                     <div class="kpi-card light dyn-kpi-1">
                         <div class="kpi-label" id="label-k1">Cəmi Tutulmalar</div>
                         <div class="kpi-val" id="val-k1">0.00</div>
+                        <!-- Not Bölməsi - KPI kartının içində rəqəmin altında -->
+                        <div id="mealNotice" class="kpi-mini-notice" style="display:none;">
+                            <i data-lucide="alert-circle"></i>
+                            <span>Təklif edilən əməkhaqqının şkalaya uyğunluğu yoxlanılan zaman yemək pulu da (net+yemək pulu birlikdə) nəzərə alınmalıdır.</span>
+                        </div>
                     </div>
                     <div class="kpi-card light dyn-kpi-2">
                         <div class="kpi-label" id="label-k2">Vergiyə cəlb olunan</div>
@@ -628,6 +661,9 @@
     </div>
 
 <script>
+    // Lucide ikonlarını aktivləşdir
+    lucide.createIcons();
+
     let currentSystem = 'general';
     let currentCompany = 'Birbank';
     let alertSkipped = false;
@@ -761,8 +797,12 @@
             finalGross = solveGross(baseNet, benefit, unionPct, workplace, sector, year);
             res = getDeductions(finalGross, benefit, unionPct, workplace, sector, year);
             finalNett = val;
+
+            // KPI kartındakı Notu göstər
+            document.getElementById('mealNotice').style.display = 'flex';
         } else {
             document.getElementById('salaryAlert').style.display = 'none';
+            document.getElementById('mealNotice').style.display = 'none';
             if(isN2G) {
                 finalGross = solveGross(val, benefit, unionPct, workplace, sector, year);
                 res = getDeductions(finalGross, benefit, unionPct, workplace, sector, year);
@@ -815,9 +855,8 @@
     }
 
     /* ============================================================
-       TRANSFER & PROMOTION LOGIC
+       TRANSFER & PROMOTION LOGIC (Sizin koddakı məntiq)
     ============================================================ */
-
     function tpGetParams() {
         return {
             year: document.getElementById('year').value,
@@ -854,8 +893,6 @@
 
     function tpCalc() {
         const p = tpGetParams();
-
-        // --- CURRENT ---
         const curGross = parseFloat(document.getElementById('tp-cur-gross').value) || 0;
         const curMeal  = parseFloat(document.getElementById('tp-cur-meal').value)  || 0;
         const curNet   = curGross > 0 ? tpNetFromGross(curGross, p) : 0;
@@ -865,9 +902,7 @@
         tpSetVal('tp-cur-total-net', curTotal);
 
         const isNetMode = document.getElementById('rb-net').checked;
-
         if (isNetMode) {
-            // ---- NET MODE ----
             const propNet = parseFloat(document.getElementById('tp-prop-net').value);
             if (isNaN(propNet) || propNet <= 0 || curGross <= 0) {
                 tpSetVal('tp-prop-gross-from-net', null);
@@ -875,54 +910,29 @@
                 document.getElementById('tp-result-bar').style.display = 'none';
                 return;
             }
-
             let newGross, newMeal;
-
             if (Math.abs(propNet - curTotal) < 0.005) {
-                // ── EYNI: heç nə dəyişmir ──
-                newGross = curGross;
-                newMeal  = curMeal;
-
+                newGross = curGross; newMeal = curMeal;
             } else if (propNet > curTotal) {
-                // ── ARTIŞ ──
-                // BaseNet = propNet - newMeal
-                // Şərt: Gross(BaseNet) >= curGross  ←→  BaseNet >= curNet
-                //   propNet - newMeal >= curNet
-                //   newMeal <= propNet - curNet
-                //
-                // Meal-ı mümkün qədər artır (max 100), lakin bu həddən çıxma:
-                const mealCeiling = Math.floor((propNet - curNet) * 100) / 100; // 2 onluğa yuvarla
+                const mealCeiling = Math.floor((propNet - curNet) * 100) / 100;
                 newMeal = Math.min(100, Math.max(0, mealCeiling));
-
                 const baseNet = propNet - newMeal;
-                newGross = baseNet > 0
-                    ? solveGross(baseNet, p.benefit, p.unionPct, p.workplace, p.sector, p.year)
-                    : 0;
-
+                newGross = baseNet > 0 ? solveGross(baseNet, p.benefit, p.unionPct, p.workplace, p.sector, p.year) : 0;
             } else {
-                // ── AZALMA: meal cari ilə eyni, gross azalır ──
                 newMeal = curMeal;
                 const targetBaseNet = propNet - curMeal;
-                newGross = targetBaseNet > 0
-                    ? solveGross(targetBaseNet, p.benefit, p.unionPct, p.workplace, p.sector, p.year)
-                    : 0;
+                newGross = targetBaseNet > 0 ? solveGross(targetBaseNet, p.benefit, p.unionPct, p.workplace, p.sector, p.year) : 0;
             }
-
             tpSetVal('tp-prop-gross-from-net', newGross);
             tpSetVal('tp-prop-meal-from-net', newMeal);
-
-            // Result bar
-            const newTotal = propNet;
             document.getElementById('tp-result-bar').style.display = 'grid';
             document.getElementById('tr-cur-gross-disp').innerText = curGross.toFixed(2);
             document.getElementById('tr-new-gross-disp').innerText = newGross.toFixed(2);
             document.getElementById('tr-cur-total-disp').innerText = curTotal.toFixed(2);
-            document.getElementById('tr-new-total-disp').innerText = newTotal.toFixed(2);
+            document.getElementById('tr-new-total-disp').innerText = propNet.toFixed(2);
             document.getElementById('tr-gross-badge').innerHTML = tpBadge(newGross, curGross);
-            document.getElementById('tr-net-badge').innerHTML   = tpBadge(newTotal, curTotal);
-
+            document.getElementById('tr-net-badge').innerHTML   = tpBadge(propNet, curTotal);
         } else {
-            // ---- GROSS MODE ----
             const propGross = parseFloat(document.getElementById('tp-prop-gross').value);
             if (isNaN(propGross) || propGross <= 0 || curGross <= 0) {
                 tpSetVal('tp-prop-total-net-from-gross', null);
@@ -932,70 +942,27 @@
                 document.getElementById('tp-result-bar').style.display = 'none';
                 return;
             }
-
-            // Field 2: Total net from proposed gross
             const totalNetFromPropGross = tpNetFromGross(propGross, p);
-
             let newBaseNet, newMeal, newGrossFromBaseNet;
-
             if (Math.abs(propGross - curGross) < 0.005) {
-                // SAME: no change, everything stays as current
-                newMeal             = curMeal;
-                newBaseNet          = curNet;
-                newGrossFromBaseNet = curGross;
-
+                newMeal = curMeal; newBaseNet = curNet; newGrossFromBaseNet = curGross;
             } else if (propGross > curGross) {
-                // INCREASE:
-                // Total net = totalNetFromPropGross. We need to split into Base Net + Meal.
-                // Meal can go up to 100 (max). Constraint: Gross(Base Net) >= curGross.
-                // Strategy: maximise meal (up to 100) while keeping Gross(Base Net) >= curGross.
-                //
-                // Min Base Net such that Gross(Base Net) >= curGross:
-                //   find minBaseNet = net from curGross (i.e. if grossFromBaseNet == curGross → baseNet = curNet)
-                const minBaseNet = curNet; // Gross(curNet) == curGross by definition
-
-                // Max meal = min(100, totalNetFromPropGross - minBaseNet)
+                const minBaseNet = curNet;
                 const maxPossibleMeal = Math.min(100, Math.max(0, totalNetFromPropGross - minBaseNet));
                 newMeal = maxPossibleMeal;
-
                 newBaseNet = totalNetFromPropGross - newMeal;
-
-                // Clamp: base net must not be less than minBaseNet
-                if (newBaseNet < minBaseNet) {
-                    newBaseNet = minBaseNet;
-                    newMeal    = totalNetFromPropGross - newBaseNet;
-                    if (newMeal > 100) newMeal = 100;
-                    newBaseNet = totalNetFromPropGross - newMeal;
-                }
-
                 newGrossFromBaseNet = solveGross(newBaseNet, p.benefit, p.unionPct, p.workplace, p.sector, p.year);
-
-                // Safety: if due to rounding gross from base net < curGross, nudge base net up slightly
-                if (newGrossFromBaseNet < curGross - 0.005) {
-                    newBaseNet = curNet;
-                    newMeal    = Math.min(100, totalNetFromPropGross - newBaseNet);
-                    newBaseNet = totalNetFromPropGross - newMeal;
-                    newGrossFromBaseNet = solveGross(newBaseNet, p.benefit, p.unionPct, p.workplace, p.sector, p.year);
-                }
-
             } else {
-                // DECREASE: meal stays same as current
-                newMeal             = curMeal;
-                newBaseNet          = totalNetFromPropGross - newMeal;
+                newMeal = curMeal;
+                newBaseNet = totalNetFromPropGross - newMeal;
                 if (newBaseNet < 0) newBaseNet = 0;
-                newGrossFromBaseNet = newBaseNet > 0
-                    ? solveGross(newBaseNet, p.benefit, p.unionPct, p.workplace, p.sector, p.year)
-                    : 0;
+                newGrossFromBaseNet = newBaseNet > 0 ? solveGross(newBaseNet, p.benefit, p.unionPct, p.workplace, p.sector, p.year) : 0;
             }
-
             const newTotalNet = newBaseNet + newMeal;
-
             tpSetVal('tp-prop-total-net-from-gross', totalNetFromPropGross);
             tpSetVal('tp-prop-base-net', newBaseNet);
             tpSetVal('tp-prop-meal-from-gross', newMeal);
             tpSetVal('tp-prop-gross-from-base-net', newGrossFromBaseNet);
-
-            // Result bar — show Gross(Base Net) as the contract gross
             document.getElementById('tp-result-bar').style.display = 'grid';
             document.getElementById('tr-cur-gross-disp').innerText = curGross.toFixed(2);
             document.getElementById('tr-new-gross-disp').innerText = newGrossFromBaseNet.toFixed(2);
@@ -1007,7 +974,7 @@
     }
 
     /* ============================================================
-       BULK
+       BULK (Sizin koddakı məntiq)
     ============================================================ */
     let bulkData = [];
     function handleFile(e) {
@@ -1016,7 +983,6 @@
             const workbook = XLSX.read(new Uint8Array(evt.target.result), {type: 'array'});
             const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
             const json = XLSX.utils.sheet_to_json(firstSheet);
-            
             const year = document.getElementById('year').value;
             const sector = document.getElementById('sector').value;
             const workplace = document.getElementById('workplace').value;
@@ -1024,36 +990,28 @@
             const benefit = parseFloat(document.querySelector('input[name="benefit"]:checked').value);
             const unionPct = parseFloat(document.getElementById('union').value);
             const useBulkRec = document.getElementById('bulkRecruitmentMode').checked;
-            
             const body = document.getElementById('bulk-body');
             const head = document.getElementById('bulk-head');
-            body.innerHTML = ''; 
-            bulkData = [];
-
+            body.innerHTML = ''; bulkData = [];
             if (useBulkRec && mode === 'n2g') {
                 head.innerHTML = `<th>Badge</th><th>Gross (Baza)</th><th>Baza Net</th><th>Yemək</th><th>Nett (Cəm)</th><th>DSMF</th><th>İTS</th><th>Vergi</th>`;
             } else {
                 head.innerHTML = `<th>Badge</th><th>Gross</th><th>Nett</th><th>DSMF</th><th>İTS</th><th>Vergi</th>`;
             }
-            
             json.forEach(row => {
                 const badge = row['Employee badge'] || 'N/A';
                 const val = parseFloat(row['Salary']) || 0;
                 if(val === 0) return;
-                
                 let g, n, res, meal = 0, baseNet = 0;
-
                 if (useBulkRec && mode === 'n2g') {
                     const minRef = getBaseRef(workplace);
                     meal = Math.max(0, val - minRef);
                     if (meal > 0 && meal < 10) meal = 10;
                     if (meal > 100) meal = 100;
                     baseNet = val - meal;
-                    
                     g = solveGross(baseNet, benefit, unionPct, workplace, sector, year);
                     res = getDeductions(g, benefit, unionPct, workplace, sector, year);
                     n = val;
-
                     body.innerHTML += `<tr><td>${badge}</td><td>${g.toFixed(2)}</td><td>${baseNet.toFixed(2)}</td><td>${meal.toFixed(2)}</td><td>${n.toFixed(2)}</td><td>${res.dsmf.toFixed(2)}</td><td>${res.med.toFixed(2)}</td><td>${res.tax.toFixed(2)}</td></tr>`;
                     bulkData.push({Badge: badge, Gross_Baza: g.toFixed(2), Baza_Net: baseNet.toFixed(2), Yemek_Pulu: meal.toFixed(2), Nett_Cem: n.toFixed(2)});
                 } else {
