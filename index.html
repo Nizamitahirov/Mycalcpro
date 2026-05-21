@@ -1244,13 +1244,15 @@
         let newGross, newMeal, status;
 
         if (incNet === 0) {
-            newGross = curGross;
             newMeal = Math.round(curMeal);
+            newGross = solve(newTotalNet - newMeal);
             status = 'Artım yoxdur';
         } else if (curMeal + incNet <= 100) {
-            // Meal absorbs the full increase; gross stays
-            newGross = curGross;
+            // Meal absorbs the full increase. Round meal to a whole AZN and
+            // recompute gross so the total net stays exact — gross absorbs
+            // the sub-AZN rounding remainder.
             newMeal = Math.round(curMeal + incNet);
+            newGross = solve(newTotalNet - newMeal);
             status = 'Gross dəyişmir';
         } else {
             // Meal capped at 100, excess goes to gross
@@ -1311,17 +1313,27 @@
     let mgBulkData = [];
     let mgBulkInput = [];
 
+    function mgNorm(s) {
+        // Lowercase + map Azerbaijani special letters + strip combining marks.
+        // Handles the JS quirk where "İ".toLowerCase() === "i̇".
+        return String(s ?? '')
+            .toLowerCase()
+            .replace(/ə/g, 'e')
+            .replace(/ı/g, 'i')
+            .normalize('NFD')
+            .replace(/[̀-ͯ]/g, '')
+            .trim();
+    }
+
     function mgPickCol(row, names) {
+        const targets = names.map(mgNorm);
         for (const k of Object.keys(row)) {
-            const norm = k.toString().trim().toLowerCase();
-            for (const n of names) {
-                if (norm === n) return row[k];
-            }
+            if (targets.includes(mgNorm(k))) return row[k];
         }
         for (const k of Object.keys(row)) {
-            const norm = k.toString().trim().toLowerCase();
-            for (const n of names) {
-                if (norm.includes(n)) return row[k];
+            const norm = mgNorm(k);
+            for (const t of targets) {
+                if (t && norm.includes(t)) return row[k];
             }
         }
         return undefined;
@@ -1329,10 +1341,10 @@
 
     function mgParseWorkplace(v) {
         if (v === undefined || v === null || v === '') return null;
-        const s = String(v).trim().toLowerCase();
+        const s = mgNorm(v);
         if (!s) return null;
-        if (s.includes('elave') || s.includes('əlavə') || s.includes('secondary') || s === 'extra') return 'secondary';
-        if (s.includes('esas') || s.includes('əsas') || s.includes('main') || s === 'primary') return 'main';
+        if (s.includes('elave') || s.includes('secondary') || s === 'extra') return 'secondary';
+        if (s.includes('esas') || s.includes('main') || s === 'primary') return 'main';
         return null;
     }
 
@@ -1342,23 +1354,22 @@
         if (!s) return null;
         let n = parseFloat(s);
         if (isNaN(n)) return null;
-        // Accept either percent form (1, 2) or fractional form (0.01, 0.02)
         if (n > 0 && n < 1) n = n * 100;
         return n;
     }
 
     function mgParseOffice(v) {
         if (v === undefined || v === null || v === '') return null;
-        const s = String(v).trim().toLowerCase();
+        const s = mgNorm(v);
         if (!s) return null;
-        if (s.includes('bas ofis') || s.includes('baş ofis') || s.includes('head') || s === 'hq') return true;
+        if (s.includes('bas ofis') || s.includes('head') || s === 'hq') return true;
         if (s.includes('filial') || s.includes('branch')) return false;
         return null;
     }
 
     function mgParseYear(v) {
         if (v === undefined || v === null || v === '') return null;
-        const s = String(v).trim();
+        const s = String(v).trim().replace(/\.0$/, '');
         if (!/^\d{4}$/.test(s)) return null;
         return s;
     }
