@@ -708,8 +708,8 @@
                                 <input type="text" id="mg-cur-net" class="tp-input auto-green" readonly placeholder="0.00">
                             </div>
                             <div class="tp-field">
-                                <label>Cari Yemək Pulu (net)</label>
-                                <input type="number" id="mg-cur-meal" class="tp-input manual" placeholder="0.00" oninput="mgCalc()">
+                                <label>Cari Yemək Pulu (net, tam)</label>
+                                <input type="number" id="mg-cur-meal" class="tp-input manual" placeholder="0" step="1" min="0" oninput="mgCalc()">
                             </div>
                             <div class="tp-field">
                                 <label>Cari Total Net</label>
@@ -1221,7 +1221,7 @@
     }
 
     function mgComputeOne(curGross, curMeal, incNet, isHead, p) {
-        // Returns { newGross, newMeal, curNet, newTotalNet, status }
+        // newMeal is always an integer; newGross may be fractional.
         if (curGross <= 0) {
             return { newGross: 0, newMeal: 0, curNet: 0, newTotalNet: 0, status: 'Cari gross daxil edilməyib' };
         }
@@ -1231,38 +1231,33 @@
         const minGrossInc = isHead ? 50 : 20;
         const curNet = tpNetFromGross(curGross, p);
         const newTotalNet = curNet + curMeal + incNet;
+        const solve = (bn) => bn > 0
+            ? solveGross(bn, p.benefit, p.unionPct, p.workplace, p.sector, p.year)
+            : 0;
 
         let newGross, newMeal, status;
 
         if (incNet === 0) {
-            // No change requested
             newGross = curGross;
-            newMeal = curMeal;
+            newMeal = Math.round(curMeal);
             status = 'Artım yoxdur';
         } else if (curMeal + incNet <= 100) {
-            // Case 1: meal can absorb full increase, gross stays
+            // Meal absorbs the full increase; gross stays
             newGross = curGross;
-            newMeal = curMeal + incNet;
+            newMeal = Math.round(curMeal + incNet);
             status = 'Gross dəyişmir';
         } else {
-            // Case 2: meal capped at 100, excess goes to gross
+            // Meal capped at 100, excess goes to gross
             newMeal = 100;
-            let newBaseNet = newTotalNet - newMeal;
-            newGross = newBaseNet > 0
-                ? solveGross(newBaseNet, p.benefit, p.unionPct, p.workplace, p.sector, p.year)
-                : 0;
+            newGross = solve(newTotalNet - newMeal);
 
             if (newGross - curGross < minGrossInc) {
-                // Need at least minGrossInc gross increase: lower meal
+                // Lower meal so gross diff >= minGrossInc.
+                // Floor pushes the rounding remainder into gross, preserving the min.
                 const minNewGross = curGross + minGrossInc;
                 const minNewBaseNet = tpNetFromGross(minNewGross, p);
-                newMeal = newTotalNet - minNewBaseNet;
-                if (newMeal < 0) newMeal = 0;
-                if (newMeal > 100) newMeal = 100;
-                const finalBaseNet = newTotalNet - newMeal;
-                newGross = finalBaseNet > 0
-                    ? solveGross(finalBaseNet, p.benefit, p.unionPct, p.workplace, p.sector, p.year)
-                    : 0;
+                newMeal = Math.max(0, Math.min(100, Math.floor(newTotalNet - minNewBaseNet)));
+                newGross = solve(newTotalNet - newMeal);
                 status = `Gross minimumu (${minGrossInc} AZN) tətbiq edildi`;
             } else {
                 status = 'Yemək 100-ə çatdırıldı';
@@ -1295,15 +1290,15 @@
 
         document.getElementById('mg-new-total').value = r.newTotalNet.toFixed(2);
         document.getElementById('mg-new-gross').value = r.newGross.toFixed(2);
-        document.getElementById('mg-new-meal').value  = r.newMeal.toFixed(2);
+        document.getElementById('mg-new-meal').value  = r.newMeal.toString();
 
         document.getElementById('mg-result-bar').style.display = 'grid';
         document.getElementById('mg-r-cur-gross').innerText = curGross.toFixed(2);
         document.getElementById('mg-r-new-gross').innerText = r.newGross.toFixed(2);
-        document.getElementById('mg-r-cur-meal').innerText  = curMeal.toFixed(2);
-        document.getElementById('mg-r-new-meal').innerText  = r.newMeal.toFixed(2);
+        document.getElementById('mg-r-cur-meal').innerText  = Math.round(curMeal).toString();
+        document.getElementById('mg-r-new-meal').innerText  = r.newMeal.toString();
         document.getElementById('mg-r-gross-badge').innerHTML = tpBadge(r.newGross, curGross);
-        document.getElementById('mg-r-meal-badge').innerHTML  = tpBadge(r.newMeal, curMeal);
+        document.getElementById('mg-r-meal-badge').innerHTML  = tpBadge(r.newMeal, Math.round(curMeal));
     }
 
     /* ---- Bulk ---- */
@@ -1360,23 +1355,24 @@
         mgBulkInput.forEach(item => {
             const r = mgComputeOne(item.curGross, item.curMeal, item.incNet, isHead, p);
             const grossDelta = r.newGross - item.curGross;
+            const curMealInt = Math.round(item.curMeal);
             body.innerHTML += `<tr>
                 <td>${item.badge}</td>
                 <td>${item.curGross.toFixed(2)}</td>
-                <td>${item.curMeal.toFixed(2)}</td>
+                <td>${curMealInt}</td>
                 <td>${item.incNet.toFixed(2)}</td>
                 <td><b style="color:#16a34a;">${r.newGross.toFixed(2)}</b></td>
-                <td><b style="color:#2563eb;">${r.newMeal.toFixed(2)}</b></td>
+                <td><b style="color:#2563eb;">${r.newMeal}</b></td>
                 <td>${grossDelta.toFixed(2)}</td>
                 <td style="font-size:0.68rem; color:#64748b;">${r.status}</td>
             </tr>`;
             mgBulkData.push({
                 'Employee Badge': item.badge,
                 'Cari Gross': item.curGross.toFixed(2),
-                'Cari Yemek Pulu': item.curMeal.toFixed(2),
+                'Cari Yemek Pulu': curMealInt,
                 'Net Artim': item.incNet.toFixed(2),
                 'Yeni Gross': r.newGross.toFixed(2),
-                'Yeni Yemek Pulu': r.newMeal.toFixed(2),
+                'Yeni Yemek Pulu': r.newMeal,
                 'Gross Delta': grossDelta.toFixed(2),
                 'Status': r.status,
             });
