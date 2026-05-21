@@ -670,7 +670,8 @@
                         Kütləvi artımlar — Hesablama Qaydaları
                     </div>
                     <ul>
-                        <li>Yuxarıdakı tənzimləmələr (İl, Sektor, İş Yeri, Həmkar, Güzəşt) bu tabda da istifadə olunur.</li>
+                        <li>Yuxarıdakı tənzimləmələr (İl, Sektor, İş Yeri, Həmkar, Güzəşt) fərdi hesablama üçün istifadə olunur.</li>
+                        <li>Bulk yükləmədə hər sətir üçün <strong>İl, İş Növü, HİK və İş Yeri</strong> sütunları göstərilərsə, hesablama o sətirin öz tənzimləməsinə uyğun aparılır (göstərilməyənlər üçün yuxarıdakı tənzimləmə istifadə edilir).</li>
                         <li>Əgər <strong>cari yemək pulu + artım net</strong> ≤ 100 AZN olarsa, gross dəyişmir — bütün artım yemək puluna gedir.</li>
                         <li>Əgər 100-ü keçirsə, yemək pulu 100-ə çatdırılır, qalan hissə gross-a əlavə olunur.</li>
                         <li>Lakin yeni gross − cari gross fərqi <strong>Filial</strong> üçün 20 AZN-dən, <strong>Baş ofis</strong> üçün 50 AZN-dən az ola bilməz.</li>
@@ -783,8 +784,9 @@
                 <div class="upload-zone" onclick="document.getElementById('mgFileIn').click()">
                     <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
                     <h3 style="margin:0; font-size:1.05rem; font-weight:800;">Excel faylı sürükləyin və ya seçin</h3>
-                    <p style="color:#94a3b8; font-size:0.78rem; margin-top:8px;">
-                        Sütunlar: <b>Employee Badge</b>, <b>Cari Gross</b>, <b>Cari Yemek Pulu</b>, <b>Net Artim</b>
+                    <p style="color:#94a3b8; font-size:0.78rem; margin-top:8px; line-height:1.6;">
+                        Tələb olunan sütunlar: <b>Employee Badge</b>, <b>Cari Gross</b>, <b>Cari Yemek Pulu</b>, <b>Net Artim</b><br>
+                        Opsional (hər sətir üçün): <b>İl</b>, <b>İş Növü</b> (Əsas/Əlavə), <b>HİK</b> (0, 1, 2 və ya 0.01), <b>İş Yeri</b> (Filial/Baş ofis)
                     </p>
                     <input type="file" id="mgFileIn" accept=".xlsx, .csv" style="display:none" onchange="mgHandleFile(event)">
                 </div>
@@ -803,6 +805,10 @@
                             <thead>
                                 <tr>
                                     <th>Badge</th>
+                                    <th>İl</th>
+                                    <th>İş Növü</th>
+                                    <th>HİK</th>
+                                    <th>İş Yeri</th>
                                     <th>Cari Gross</th>
                                     <th>Cari Yemək</th>
                                     <th>Net Artım</th>
@@ -1321,6 +1327,42 @@
         return undefined;
     }
 
+    function mgParseWorkplace(v) {
+        if (v === undefined || v === null || v === '') return null;
+        const s = String(v).trim().toLowerCase();
+        if (!s) return null;
+        if (s.includes('elave') || s.includes('əlavə') || s.includes('secondary') || s === 'extra') return 'secondary';
+        if (s.includes('esas') || s.includes('əsas') || s.includes('main') || s === 'primary') return 'main';
+        return null;
+    }
+
+    function mgParseUnion(v) {
+        if (v === undefined || v === null || v === '') return null;
+        const s = String(v).trim().replace('%', '').replace(',', '.');
+        if (!s) return null;
+        let n = parseFloat(s);
+        if (isNaN(n)) return null;
+        // Accept either percent form (1, 2) or fractional form (0.01, 0.02)
+        if (n > 0 && n < 1) n = n * 100;
+        return n;
+    }
+
+    function mgParseOffice(v) {
+        if (v === undefined || v === null || v === '') return null;
+        const s = String(v).trim().toLowerCase();
+        if (!s) return null;
+        if (s.includes('bas ofis') || s.includes('baş ofis') || s.includes('head') || s === 'hq') return true;
+        if (s.includes('filial') || s.includes('branch')) return false;
+        return null;
+    }
+
+    function mgParseYear(v) {
+        if (v === undefined || v === null || v === '') return null;
+        const s = String(v).trim();
+        if (!/^\d{4}$/.test(s)) return null;
+        return s;
+    }
+
     function mgHandleFile(e) {
         const file = e.target.files[0];
         if (!file) return;
@@ -1334,6 +1376,10 @@
                 curGross: parseFloat(mgPickCol(row, ['cari gross', 'current gross', 'gross'])) || 0,
                 curMeal: parseFloat(mgPickCol(row, ['cari yemek pulu', 'cari yemək pulu', 'cari net yemek pulu', 'cari net yemək pulu', 'meal', 'yemek pulu', 'yemək pulu'])) || 0,
                 incNet: parseFloat(mgPickCol(row, ['net artim', 'net artım', 'net artim mebleği', 'net artım məbləği', 'artim', 'artım', 'increase'])) || 0,
+                year: mgParseYear(mgPickCol(row, ['il', 'year'])),
+                workplace: mgParseWorkplace(mgPickCol(row, ['is novu', 'iş növü', 'is novu (esas/elave)', 'workplace'])),
+                unionPct: mgParseUnion(mgPickCol(row, ['hik', 'həmkar', 'hemkar', 'union'])),
+                isHead: mgParseOffice(mgPickCol(row, ['is yeri', 'iş yeri', 'yerlesme', 'yerləşmə', 'office', 'location'])),
             }));
             mgBulkRecalc();
         };
@@ -1347,17 +1393,33 @@
             document.getElementById('mg-bulk-results').style.display = 'none';
             return;
         }
-        const p = mgGetParams();
-        const isHead = document.getElementById('mg-office').value === 'head';
+        const fb = mgGetParams();
+        const fbIsHead = document.getElementById('mg-office').value === 'head';
         body.innerHTML = '';
         mgBulkData = [];
 
         mgBulkInput.forEach(item => {
+            const p = {
+                year: item.year || fb.year,
+                sector: fb.sector,
+                workplace: item.workplace || fb.workplace,
+                unionPct: item.unionPct !== null ? item.unionPct : fb.unionPct,
+                benefit: fb.benefit,
+            };
+            const isHead = item.isHead !== null ? item.isHead : fbIsHead;
+
             const r = mgComputeOne(item.curGross, item.curMeal, item.incNet, isHead, p);
             const grossDelta = r.newGross - item.curGross;
             const curMealInt = Math.round(item.curMeal);
+            const wpLabel = p.workplace === 'main' ? 'Əsas' : 'Əlavə';
+            const officeLabel = isHead ? 'Baş ofis' : 'Filial';
+
             body.innerHTML += `<tr>
                 <td>${item.badge}</td>
+                <td>${p.year}</td>
+                <td>${wpLabel}</td>
+                <td>${p.unionPct}%</td>
+                <td>${officeLabel}</td>
                 <td>${item.curGross.toFixed(2)}</td>
                 <td>${curMealInt}</td>
                 <td>${item.incNet.toFixed(2)}</td>
@@ -1368,6 +1430,10 @@
             </tr>`;
             mgBulkData.push({
                 'Employee Badge': item.badge,
+                'İl': p.year,
+                'İş Növü': wpLabel,
+                'HİK': p.unionPct,
+                'İş Yeri': officeLabel,
                 'Cari Gross': item.curGross.toFixed(2),
                 'Cari Yemek Pulu': curMealInt,
                 'Net Artim': item.incNet.toFixed(2),
@@ -1392,8 +1458,9 @@
 
     function mgDownloadTemplate() {
         const sample = [
-            { 'Employee Badge': 'B1001', 'Cari Gross': 1000, 'Cari Yemek Pulu': 50, 'Net Artim': 80 },
-            { 'Employee Badge': 'B1002', 'Cari Gross': 1500, 'Cari Yemek Pulu': 100, 'Net Artim': 120 },
+            { 'Employee Badge': 'B1001', 'İl': 2026, 'İş Növü': 'Əsas',  'HİK': 1, 'İş Yeri': 'Filial',   'Cari Gross': 1000, 'Cari Yemek Pulu': 50,  'Net Artim': 80  },
+            { 'Employee Badge': 'B1002', 'İl': 2026, 'İş Növü': 'Əsas',  'HİK': 1, 'İş Yeri': 'Baş ofis', 'Cari Gross': 1500, 'Cari Yemek Pulu': 100, 'Net Artim': 120 },
+            { 'Employee Badge': 'B1003', 'İl': 2026, 'İş Növü': 'Əlavə', 'HİK': 0, 'İş Yeri': 'Filial',   'Cari Gross': 800,  'Cari Yemek Pulu': 0,   'Net Artim': 60  },
         ];
         const ws = XLSX.utils.json_to_sheet(sample);
         const wb = XLSX.utils.book_new();
