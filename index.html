@@ -362,6 +362,7 @@
             <button class="tab-btn active" id="tabInd" onclick="switchTab('individual', this)">Fərdi</button>
             <button class="tab-btn" id="tabBulk" onclick="switchTab('bulk', this)">Toplu</button>
             <button class="tab-btn" id="tabTP" onclick="switchTab('transfer', this)">Transfer & Promotion</button>
+            <button class="tab-btn" id="tabMG" onclick="switchTab('massgrowth', this)">Kütləvi artımlar</button>
         </div>
 
         <!-- Company Toggle -->
@@ -658,6 +659,167 @@
             </div>
         </div>
 
+        <!-- TAB CONTENT: MASS GROWTH (Kütləvi artımlar) -->
+        <div id="massgrowth" class="tab-pane">
+            <div class="card">
+
+                <!-- INTRO -->
+                <div class="tp-intro">
+                    <div class="tp-intro-title">
+                        <i class="fa-solid fa-chart-line"></i>
+                        Kütləvi artımlar — Hesablama Qaydaları
+                    </div>
+                    <ul>
+                        <li>Yuxarıdakı tənzimləmələr (İl, Sektor, İş Yeri, Həmkar, Güzəşt) bu tabda da istifadə olunur.</li>
+                        <li>Əgər <strong>cari yemək pulu + artım net</strong> ≤ 100 AZN olarsa, gross dəyişmir — bütün artım yemək puluna gedir.</li>
+                        <li>Əgər 100-ü keçirsə, yemək pulu 100-ə çatdırılır, qalan hissə gross-a əlavə olunur.</li>
+                        <li>Lakin yeni gross − cari gross fərqi <strong>Filial</strong> üçün 20 AZN-dən, <strong>Baş ofis</strong> üçün 50 AZN-dən az ola bilməz.</li>
+                        <li>Əgər meal = 100 ilə bu minimum fərq təmin olunmursa, yemək pulu kifayət qədər azaldılır ki, gross artım minimum şərti ödəsin.</li>
+                    </ul>
+                </div>
+
+                <!-- Office type selector -->
+                <div class="controls-row" style="border-bottom:none; padding-bottom:0; margin-bottom:14px;">
+                    <div class="form-group w-workplace">
+                        <label>Yerləşmə</label>
+                        <select id="mg-office" onchange="mgCalc(); mgBulkRecalc();">
+                            <option value="branch" selected>Filial (min 20 AZN)</option>
+                            <option value="head">Baş ofis (min 50 AZN)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- PANEL LAYOUT -->
+                <div class="tp-panels">
+
+                    <!-- LEFT: CURRENT -->
+                    <div class="tp-panel left">
+                        <div class="tp-section-title">
+                            <i class="fa-solid fa-circle-info"></i>
+                            <span>Cari Vəziyyət</span>
+                        </div>
+                        <div class="tp-field-group">
+                            <div class="tp-field">
+                                <label>Cari Gross</label>
+                                <input type="number" id="mg-cur-gross" class="tp-input manual" placeholder="0.00" oninput="mgCalc()">
+                            </div>
+                            <div class="tp-field">
+                                <label>Cari Net (avto)</label>
+                                <input type="text" id="mg-cur-net" class="tp-input auto-green" readonly placeholder="0.00">
+                            </div>
+                            <div class="tp-field">
+                                <label>Cari Yemək Pulu (net)</label>
+                                <input type="number" id="mg-cur-meal" class="tp-input manual" placeholder="0.00" oninput="mgCalc()">
+                            </div>
+                            <div class="tp-field">
+                                <label>Cari Total Net</label>
+                                <input type="text" id="mg-cur-total" class="tp-input auto-blue" readonly placeholder="0.00">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT: NEW -->
+                    <div class="tp-panel right">
+                        <div class="tp-section-title">
+                            <i class="fa-solid fa-arrow-trend-up"></i>
+                            <span>Artım və Nəticə</span>
+                        </div>
+
+                        <div class="tp-right-grid">
+                            <div class="tp-field">
+                                <label>Net Artım Məbləği</label>
+                                <input type="number" id="mg-inc-net" class="tp-input manual" placeholder="0.00" oninput="mgCalc()">
+                            </div>
+                            <div class="tp-field">
+                                <label>Yeni Total Net (avto)</label>
+                                <input type="text" id="mg-new-total" class="tp-input auto" readonly placeholder="0.00">
+                            </div>
+                            <div class="tp-field">
+                                <label>Yeni Gross ★</label>
+                                <input type="text" id="mg-new-gross" class="tp-input auto-green" readonly placeholder="0.00" style="border-color:#ff2d55; border-width:2px;">
+                            </div>
+                            <div class="tp-field">
+                                <label>Yeni Yemək Pulu ★</label>
+                                <input type="text" id="mg-new-meal" class="tp-input auto-blue" readonly placeholder="0.00" style="border-color:#ff2d55; border-width:2px;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="tp-divider">
+
+                <!-- RESULT BAR -->
+                <div id="mg-result-bar" class="tp-result-bar" style="display:none;">
+                    <div class="tp-result-item">
+                        <div class="r-label">Cari Gross</div>
+                        <div class="r-val" id="mg-r-cur-gross">—</div>
+                    </div>
+                    <div class="tp-result-item green">
+                        <div class="r-label">Yeni Gross <span id="mg-r-gross-badge"></span></div>
+                        <div class="r-val" id="mg-r-new-gross">—</div>
+                    </div>
+                    <div class="tp-result-item">
+                        <div class="r-label">Cari Yemək</div>
+                        <div class="r-val" id="mg-r-cur-meal">—</div>
+                    </div>
+                    <div class="tp-result-item highlight">
+                        <div class="r-label">Yeni Yemək <span id="mg-r-meal-badge"></span></div>
+                        <div class="r-val" id="mg-r-new-meal">—</div>
+                    </div>
+                </div>
+
+                <!-- BULK SECTION -->
+                <hr class="tp-divider">
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+                    <div style="font-size:0.75rem; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">
+                        <i class="fa-solid fa-layer-group" style="color:var(--bir-red); margin-right:6px;"></i>
+                        Toplu Yükləmə
+                    </div>
+                    <button class="alert-btn" style="background:#1e293b;" onclick="mgDownloadTemplate()">
+                        <i class="fa-solid fa-file-arrow-down"></i> ŞABLON YÜKLƏ
+                    </button>
+                </div>
+
+                <div class="upload-zone" onclick="document.getElementById('mgFileIn').click()">
+                    <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
+                    <h3 style="margin:0; font-size:1.05rem; font-weight:800;">Excel faylı sürükləyin və ya seçin</h3>
+                    <p style="color:#94a3b8; font-size:0.78rem; margin-top:8px;">
+                        Sütunlar: <b>Employee Badge</b>, <b>Cari Gross</b>, <b>Cari Yemek Pulu</b>, <b>Net Artim</b>
+                    </p>
+                    <input type="file" id="mgFileIn" accept=".xlsx, .csv" style="display:none" onchange="mgHandleFile(event)">
+                </div>
+
+                <div id="mg-bulk-results" style="display:none; margin-top:20px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                        <span style="font-weight:800; font-size:0.85rem; color:#64748b;">
+                            NƏTİCƏ: <span id="mg-bk-count" style="color:var(--bir-red)">0</span> İŞÇİ HESABLANDI
+                        </span>
+                        <button class="btn-action" style="width:auto; padding:10px 22px; background:#00c853; margin:0;" onclick="mgExportResults()">
+                            <i class="fa-solid fa-download"></i> EXCEL-Ə ÇIXAR
+                        </button>
+                    </div>
+                    <div class="bulk-table-wrap">
+                        <table class="bulk-table">
+                            <thead>
+                                <tr>
+                                    <th>Badge</th>
+                                    <th>Cari Gross</th>
+                                    <th>Cari Yemək</th>
+                                    <th>Net Artım</th>
+                                    <th>Yeni Gross</th>
+                                    <th>Yeni Yemək</th>
+                                    <th>Gross Δ</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="mg-bulk-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
     </div>
 
 <script>
@@ -692,11 +854,13 @@
         alertSkipped = false;
         calc();
         tpCalc();
+        mgCalc();
+        mgBulkRecalc();
     }
 
     function handleManualInput() { alertSkipped = false; calc(); }
     function toggleMode() { alertSkipped = false; calc(); }
-    function selectBenefit(id) { document.getElementById(id).checked = true; calc(); tpCalc(); }
+    function selectBenefit(id) { document.getElementById(id).checked = true; calc(); tpCalc(); mgCalc(); mgBulkRecalc(); }
 
     function getBaseRef(workplace) {
         const isMain = workplace === 'main';
@@ -852,6 +1016,9 @@
 
         document.querySelectorAll('.benefit-item').forEach(i => i.classList.remove('active'));
         document.querySelector('input[name="benefit"]:checked').closest('.benefit-item').classList.add('active');
+
+        if (typeof mgCalc === 'function') mgCalc();
+        if (typeof mgBulkRecalc === 'function') mgBulkRecalc();
     }
 
     /* ============================================================
@@ -1038,6 +1205,204 @@
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Maaşlar");
         XLSX.writeFile(wb, "BirCalc_Bulk.xlsx");
+    }
+
+    /* ============================================================
+       MASS GROWTH (Kütləvi artımlar) LOGIC
+    ============================================================ */
+    function mgGetParams() {
+        return {
+            year: document.getElementById('year').value,
+            sector: document.getElementById('sector').value,
+            workplace: document.getElementById('workplace').value,
+            benefit: parseFloat(document.querySelector('input[name="benefit"]:checked').value),
+            unionPct: parseFloat(document.getElementById('union').value),
+        };
+    }
+
+    function mgComputeOne(curGross, curMeal, incNet, isHead, p) {
+        // Returns { newGross, newMeal, curNet, newTotalNet, status }
+        if (curGross <= 0) {
+            return { newGross: 0, newMeal: 0, curNet: 0, newTotalNet: 0, status: 'Cari gross daxil edilməyib' };
+        }
+        if (incNet < 0) incNet = 0;
+        if (curMeal < 0) curMeal = 0;
+
+        const minGrossInc = isHead ? 50 : 20;
+        const curNet = tpNetFromGross(curGross, p);
+        const newTotalNet = curNet + curMeal + incNet;
+
+        let newGross, newMeal, status;
+
+        if (incNet === 0) {
+            // No change requested
+            newGross = curGross;
+            newMeal = curMeal;
+            status = 'Artım yoxdur';
+        } else if (curMeal + incNet <= 100) {
+            // Case 1: meal can absorb full increase, gross stays
+            newGross = curGross;
+            newMeal = curMeal + incNet;
+            status = 'Gross dəyişmir';
+        } else {
+            // Case 2: meal capped at 100, excess goes to gross
+            newMeal = 100;
+            let newBaseNet = newTotalNet - newMeal;
+            newGross = newBaseNet > 0
+                ? solveGross(newBaseNet, p.benefit, p.unionPct, p.workplace, p.sector, p.year)
+                : 0;
+
+            if (newGross - curGross < minGrossInc) {
+                // Need at least minGrossInc gross increase: lower meal
+                const minNewGross = curGross + minGrossInc;
+                const minNewBaseNet = tpNetFromGross(minNewGross, p);
+                newMeal = newTotalNet - minNewBaseNet;
+                if (newMeal < 0) newMeal = 0;
+                if (newMeal > 100) newMeal = 100;
+                const finalBaseNet = newTotalNet - newMeal;
+                newGross = finalBaseNet > 0
+                    ? solveGross(finalBaseNet, p.benefit, p.unionPct, p.workplace, p.sector, p.year)
+                    : 0;
+                status = `Gross minimumu (${minGrossInc} AZN) tətbiq edildi`;
+            } else {
+                status = 'Yemək 100-ə çatdırıldı';
+            }
+        }
+        return { newGross, newMeal, curNet, newTotalNet, status };
+    }
+
+    function mgCalc() {
+        const p = mgGetParams();
+        const curGross = parseFloat(document.getElementById('mg-cur-gross').value) || 0;
+        const curMeal  = parseFloat(document.getElementById('mg-cur-meal').value)  || 0;
+        const incNet   = parseFloat(document.getElementById('mg-inc-net').value)   || 0;
+        const isHead   = document.getElementById('mg-office').value === 'head';
+
+        // Live readouts for current side
+        const curNet = curGross > 0 ? tpNetFromGross(curGross, p) : 0;
+        document.getElementById('mg-cur-net').value = curGross > 0 ? curNet.toFixed(2) : '';
+        document.getElementById('mg-cur-total').value = curGross > 0 ? (curNet + curMeal).toFixed(2) : '';
+
+        if (curGross <= 0 || incNet <= 0) {
+            document.getElementById('mg-new-total').value = '';
+            document.getElementById('mg-new-gross').value = '';
+            document.getElementById('mg-new-meal').value = '';
+            document.getElementById('mg-result-bar').style.display = 'none';
+            return;
+        }
+
+        const r = mgComputeOne(curGross, curMeal, incNet, isHead, p);
+
+        document.getElementById('mg-new-total').value = r.newTotalNet.toFixed(2);
+        document.getElementById('mg-new-gross').value = r.newGross.toFixed(2);
+        document.getElementById('mg-new-meal').value  = r.newMeal.toFixed(2);
+
+        document.getElementById('mg-result-bar').style.display = 'grid';
+        document.getElementById('mg-r-cur-gross').innerText = curGross.toFixed(2);
+        document.getElementById('mg-r-new-gross').innerText = r.newGross.toFixed(2);
+        document.getElementById('mg-r-cur-meal').innerText  = curMeal.toFixed(2);
+        document.getElementById('mg-r-new-meal').innerText  = r.newMeal.toFixed(2);
+        document.getElementById('mg-r-gross-badge').innerHTML = tpBadge(r.newGross, curGross);
+        document.getElementById('mg-r-meal-badge').innerHTML  = tpBadge(r.newMeal, curMeal);
+    }
+
+    /* ---- Bulk ---- */
+    let mgBulkData = [];
+    let mgBulkInput = [];
+
+    function mgPickCol(row, names) {
+        for (const k of Object.keys(row)) {
+            const norm = k.toString().trim().toLowerCase();
+            for (const n of names) {
+                if (norm === n) return row[k];
+            }
+        }
+        for (const k of Object.keys(row)) {
+            const norm = k.toString().trim().toLowerCase();
+            for (const n of names) {
+                if (norm.includes(n)) return row[k];
+            }
+        }
+        return undefined;
+    }
+
+    function mgHandleFile(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = evt => {
+            const wb = XLSX.read(new Uint8Array(evt.target.result), { type: 'array' });
+            const sheet = wb.Sheets[wb.SheetNames[0]];
+            const rows = XLSX.utils.sheet_to_json(sheet);
+            mgBulkInput = rows.map(row => ({
+                badge: mgPickCol(row, ['employee badge', 'badge']) || 'N/A',
+                curGross: parseFloat(mgPickCol(row, ['cari gross', 'current gross', 'gross'])) || 0,
+                curMeal: parseFloat(mgPickCol(row, ['cari yemek pulu', 'cari yemək pulu', 'cari net yemek pulu', 'cari net yemək pulu', 'meal', 'yemek pulu', 'yemək pulu'])) || 0,
+                incNet: parseFloat(mgPickCol(row, ['net artim', 'net artım', 'net artim mebleği', 'net artım məbləği', 'artim', 'artım', 'increase'])) || 0,
+            }));
+            mgBulkRecalc();
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
+    function mgBulkRecalc() {
+        const body = document.getElementById('mg-bulk-body');
+        if (!body) return;
+        if (mgBulkInput.length === 0) {
+            document.getElementById('mg-bulk-results').style.display = 'none';
+            return;
+        }
+        const p = mgGetParams();
+        const isHead = document.getElementById('mg-office').value === 'head';
+        body.innerHTML = '';
+        mgBulkData = [];
+
+        mgBulkInput.forEach(item => {
+            const r = mgComputeOne(item.curGross, item.curMeal, item.incNet, isHead, p);
+            const grossDelta = r.newGross - item.curGross;
+            body.innerHTML += `<tr>
+                <td>${item.badge}</td>
+                <td>${item.curGross.toFixed(2)}</td>
+                <td>${item.curMeal.toFixed(2)}</td>
+                <td>${item.incNet.toFixed(2)}</td>
+                <td><b style="color:#16a34a;">${r.newGross.toFixed(2)}</b></td>
+                <td><b style="color:#2563eb;">${r.newMeal.toFixed(2)}</b></td>
+                <td>${grossDelta.toFixed(2)}</td>
+                <td style="font-size:0.68rem; color:#64748b;">${r.status}</td>
+            </tr>`;
+            mgBulkData.push({
+                'Employee Badge': item.badge,
+                'Cari Gross': item.curGross.toFixed(2),
+                'Cari Yemek Pulu': item.curMeal.toFixed(2),
+                'Net Artim': item.incNet.toFixed(2),
+                'Yeni Gross': r.newGross.toFixed(2),
+                'Yeni Yemek Pulu': r.newMeal.toFixed(2),
+                'Gross Delta': grossDelta.toFixed(2),
+                'Status': r.status,
+            });
+        });
+
+        document.getElementById('mg-bk-count').innerText = mgBulkInput.length;
+        document.getElementById('mg-bulk-results').style.display = 'block';
+    }
+
+    function mgExportResults() {
+        if (mgBulkData.length === 0) return;
+        const ws = XLSX.utils.json_to_sheet(mgBulkData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Kütləvi Artımlar");
+        XLSX.writeFile(wb, "BirCalc_MassGrowth.xlsx");
+    }
+
+    function mgDownloadTemplate() {
+        const sample = [
+            { 'Employee Badge': 'B1001', 'Cari Gross': 1000, 'Cari Yemek Pulu': 50, 'Net Artim': 80 },
+            { 'Employee Badge': 'B1002', 'Cari Gross': 1500, 'Cari Yemek Pulu': 100, 'Net Artim': 120 },
+        ];
+        const ws = XLSX.utils.json_to_sheet(sample);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Şablon");
+        XLSX.writeFile(wb, "BirCalc_MassGrowth_Template.xlsx");
     }
 
     calc();
