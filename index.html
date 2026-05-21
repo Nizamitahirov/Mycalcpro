@@ -1244,13 +1244,15 @@
         let newGross, newMeal, status;
 
         if (incNet === 0) {
-            newGross = curGross;
             newMeal = Math.round(curMeal);
+            newGross = solve(newTotalNet - newMeal);
             status = 'Artım yoxdur';
         } else if (curMeal + incNet <= 100) {
-            // Meal absorbs the full increase; gross stays
-            newGross = curGross;
+            // Meal absorbs the full increase. Round meal to a whole AZN and
+            // recompute gross so the total net stays exact — gross absorbs
+            // the sub-AZN rounding remainder.
             newMeal = Math.round(curMeal + incNet);
+            newGross = solve(newTotalNet - newMeal);
             status = 'Gross dəyişmir';
         } else {
             // Meal capped at 100, excess goes to gross
