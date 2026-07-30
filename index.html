@@ -30,33 +30,36 @@
 
         /* Modern Navbar */
         .navbar {
-            background: var(--bg-card); padding: 0 25px; height: 65px;
-            display: flex; align-items: center; justify-content: space-between;
+            background: var(--bg-card); padding: 0 16px; height: 65px;
+            display: flex; align-items: center; justify-content: space-between; gap: 10px;
+            flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden;
             position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 12px rgba(0,0,0,0.06);
         }
-        .logo { font-weight: 900; font-size: 1.3rem; background: var(--bir-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -1px; }
+        .navbar::-webkit-scrollbar { height: 0; }
+        .navbar { scrollbar-width: none; }
+        .logo { font-weight: 900; font-size: 1.2rem; background: var(--bir-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -1px; flex-shrink: 0; white-space: nowrap; }
 
         /* System Switcher (General/Recruitment) */
-        .system-switch { display: flex; background: #f1f3f5; padding: 4px; border-radius: 12px; gap: 4px; }
+        .system-switch { display: flex; background: #f1f3f5; padding: 4px; border-radius: 12px; gap: 4px; flex-shrink: 0; }
         .sw-btn {
-            padding: 8px 16px; font-size: 0.72rem; font-weight: 800; border-radius: 10px;
+            padding: 8px 12px; font-size: 0.7rem; font-weight: 800; border-radius: 10px; white-space: nowrap;
             cursor: pointer; border: none; background: none; transition: 0.3s; font-family: 'Montserrat'; color: #888;
         }
         .sw-btn.active { background: #333; color: white; }
 
         /* Company Nav */
-        .company-nav { display: flex; background: #f1f3f5; padding: 4px; border-radius: 12px; gap: 4px; }
+        .company-nav { display: flex; background: #f1f3f5; padding: 4px; border-radius: 12px; gap: 4px; flex-shrink: 0; }
         .comp-btn {
-            padding: 8px 16px; font-size: 0.75rem; font-weight: 700; color: #666;
+            padding: 8px 12px; font-size: 0.72rem; font-weight: 700; color: #666; white-space: nowrap;
             border-radius: 10px; cursor: pointer; transition: 0.2s; border: none; background: none; font-family: 'Montserrat';
         }
         .comp-btn.active { background: white; color: var(--bir-red); box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
         .comp-btn.active.birbank { background: var(--bir-gradient); color: white; }
 
         /* Nav Tabs (Individual/Bulk/Transfer) */
-        .nav-tabs { display: flex; gap: 8px; background: #f1f3f5; padding: 4px; border-radius: 12px; }
+        .nav-tabs { display: flex; gap: 6px; background: #f1f3f5; padding: 4px; border-radius: 12px; flex-shrink: 0; }
         .tab-btn {
-            padding: 8px 18px; font-size: 0.75rem; font-weight: 800; border-radius: 10px;
+            padding: 8px 12px; font-size: 0.72rem; font-weight: 800; border-radius: 10px; white-space: nowrap;
             cursor: pointer; border: none; background: none; transition: 0.3s; font-family: 'Montserrat'; color: #777;
         }
         .tab-btn.active { background: var(--bir-gradient); color: white; box-shadow: 0 4px 10px rgba(255, 45, 85, 0.2); }
@@ -401,23 +404,24 @@
         .maya-fab {
             position: fixed; bottom: 24px; right: 24px; z-index: 900;
             display: flex; align-items: center; gap: 10px;
-            background: var(--bir-gradient); color: white; border: none; cursor: pointer;
+            /* Fərqli bənövşəyi-indiqo rəng — qırmızı düymələrlə qarışmasın, görünsün */
+            background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%); color: white; border: none; cursor: pointer;
             padding: 14px 22px; border-radius: 50px;
             font-family: 'Montserrat'; font-weight: 800; font-size: 0.85rem; letter-spacing: 0.3px;
-            box-shadow: 0 10px 30px rgba(255, 45, 85, 0.35); transition: 0.25s ease;
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.45); transition: 0.25s ease;
         }
-        .maya-fab:hover { transform: translateY(-3px); box-shadow: 0 14px 34px rgba(255, 45, 85, 0.45); }
+        .maya-fab:hover { transform: translateY(-3px); box-shadow: 0 14px 36px rgba(99, 102, 241, 0.55); }
         .maya-fab i { font-size: 1rem; animation: mayaIconWiggle 2.4s ease-in-out infinite; transform-origin: center; }
         .maya-fab.hidden { display: none; }
         /* Diqqət çəkən pulse halqası */
         .maya-fab::after {
             content: ''; position: absolute; inset: 0; border-radius: 50px; z-index: -1;
-            box-shadow: 0 0 0 0 rgba(255, 45, 85, 0.5); animation: mayaRing 2.2s ease-out infinite;
+            box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.6); animation: mayaRing 2.2s ease-out infinite;
         }
         @keyframes mayaRing {
-            0% { box-shadow: 0 0 0 0 rgba(255, 45, 85, 0.5); }
-            70% { box-shadow: 0 0 0 16px rgba(255, 45, 85, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(255, 45, 85, 0); }
+            0% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.6); }
+            70% { box-shadow: 0 0 0 16px rgba(139, 92, 246, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0); }
         }
         @keyframes mayaIconWiggle {
             0%, 55%, 100% { transform: rotate(0) scale(1); }
@@ -451,8 +455,13 @@
         .maya-name { font-weight: 800; font-size: 0.95rem; }
         .maya-sub { font-size: 0.6rem; opacity: 0.8; font-weight: 700; display: flex; align-items: center; gap: 5px; margin-top: 2px; }
         .maya-status-dot { width: 7px; height: 7px; background: #4ade80; border-radius: 50%; box-shadow: 0 0 6px #4ade80; }
+        .maya-head-btn { background: rgba(255,255,255,0.12); border: none; color: white; width: 30px; height: 30px; border-radius: 9px; cursor: pointer; font-size: 0.85rem; transition: 0.2s; }
+        .maya-head-btn:hover { background: rgba(255,255,255,0.25); }
         .maya-close { background: rgba(255,255,255,0.12); border: none; color: white; width: 30px; height: 30px; border-radius: 9px; cursor: pointer; font-size: 0.85rem; transition: 0.2s; }
         .maya-close:hover { background: rgba(255,255,255,0.25); }
+        .maya-chip.chip-platform { background: #1e293b; color: white; border-color: #1e293b; }
+        .maya-chip.chip-platform:hover { background: #0f172a; color: white; }
+        .maya-chip.chip-platform i { margin-right: 4px; }
 
         .maya-body { flex: 1; overflow-y: auto; padding: 15px; background: #f8fafc; display: flex; flex-direction: column; gap: 10px; }
         .maya-msg { max-width: 88%; padding: 10px 14px; border-radius: 14px; font-size: 0.76rem; font-weight: 600; line-height: 1.6; overflow-wrap: break-word; }
@@ -485,7 +494,7 @@
         .maya-send:hover { opacity: 0.9; }
         .maya-send:disabled { opacity: 0.45; cursor: default; }
 
-        @media print { .maya-fab, .maya-panel, .btn-ai-explain, .platform-btn { display: none !important; } }
+        @media print { .maya-fab, .maya-panel, .btn-ai-explain { display: none !important; } }
         @media (max-width: 640px) { .maya-panel { bottom: 12px; right: 12px; } }
 
         /* ===== İzahat card ===== */
@@ -512,14 +521,6 @@
             background: #1e293b; color: white; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;
         }
         .btn-ai-explain:hover { background: #0f172a; }
-
-        /* Platform explain button (navbar) */
-        .platform-btn {
-            display: flex; align-items: center; gap: 7px; border: 1px solid #e2e8f0; background: white; cursor: pointer;
-            padding: 8px 14px; border-radius: 10px; font-family: 'Montserrat'; font-weight: 800; font-size: 0.7rem; color: #1e293b; transition: 0.2s;
-        }
-        .platform-btn:hover { border-color: var(--bir-red); color: var(--bir-red); background: #fff8f9; }
-        .platform-btn i { color: var(--bir-red); }
 
         /* Platform explain modal */
         .plat-overlay { position: fixed; inset: 0; background: rgba(15,23,42,0.55); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 20px; }
@@ -586,8 +587,6 @@
             <button class="comp-btn" onclick="setCompany('Birmarket', this)">Birmarket</button>
         </div>
 
-        <!-- Platform explain -->
-        <button class="platform-btn" onclick="platformExplain()"><i class="fa-solid fa-wand-magic-sparkles"></i> Platformanı AI ilə izah et</button>
     </nav>
 
     <!-- Platform explain modal -->
@@ -1258,11 +1257,13 @@
             <div class="maya-name">Maya</div>
             <div class="maya-sub"><span class="maya-status-dot"></span> MyAI Assistant · Onlayn</div>
         </div>
+        <button class="maya-head-btn" onclick="platformExplain()" title="Platformanı izah et"><i class="fa-solid fa-circle-info"></i></button>
         <button class="maya-close" onclick="mayaToggle(false)"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <div class="maya-body" id="mayaBody">
         <div class="maya-msg bot">Salam! Mən <b>Maya</b> — BirCalc-ın AI assistentiyəm. 🤖<br>Əmək haqqı hesablamalarında kömək edirəm: <b>GROSS ↔ NET</b> və <b>GROSS → SUPERGROSS</b>. Sualınızı sərbəst formada yazın.</div>
         <div class="maya-chips" id="mayaChips">
+            <button class="maya-chip chip-platform" onclick="platformExplain()"><i class="fa-solid fa-circle-info"></i> Platformanı izah et</button>
             <button class="maya-chip" onclick="mayaChip(this)">2500 gross nə qədər net edir?</button>
             <button class="maya-chip" onclick="mayaChip(this)">3000 net üçün gross nə qədər olmalıdır?</button>
             <button class="maya-chip" onclick="mayaChip(this)">2000 gross supergross neçə edir?</button>
