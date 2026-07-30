@@ -494,8 +494,25 @@
         .maya-send:hover { opacity: 0.9; }
         .maya-send:disabled { opacity: 0.45; cursor: default; }
 
-        @media print { .maya-fab, .maya-panel, .btn-ai-explain { display: none !important; } }
+        @media print { .maya-fab, .maya-panel, .maya-auth, .btn-ai-explain { display: none !important; } }
         @media (max-width: 640px) { .maya-panel { bottom: 12px; right: 12px; } }
+
+        /* Maya parol qapısı */
+        .maya-auth { position: fixed; inset: 0; background: rgba(15,23,42,0.55); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); z-index: 1100; display: none; align-items: center; justify-content: center; padding: 20px; }
+        .maya-auth.open { display: flex; animation: overlayFade 0.25s ease; }
+        .maya-auth-box { background: white; border-radius: 22px; padding: 32px 28px; width: 360px; max-width: 100%; text-align: center; box-shadow: 0 25px 60px rgba(0,0,0,0.3); animation: modalPop 0.3s ease; }
+        .maya-auth-icon { width: 60px; height: 60px; border-radius: 18px; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; color: white; background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%); box-shadow: 0 8px 20px rgba(99,102,241,0.35); }
+        .maya-auth-title { font-size: 1rem; font-weight: 800; color: #1e293b; margin-bottom: 5px; }
+        .maya-auth-sub { font-size: 0.72rem; font-weight: 600; color: #94a3b8; margin-bottom: 18px; }
+        .maya-auth-input { width: 100%; padding: 12px 14px; border: 1px solid #e2e8f0; border-radius: 12px; outline: none; font-family: 'Montserrat'; font-size: 0.85rem; font-weight: 700; color: #333; text-align: center; letter-spacing: 2px; transition: 0.2s; }
+        .maya-auth-input:focus { border-color: #6366f1; background: #f5f3ff; }
+        .maya-auth-err { display: none; color: #c53030; font-size: 0.68rem; font-weight: 700; margin-top: 10px; }
+        .maya-auth-actions { display: flex; gap: 10px; margin-top: 18px; }
+        .maya-auth-actions button { flex: 1; padding: 11px; border: none; border-radius: 12px; cursor: pointer; font-family: 'Montserrat'; font-weight: 800; font-size: 0.75rem; transition: 0.2s; }
+        .maya-auth-cancel { background: #f1f3f5; color: #64748b; }
+        .maya-auth-cancel:hover { background: #e2e8f0; }
+        .maya-auth-ok { background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%); color: white; }
+        .maya-auth-ok:hover { opacity: 0.92; }
 
         /* ===== İzahat card ===== */
         .izahat-card { position: relative; }
@@ -1275,6 +1292,22 @@
     </div>
 </div>
 
+<!-- Maya parol qapısı -->
+<div class="maya-auth" id="mayaAuth">
+    <div class="maya-auth-box">
+        <div class="maya-auth-icon"><i class="fa-solid fa-lock"></i></div>
+        <div class="maya-auth-title">Maya AI — Girişi qorunur</div>
+        <div class="maya-auth-sub">Davam etmək üçün parolu daxil edin</div>
+        <input type="password" class="maya-auth-input" id="mayaAuthInput" placeholder="Parol" autocomplete="off"
+               onkeydown="if(event.key==='Enter'){ mayaAuthSubmit(); }">
+        <div class="maya-auth-err" id="mayaAuthErr">Parol yanlışdır. Yenidən cəhd edin.</div>
+        <div class="maya-auth-actions">
+            <button class="maya-auth-cancel" onclick="mayaAuthClose()">İmtina</button>
+            <button class="maya-auth-ok" onclick="mayaAuthSubmit()">Daxil ol</button>
+        </div>
+    </div>
+</div>
+
 <script>
     // Lucide ikonlarını aktivləşdir
     lucide.createIcons();
@@ -1671,7 +1704,17 @@
             const modeLabel = (c.mode === 'n2g') ? 'NET→GROSS' : 'GROSS→NET';
             ctx = `Bu ${modeLabel} hesablamasını sadə dildə, addım-addım izah et. Parametrlər: il ${c.year}, sektor ${sectorLabel}, ${wpLabel}, həmkar ${c.unionPct}%, vergi güzəşti ${c.benefit} AZN. GROSS ${c.gross.toFixed(2)} AZN, vergiyə cəlb olunan ${c.res.taxable.toFixed(2)} AZN. Tutulmalar — gəlir vergisi ${c.res.tax.toFixed(2)}, DSMF ${c.res.dsmf.toFixed(2)}, işsizlik ${c.res.unemp.toFixed(2)}, İTS ${c.res.med.toFixed(2)}, həmkar haqqı ${c.res.union.toFixed(2)}. NET ${c.nett.toFixed(2)} AZN. Hər tutulmanın hansı düsturla və hansı pillə ilə alındığını izah et. Yenidən calculate_salary çağırma, sadəcə mövcud rəqəmləri izah et.`;
         }
+        // Parol qapısından keçsin; açıldıqdan sonra izahı göndər
+        if (!mayaAuthed) {
+            mayaPendingExplain = ctx;
+            mayaToggle(true);
+            return;
+        }
         mayaToggle(true);
+        mayaRunExplain(ctx);
+    }
+
+    function mayaRunExplain(ctx) {
         const chips = document.getElementById('mayaChips');
         if (chips) chips.remove();
         document.getElementById('mayaInput').value = ctx;
@@ -2425,8 +2468,8 @@
 
 5. İstifadəçi qeyd edərsə parametrləri ötür: il (2025/2026), dövlət və ya neft-qaz sektoru → sector=state, Texnopark rezidenti → sector=texnopark (5% gəlir vergisi, işəgötürən DSMF-siz supergross), əlavə iş yeri → workplace=secondary, vergi güzəşti (VM maddə 102) → benefit məbləği. Güzəşt məbləğləri: 800 (şəhid ailəsi), 400 (müharibə əlili, qəhrəman, veteran, Çernobıl), 200 (61-100% əlillik), 100 (məcburi köçkün), 50 (himayəsində 3+ nəfər, digərləri ilə cəmlənə bilər, məs. 400+50=450).
 6. Müqayisə istənilsə (məs. 2025 vs 2026) aləti hər variant üçün ayrıca çağır.
-7. Cavab formatı: qısa və dəqiq. Nəticəni belə təqdim et — GROSS, tutulmalar sətir-sətir (Gəlir vergisi, DSMF, İşsizlik sığortası, İTS, Həmkarlar haqqı), NET. Supergross üçün: GROSS, işəgötürən ödənişləri sətir-sətir, SUPERGROSS. Recruitment üçün: təklif olunan cəmi net, YEMƏK PULU, baza net, GROSS (baza) və tutulmalar. Transfer/Kütləvi artım/Texnopar üçün: cari və yeni GROSS, yeni YEMƏK PULU (varsa status qeydi). Vacib rəqəmləri **qalın** yaz. AZN valyutasını göstər.
-   Recruitment sualında istifadəçi şirkət deməyibsə Birbank götür və bunu qeyd et; həmkar faizini (HİK) desə tətbiq et.
+7. ÇOX VACİB — CAVAB VERMƏ QAYDASI: Hər alət nəticəsində 'answer_text' sahəsi var. Nəticəni istifadəçiyə təqdim edərkən rəqəmləri MƏHZ bu 'answer_text' sahəsindən, DƏYİŞDİRMƏDƏN götür. 'answer_text'-in sətirlərini olduğu kimi göstər (istəsən vacib rəqəmləri **qalın** edə, əvvəlinə qısa bir cümlə əlavə edə bilərsən). ÖZ-ÖZÜNƏ heç bir toplama, çıxma, vurma və ya hesablama APARMA. 'answer_text'-də (və digər sahələrdə) OLMAYAN heç bir rəqəm YAZMA — xüsusən yeni "NET" və ya başqa məbləğ uydurma. Bir neçə hesablama varsa (müqayisə), hər birinin 'answer_text'-ini ayrıca göstər.
+   Recruitment sualında istifadəçi şirkət deməyibsə Birbank götür və bunu qeyd et; həmkar faizini (HİK) desə tətbiq et. Recruitment-də əsas məqam: təklif olunan CƏMİ net = baza net + yemək pulu; gross yalnız BAZA net-dən hesablanır. Namizədin əlinə keçən cəmi məbləğ təklif olunan netdir.
 8. Vergi qaydaları haqqında ümumi suallara qısa izah verə bilərsən. Mövzudan tam kənar suallarda nəzakətlə bildir ki, yalnız əmək haqqı hesablamaları üzrə köməklik edirsən.`;
 
     const MAYA_TOOLS = [{
@@ -2529,6 +2572,10 @@
         }
     }];
 
+    const MAYA_SECLBL = { private: 'özəl/qeyri-neft', state: 'dövlət/neft-qaz', texnopark: 'Texnopark rezidenti' };
+    const mayaF = n => Number(n).toFixed(2);
+    const mayaWp = w => (w === 'main' ? 'əsas iş yeri' : 'əlavə iş yeri');
+
     function mayaCalculate(a) {
         const r2 = v => Math.round((v + Number.EPSILON) * 100) / 100;
         const amount = Number(a.amount);
@@ -2542,6 +2589,16 @@
 
         if (a.direction === 'gross_to_supergross') {
             const emp = getEmployerCosts(amount, sector, year);
+            const supergross = amount + emp.total;
+            const answer_text =
+`GROSS: ${mayaF(amount)} AZN
+İşəgötürən ödənişləri:
+• DSMF: ${mayaF(emp.dsmf)} AZN
+• İşsizlik sığortası: ${mayaF(emp.unemp)} AZN
+• İTS: ${mayaF(emp.med)} AZN
+• Cəmi: ${mayaF(emp.total)} AZN
+SUPERGROSS: ${mayaF(supergross)} AZN
+(${year}, ${MAYA_SECLBL[sector]})`;
             return {
                 direction: 'gross_to_supergross', year, sector,
                 gross: r2(amount),
@@ -2549,7 +2606,8 @@
                 employer_unemployment_insurance: r2(emp.unemp),
                 employer_medical_insurance: r2(emp.med),
                 employer_total: r2(emp.total),
-                supergross: r2(amount + emp.total)
+                supergross: r2(supergross),
+                answer_text
             };
         }
 
@@ -2557,6 +2615,20 @@
             ? solveGross(amount, benefit, unionPct, workplace, sector, year)
             : amount;
         const res = getDeductions(gross, benefit, unionPct, workplace, sector, year);
+        const net = gross - res.total;
+        const dirLabel = (a.direction === 'net_to_gross') ? 'NET → GROSS' : 'GROSS → NET';
+        const answer_text =
+`${dirLabel}
+GROSS: ${mayaF(gross)} AZN
+Tutulmalar:
+• Gəlir vergisi: ${mayaF(res.tax)} AZN
+• DSMF: ${mayaF(res.dsmf)} AZN
+• İşsizlik sığortası: ${mayaF(res.unemp)} AZN
+• İTS: ${mayaF(res.med)} AZN
+• Həmkarlar (${unionPct}%): ${mayaF(res.union)} AZN
+• Cəmi tutulma: ${mayaF(res.total)} AZN
+NET: ${mayaF(net)} AZN
+(${year}, ${MAYA_SECLBL[sector]}, ${mayaWp(workplace)}${benefit ? ', güzəşt ' + mayaF(benefit) + ' AZN' : ''})`;
         return {
             direction: a.direction, year, sector, workplace,
             union_percent: unionPct, benefit_applied: benefit,
@@ -2568,7 +2640,8 @@
             union_fee: r2(res.union),
             taxable_amount: r2(res.taxable),
             total_deductions: r2(res.total),
-            net: r2(gross - res.total)
+            net: r2(net),
+            answer_text
         };
     }
 
@@ -2597,13 +2670,30 @@
         const baseNet = totalNet - meal;
         const gross = solveGross(baseNet, p.benefit, p.unionPct, p.workplace, p.sector, p.year);
         const res = getDeductions(gross, p.benefit, p.unionPct, p.workplace, p.sector, p.year);
+        const netFromGross = gross - res.total;
+        const answer_text =
+`İşə qəbul (NET → GROSS) — ${company}, ${mayaWp(p.workplace)}, ${p.year}
+Təklif olunan cəmi NET: ${mayaF(totalNet)} AZN
+• Baza NET: ${mayaF(baseNet)} AZN
+• Yemək pulu: ${mayaF(meal)} AZN
+Baza GROSS: ${mayaF(gross)} AZN
+Tutulmalar (baza grossdan):
+• Gəlir vergisi: ${mayaF(res.tax)} AZN
+• DSMF: ${mayaF(res.dsmf)} AZN
+• İşsizlik sığortası: ${mayaF(res.unemp)} AZN
+• İTS: ${mayaF(res.med)} AZN
+• Həmkarlar (${p.unionPct}%): ${mayaF(res.union)} AZN
+• Cəmi tutulma: ${mayaF(res.total)} AZN
+Yoxlama: Baza GROSS (${mayaF(gross)}) − tutulmalar (${mayaF(res.total)}) = baza NET ${mayaF(netFromGross)} AZN. Namizəd əlinə CƏMİ ${mayaF(baseNet + meal)} AZN alır (${mayaF(baseNet)} baza net + ${mayaF(meal)} yemək pulu).`;
         return {
             method: 'recruitment_net_to_gross', company, year: p.year, sector: p.sector, workplace: p.workplace,
             union_percent: p.unionPct, benefit_applied: p.benefit,
             total_net_offer: r2(totalNet), base_reference_net: minRef,
             meal_allowance: r2(meal), base_net: r2(baseNet), gross: r2(gross),
             income_tax: r2(res.tax), dsmf: r2(res.dsmf), unemployment_insurance: r2(res.unemp),
-            medical_insurance_its: r2(res.med), union_fee: r2(res.union), total_deductions: r2(res.total)
+            medical_insurance_its: r2(res.med), union_fee: r2(res.union), total_deductions: r2(res.total),
+            net_from_gross: r2(netFromGross), total_take_home: r2(baseNet + meal),
+            answer_text
         };
     }
 
@@ -2632,10 +2722,17 @@
                 newMeal = curMeal;
                 newGross = solve(propNet - curMeal);
             }
+            const answer_text =
+`Transfer & Promotion (təklif olunan NET-dən) — ${p.year}, ${MAYA_SECLBL[p.sector]}
+Cari: GROSS ${mayaF(curGross)} AZN, yemək ${mayaF(curMeal)} AZN, cəmi net ${mayaF(curTotal)} AZN
+Təklif olunan cəmi NET: ${mayaF(propNet)} AZN
+→ Yeni GROSS: ${mayaF(newGross)} AZN
+→ Yeni yemək pulu: ${mayaF(newMeal)} AZN`;
             return {
                 method: 'transfer_from_net', year: p.year, sector: p.sector, workplace: p.workplace,
                 current_gross: r2(curGross), current_meal: r2(curMeal), current_total_net: r2(curTotal),
-                proposed_total_net: r2(propNet), new_gross: r2(newGross), new_meal: r2(newMeal)
+                proposed_total_net: r2(propNet), new_gross: r2(newGross), new_meal: r2(newMeal),
+                answer_text
             };
         } else {
             const propGross = proposedVal;
@@ -2651,12 +2748,21 @@
                 newBaseNet = Math.max(0, totalNetFromPropGross - newMeal);
                 newGross = solve(newBaseNet);
             }
+            const answer_text =
+`Transfer & Promotion (təklif olunan GROSS-dan) — ${p.year}, ${MAYA_SECLBL[p.sector]}
+Cari: GROSS ${mayaF(curGross)} AZN, yemək ${mayaF(curMeal)} AZN, cəmi net ${mayaF(curTotal)} AZN
+Təklif olunan GROSS: ${mayaF(propGross)} AZN (bu grossdan cəmi net ${mayaF(totalNetFromPropGross)} AZN)
+→ Yeni GROSS: ${mayaF(newGross)} AZN
+→ Yeni baza NET: ${mayaF(newBaseNet)} AZN
+→ Yeni yemək pulu: ${mayaF(newMeal)} AZN
+→ Yeni cəmi NET: ${mayaF(newBaseNet + newMeal)} AZN`;
             return {
                 method: 'transfer_from_gross', year: p.year, sector: p.sector, workplace: p.workplace,
                 current_gross: r2(curGross), current_meal: r2(curMeal), current_total_net: r2(curTotal),
                 proposed_gross: r2(propGross), total_net_from_proposed_gross: r2(totalNetFromPropGross),
                 new_base_net: r2(newBaseNet), new_meal: r2(newMeal), new_gross: r2(newGross),
-                new_total_net: r2(newBaseNet + newMeal)
+                new_total_net: r2(newBaseNet + newMeal),
+                answer_text
             };
         }
     }
@@ -2671,11 +2777,19 @@
         if (!isFinite(curGross) || curGross <= 0) return { error: 'Cari gross müsbət olmalıdır.' };
         const p = mayaP(a);
         const r = mgComputeOne(curGross, curMeal, incNet, isHead, p);
+        const answer_text =
+`Kütləvi artım — ${p.year}, ${MAYA_SECLBL[p.sector]}, ${isHead ? 'baş ofis' : 'filial'}
+Cari: GROSS ${mayaF(curGross)} AZN, yemək ${mayaF(curMeal)} AZN, cari net ${mayaF(r.curNet)} AZN
+Net artım: ${mayaF(incNet)} AZN → yeni cəmi net ${mayaF(r.newTotalNet)} AZN
+→ Yeni GROSS: ${mayaF(r.newGross)} AZN
+→ Yeni yemək pulu: ${mayaF(r.newMeal)} AZN
+Status: ${r.status}`;
         return {
             method: 'mass_growth', year: p.year, sector: p.sector, workplace: p.workplace, is_head_office: isHead,
             current_gross: r2(curGross), current_meal: r2(curMeal), current_net: r2(r.curNet),
             net_increase: r2(incNet), new_total_net: r2(r.newTotalNet),
-            new_gross: r2(r.newGross), new_meal: r2(r.newMeal), status: r.status
+            new_gross: r2(r.newGross), new_meal: r2(r.newMeal), status: r.status,
+            answer_text
         };
     }
 
@@ -2690,11 +2804,19 @@
         const unionPct = Math.min(30, Math.max(0, Number(a.union_percent) || 0));
         if (!isFinite(curGross) || curGross <= 0) return { error: 'Cari gross müsbət olmalıdır.' };
         const r = txComputeOne(curGross, curMeal, incNet, isHead, type, unionPct);
+        const answer_text =
+`Texnopar — ${type === 'expat' ? 'əcnəbi işçi' : 'yerli işçi'}, ${isHead ? 'baş ofis' : 'filial'}, həmkar ${unionPct}%
+Cari: GROSS ${mayaF(curGross)} AZN, yemək ${mayaF(curMeal)} AZN, cari net ${mayaF(r.curNet)} AZN
+Net artım: ${mayaF(incNet)} AZN → yeni cəmi net ${mayaF(r.newTotalNet)} AZN
+→ Yeni GROSS: ${mayaF(r.newGross)} AZN
+→ Yeni yemək pulu: ${mayaF(r.newMeal)} AZN
+Status: ${r.status}`;
         return {
             method: 'texnopar_transfer', worker_type: type, is_head_office: isHead, union_percent: unionPct,
             current_gross: r2(curGross), current_meal: r2(curMeal), current_net: r2(r.curNet),
             net_increase: r2(incNet), new_total_net: r2(r.newTotalNet),
-            new_gross: r2(r.newGross), new_meal: r2(r.newMeal), status: r.status
+            new_gross: r2(r.newGross), new_meal: r2(r.newMeal), status: r.status,
+            answer_text
         };
     }
 
@@ -2711,11 +2833,58 @@
 
     let mayaMessages = [];
     let mayaBusy = false;
+    let mayaAuthed = false;
+    let mayaPendingExplain = null;
+    const MAYA_PASSWORD = '2026';
+
+    function _mayaShowPanel() {
+        document.getElementById('mayaPanel').classList.add('open');
+        document.getElementById('mayaFab').classList.add('hidden');
+        document.getElementById('mayaInput').focus();
+    }
 
     function mayaToggle(open) {
-        document.getElementById('mayaPanel').classList.toggle('open', open);
-        document.getElementById('mayaFab').classList.toggle('hidden', open);
-        if (open) document.getElementById('mayaInput').focus();
+        if (open) {
+            // Parol qapısı: yalnız doğru paroldan sonra açılır
+            if (!mayaAuthed) {
+                const g = document.getElementById('mayaAuth');
+                g.classList.add('open');
+                document.getElementById('mayaAuthErr').style.display = 'none';
+                const inp = document.getElementById('mayaAuthInput');
+                inp.value = '';
+                inp.focus();
+                return;
+            }
+            _mayaShowPanel();
+            return;
+        }
+        document.getElementById('mayaPanel').classList.remove('open');
+        document.getElementById('mayaFab').classList.remove('hidden');
+    }
+
+    function mayaAuthSubmit() {
+        const inp = document.getElementById('mayaAuthInput');
+        if (inp.value.trim() === MAYA_PASSWORD) {
+            mayaAuthed = true;
+            document.getElementById('mayaAuth').classList.remove('open');
+            inp.value = '';
+            _mayaShowPanel();
+            if (mayaPendingExplain) {
+                const pe = mayaPendingExplain;
+                mayaPendingExplain = null;
+                mayaRunExplain(pe);
+            }
+        } else {
+            document.getElementById('mayaAuthErr').style.display = 'block';
+            inp.value = '';
+            inp.focus();
+        }
+    }
+
+    function mayaAuthClose() {
+        document.getElementById('mayaAuth').classList.remove('open');
+        document.getElementById('mayaAuthInput').value = '';
+        mayaPendingExplain = null;
     }
 
     function mayaChip(el) {
