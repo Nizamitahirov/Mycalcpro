@@ -465,8 +465,52 @@
         .maya-send:hover { opacity: 0.9; }
         .maya-send:disabled { opacity: 0.45; cursor: default; }
 
-        @media print { .maya-fab, .maya-panel { display: none !important; } }
+        @media print { .maya-fab, .maya-panel, .btn-ai-explain, .platform-btn { display: none !important; } }
         @media (max-width: 640px) { .maya-panel { bottom: 12px; right: 12px; } }
+
+        /* ===== İzahat card ===== */
+        .izahat-card { position: relative; }
+        .izahat-head { font-size: 0.85rem; font-weight: 800; color: var(--bir-red); display: flex; align-items: center; gap: 8px; margin-bottom: 12px; position: relative; z-index: 1; }
+        .izahat-body { font-size: 0.74rem; font-weight: 600; line-height: 1.75; color: #444; position: relative; z-index: 1; }
+        .izahat-body b { color: #1e293b; }
+        .izahat-body .izahat-sub { display: block; margin-top: 10px; margin-bottom: 3px; font-weight: 800; color: var(--bir-red); }
+        .izahat-body ul { margin: 4px 0 4px 0; padding-left: 20px; }
+        .izahat-body li { margin-bottom: 2px; }
+        .izahat-body hr { border: none; border-top: 1px dashed #e2e8f0; margin: 12px 0; }
+        .izahat-note { margin-top: 15px; padding-top: 12px; border-top: 1px solid #f1f3f5; font-size: 0.66rem; font-weight: 600; color: #94a3b8; line-height: 1.7; position: relative; z-index: 1; }
+        .izahat-note b { color: #64748b; }
+
+        /* AI explain button (below details) */
+        .btn-ai-explain {
+            width: 100%; padding: 11px; margin-bottom: 8px; border: none; cursor: pointer;
+            border-radius: 10px; font-family: 'Montserrat'; font-weight: 800; font-size: 0.72rem; letter-spacing: 0.3px;
+            background: #1e293b; color: white; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;
+        }
+        .btn-ai-explain:hover { background: #0f172a; }
+
+        /* Platform explain button (navbar) */
+        .platform-btn {
+            display: flex; align-items: center; gap: 7px; border: 1px solid #e2e8f0; background: white; cursor: pointer;
+            padding: 8px 14px; border-radius: 10px; font-family: 'Montserrat'; font-weight: 800; font-size: 0.7rem; color: #1e293b; transition: 0.2s;
+        }
+        .platform-btn:hover { border-color: var(--bir-red); color: var(--bir-red); background: #fff8f9; }
+        .platform-btn i { color: var(--bir-red); }
+
+        /* Platform explain modal */
+        .plat-overlay { position: fixed; inset: 0; background: rgba(15,23,42,0.55); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 20px; }
+        .plat-overlay.open { display: flex; animation: overlayFade 0.3s ease; }
+        .plat-modal { background: white; border-radius: 22px; max-width: 720px; width: 100%; max-height: 88vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 25px 60px rgba(0,0,0,0.25); animation: modalPop 0.35s ease; }
+        .plat-head { background: #1e293b; color: white; padding: 18px 22px; display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+        .plat-head .maya-avatar { width: 42px; height: 42px; }
+        .plat-htitle { flex: 1; }
+        .plat-htitle .t { font-weight: 800; font-size: 1rem; }
+        .plat-htitle .s { font-size: 0.64rem; opacity: 0.8; font-weight: 700; margin-top: 2px; }
+        .plat-body { padding: 24px 26px; overflow-y: auto; font-size: 0.82rem; font-weight: 500; line-height: 1.75; color: #333; }
+        .plat-body h3 { font-size: 0.92rem; color: var(--bir-red); margin: 18px 0 8px; }
+        .plat-body h3:first-child { margin-top: 0; }
+        .plat-body b { color: #1e293b; }
+        .plat-body ul { padding-left: 20px; margin: 6px 0; }
+        .plat-body li { margin-bottom: 5px; }
     </style>
 </head>
 <body>
@@ -516,7 +560,25 @@
             <button class="comp-btn" onclick="setCompany('Pashapay', this)">Pashapay</button>
             <button class="comp-btn" onclick="setCompany('Birmarket', this)">Birmarket</button>
         </div>
+
+        <!-- Platform explain -->
+        <button class="platform-btn" onclick="platformExplain()"><i class="fa-solid fa-wand-magic-sparkles"></i> Platformanı AI ilə izah et</button>
     </nav>
+
+    <!-- Platform explain modal -->
+    <div class="plat-overlay" id="platOverlay">
+        <div class="plat-modal">
+            <div class="plat-head">
+                <div class="maya-avatar">M</div>
+                <div class="plat-htitle">
+                    <div class="t">Platforma haqqında</div>
+                    <div class="s">Maya (MyAI) izah edir</div>
+                </div>
+                <button class="maya-close" onclick="document.getElementById('platOverlay').classList.remove('open')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="plat-body" id="platBody"></div>
+        </div>
+    </div>
 
     <div class="container">
         <!-- Salary Notification (Recruitment Only) -->
@@ -555,6 +617,7 @@
                     <select id="sector" onchange="calc()">
                         <option value="private">Özəl (Qeyri-neft)</option>
                         <option value="state">Dövlət / Neft-Qaz</option>
+                        <option value="texnopark">Texnopark</option>
                     </select>
                 </div>
                 <div class="form-group w-workplace">
@@ -636,7 +699,19 @@
                 <div class="card" style="margin-bottom:0; padding: 20px;">
                     <label style="font-size:0.6rem; font-weight:800; color:#aaa; margin-bottom:10px; display:block;">HESABLANMIŞ DETALLAR</label>
                     <table class="details-table" id="reportTable"></table>
+                    <button class="btn-ai-explain" onclick="mayaExplainCalc()"><i class="fa-solid fa-wand-magic-sparkles"></i> AI izah et</button>
                     <button class="btn-action" onclick="window.print()">ÇAP ET</button>
+                </div>
+            </div>
+
+            <!-- İzahat (tax rules explanation) -->
+            <div class="card izahat-card" style="margin-top:18px;">
+                <div class="izahat-head"><i class="fa-solid fa-circle-info"></i> İzahat</div>
+                <div id="izahatBox" class="izahat-body"></div>
+                <div class="izahat-note">
+                    <b>Qeyd:</b> Bu alət təxmini hesablar verir. Dəqiqlik tələb olunan hallarda rəsmi mənbələrə istinad tövsiyyə olunur.<br>
+                    Vergi qanunvericiliyi və limitlər dəyişdikdə nəticələr dəyişə bilər.<br>
+                    Vergi Məcəlləsinə son uyğunlaşma tarixi: 13 fevral 2026
                 </div>
             </div>
         </div>
@@ -1240,6 +1315,13 @@
     function getEmployerCosts(gross, sector, year) {
         let dsmf = 0, med = 0;
         const unemp = gross * 0.005;
+        if (sector === 'texnopark') {
+            // Texnopark: işəgötürən DSMF yoxdur. Supergross = gross + 0.5% işsizlik + İTS
+            // Excel: =A3 + A3*0.005 + IF(A3<=2500; A3*0.02; 50+(A3-2500)*0.005)
+            dsmf = 0;
+            med = (gross <= 2500) ? gross * 0.02 : 50 + (gross - 2500) * 0.005;
+            return { dsmf, unemp, med, total: unemp + med };
+        }
         if (sector === 'state') {
             dsmf = gross * 0.22;
             med = (gross <= 8000) ? gross * 0.02 : 160 + (gross - 8000) * 0.005;
@@ -1256,6 +1338,12 @@
     }
 
     function getDeductions(gross, benefit, unionPct, workplace, sector, year) {
+        if (sector === 'texnopark') {
+            // Texnopark rezidenti (əsas iş yeri, yerli işçi) — mövcud Texnopar düsturu ilə
+            const r = getDeductionsTexnopar(gross, 'local', unionPct);
+            r.taxable = (gross <= 2500) ? Math.max(0, gross - 200) : gross;
+            return r;
+        }
         let tax = 0, dsmf = 0, unemp = 0, med = 0, union = 0;
         let taxable = Math.max(0, gross - benefit);
 
@@ -1344,6 +1432,9 @@
             document.querySelectorAll('.benefit-item').forEach(i => i.classList.remove('active'));
             document.querySelector('input[name="benefit"]:checked').closest('.benefit-item').classList.add('active');
 
+            window.lastCalc = { mode: 'g2sg', year, sector, workplace, gross: val, supergross, emp };
+            document.getElementById('izahatBox').innerHTML = buildIzahat(year, sector, workplace, mode);
+
             if (typeof mgCalc === 'function') mgCalc();
             if (typeof mgBulkRecalc === 'function') mgBulkRecalc();
             if (typeof txCalc === 'function') txCalc();
@@ -1431,10 +1522,173 @@
         document.querySelectorAll('.benefit-item').forEach(i => i.classList.remove('active'));
         document.querySelector('input[name="benefit"]:checked').closest('.benefit-item').classList.add('active');
 
+        window.lastCalc = { mode, year, sector, workplace, benefit, unionPct, gross: finalGross, nett: finalNett, res, meal, baseNet, isRecruitmentN2G };
+        document.getElementById('izahatBox').innerHTML = buildIzahat(year, sector, workplace, mode);
+
         if (typeof mgCalc === 'function') mgCalc();
         if (typeof mgBulkRecalc === 'function') mgBulkRecalc();
         if (typeof txCalc === 'function') txCalc();
         if (typeof txBulkRecalc === 'function') txBulkRecalc();
+    }
+
+    /* ============================================================
+       İZAHAT (tax-rule explanation, statik) + AI izah düymələri
+    ============================================================ */
+    function buildIzahat(year, sector, workplace, mode) {
+        const wp = (workplace === 'main') ? 'əsas iş yeri' : 'əlavə iş yeri';
+
+        if (mode === 'g2sg') {
+            if (sector === 'texnopark') {
+                return `<b>Supergross (Texnopark rezidenti):</b> İşəgötürənin işçiyə görə çəkdiyi cəmi xərc.
+                    <span class="izahat-sub">Texnopark güzəşti:</span>
+                    <ul><li>İşəgötürən DSMF ödəmir (0%).</li>
+                    <li>İşsizlik sığortası (işəgötürən): Gross × 0.5%</li>
+                    <li>İcbari tibbi sığorta: 2500-dək Gross × 2%; 2500-dən çox: 50 + (Gross − 2500) × 0.5%</li></ul>
+                    <hr><b>Supergross = Gross + İşsizlik + İTS</b>`;
+            }
+            const empDsmf = (sector === 'state')
+                ? `Gross × 22%`
+                : (year === '2026'
+                    ? `200-dək 22%; 200–8000: 44 + (Gross − 200) × 15%; 8000-dən çox: 1214 + (Gross − 8000) × 11%`
+                    : `200-dək 22%; 200-dən çox: 44 + (Gross − 200) × 15%`);
+            const empMed = (sector === 'state' || year !== '2026')
+                ? `8000-dək Gross × 2%; 8000-dən çox: 160 + (Gross − 8000) × 0.5%`
+                : `2500-dək Gross × 2%; 2500-dən çox: 50 + (Gross − 2500) × 0.5%`;
+            return `<b>Supergross (${year}):</b> İşəgötürənin işçiyə görə çəkdiyi cəmi xərc.
+                <span class="izahat-sub">İşəgötürən ödənişləri:</span>
+                <ul><li>DSMF (işəgötürən payı): ${empDsmf}</li>
+                <li>İşsizlik sığortası: Gross × 0.5%</li>
+                <li>İcbari tibbi sığorta: ${empMed}</li></ul>
+                <hr><b>Supergross = Gross + DSMF + İşsizlik + İTS</b>`;
+        }
+
+        if (sector === 'texnopark') {
+            return `<b>İzahat (Texnopark rezidenti, ${year}):</b>
+                <span class="izahat-sub">Gəlir vergisi (güzəştli 5% dərəcə):</span>
+                <ul><li>Vergiyə cəlb olunan ≤ 2500: (Gross − 200) × 5%</li>
+                <li>Vergiyə cəlb olunan > 2500: Gross × 5%</li></ul>
+                <span class="izahat-sub">DSMF:</span>
+                <ul><li>200 manatadək: Əməkhaqqı × 3%</li>
+                <li>200 manatdan çox: 6 + (Əməkhaqqı − 200) × 10%</li></ul>
+                <b>İşsizlik sığortası:</b> Əməkhaqqı × 0.5%
+                <span class="izahat-sub">İcbari tibbi sığorta:</span>
+                <ul><li>2500 manatadək: Əməkhaqqı × 2%</li>
+                <li>2500 manatdan çox: 50 + (Əməkhaqqı − 2500) × 0.5%</li></ul>
+                <hr><b>Yekun Net = Gross − (Vergi + DSMF + İşsizlik + Tibbi sığorta + Həmkar haqqı)</b>`;
+        }
+
+        if (sector === 'private' && year === '2026') {
+            const exempt = (workplace === 'main') ? ' (əsas iş yeri üçün ilk 200 AZN vergidən azaddır)' : '';
+            return `<b>İzahat (Qeyri-dövlət və qeyri-neft sektoru, ${wp}, 2026):</b>
+                <span class="izahat-sub">2026 üçün yeni pilləli gəlir vergisi qaydası${exempt}:</span>
+                <ul><li>Vergiyə cəlb olunan ≤ 2500: <b>3%</b></li>
+                <li>2500 < Vergiyə cəlb olunan ≤ 8000: <b>75 AZN + 10%</b> (2500-dən artıq hissənin 10%-i)</li>
+                <li>Vergiyə cəlb olunan > 8000: <b>625 AZN + 14%</b> (8000-dən artıq hissənin 14%-i)</li></ul>
+                <span class="izahat-sub">DSMF:</span>
+                <ul><li>200 manatadək: Əməkhaqqı × 3%</li>
+                <li>200 manatdan çox: 6 + (Əməkhaqqı − 200) × 10%</li></ul>
+                <b>İşsizlik sığortası:</b> Əməkhaqqı × 0.5%
+                <span class="izahat-sub">İcbari tibbi sığorta:</span>
+                <ul><li>2500 manatadək: Əməkhaqqı × 2%</li>
+                <li>2500 manatdan çox: 50 + (Əməkhaqqı − 2500) × 0.5%</li></ul>
+                <hr><b>Yekun Net = Gross − (Vergi + DSMF + İşsizlik + Tibbi sığorta + Həmkar haqqı)</b>`;
+        }
+
+        if (sector === 'private') {
+            return `<b>İzahat (Qeyri-dövlət və qeyri-neft sektoru, 2025):</b>
+                <span class="izahat-sub">Gəlir vergisi:</span>
+                <ul><li>8000 manatadək: 0%</li>
+                <li>8000 manatdan çox: (Vergiyə cəlb olunan − 8000) × 14%</li></ul>
+                <span class="izahat-sub">DSMF:</span>
+                <ul><li>200 manatadək: Əməkhaqqı × 3%</li>
+                <li>200 manatdan çox: 6 + (Əməkhaqqı − 200) × 10%</li></ul>
+                <b>İşsizlik sığortası:</b> Əməkhaqqı × 0.5%
+                <span class="izahat-sub">İcbari tibbi sığorta:</span>
+                <ul><li>8000 manatadək: Əməkhaqqı × 2%</li>
+                <li>8000 manatdan çox: 160 + (Əməkhaqqı − 8000) × 0.5%</li></ul>
+                <hr><b>Yekun Net = Gross − (Vergi + DSMF + İşsizlik + Tibbi sığorta + Həmkar haqqı)</b>`;
+        }
+
+        // Dövlət / Neft-Qaz
+        const dsmfState = (year === '2026')
+            ? `Əməkhaqqı × 3%`
+            : `200 manatadək 3%; 200-dən çox: 6 + (Əməkhaqqı − 200) × 10%`;
+        const medState = (year === '2026')
+            ? `2500-dək Əməkhaqqı × 2%; 2500-dən çox: 50 + (Əməkhaqqı − 2500) × 0.5%`
+            : `8000-dək Əməkhaqqı × 2%; 8000-dən çox: 160 + (Əməkhaqqı − 8000) × 0.5%`;
+        const exemptS = (workplace === 'main') ? 'Vergiyə cəlb olunan məbləğ = Gross − Güzəşt − 200 (əsas iş yeri)' : 'Vergiyə cəlb olunan məbləğ = Gross − Güzəşt';
+        return `<b>İzahat (Dövlət və neft sektoru, ${wp}, ${year}):</b>
+            <ul><li>${exemptS}</li></ul>
+            <span class="izahat-sub">Gəlir vergisi:</span>
+            <ul><li>Vergiyə cəlb olunan ≤ 2500: məbləğ × 14%</li>
+            <li>Vergiyə cəlb olunan > 2500: 350 + (məbləğ − 2500) × 25%</li></ul>
+            <b>DSMF:</b> ${dsmfState}<br>
+            <b>İşsizlik sığortası:</b> Əməkhaqqı × 0.5%<br>
+            <b>İcbari tibbi sığorta:</b> ${medState}
+            <hr><b>Yekun Net = Gross − (Vergi + DSMF + İşsizlik + Tibbi sığorta + Həmkar haqqı)</b>`;
+    }
+
+    function mayaExplainCalc() {
+        const c = window.lastCalc;
+        if (!c) return;
+        const sectorLabel = { private: 'özəl/qeyri-neft', state: 'dövlət/neft-qaz', texnopark: 'Texnopark rezidenti' }[c.sector] || c.sector;
+        const wpLabel = (c.workplace === 'main') ? 'əsas iş yeri' : 'əlavə iş yeri';
+        let ctx;
+        if (c.mode === 'g2sg') {
+            ctx = `Bu SUPERGROSS hesablamasını sadə dildə, addım-addım izah et. Parametrlər: il ${c.year}, sektor ${sectorLabel}. GROSS ${c.gross.toFixed(2)} AZN. İşəgötürən ödənişləri — DSMF ${c.emp.dsmf.toFixed(2)}, işsizlik ${c.emp.unemp.toFixed(2)}, İTS ${c.emp.med.toFixed(2)}. SUPERGROSS ${c.supergross.toFixed(2)} AZN. Hər tutulmanın hansı düsturla alındığını izah et. Yenidən calculate_salary çağırma, sadəcə mövcud rəqəmləri izah et.`;
+        } else {
+            const modeLabel = (c.mode === 'n2g') ? 'NET→GROSS' : 'GROSS→NET';
+            ctx = `Bu ${modeLabel} hesablamasını sadə dildə, addım-addım izah et. Parametrlər: il ${c.year}, sektor ${sectorLabel}, ${wpLabel}, həmkar ${c.unionPct}%, vergi güzəşti ${c.benefit} AZN. GROSS ${c.gross.toFixed(2)} AZN, vergiyə cəlb olunan ${c.res.taxable.toFixed(2)} AZN. Tutulmalar — gəlir vergisi ${c.res.tax.toFixed(2)}, DSMF ${c.res.dsmf.toFixed(2)}, işsizlik ${c.res.unemp.toFixed(2)}, İTS ${c.res.med.toFixed(2)}, həmkar haqqı ${c.res.union.toFixed(2)}. NET ${c.nett.toFixed(2)} AZN. Hər tutulmanın hansı düsturla və hansı pillə ilə alındığını izah et. Yenidən calculate_salary çağırma, sadəcə mövcud rəqəmləri izah et.`;
+        }
+        mayaToggle(true);
+        const chips = document.getElementById('mayaChips');
+        if (chips) chips.remove();
+        document.getElementById('mayaInput').value = ctx;
+        mayaSend();
+    }
+
+    /* ============================================================
+       PLATFORMA — AI ilə izah (modal)
+    ============================================================ */
+    const PLATFORM_FALLBACK = `<h3>BirCalc nədir?</h3>
+        BirCalc — Azərbaycan üzrə <b>əmək haqqı hesablama</b> platformasıdır. 2025 və 2026 vergi qaydaları ilə GROSS, NET və SUPERGROSS arasında çevrilmələr aparır.
+        <h3>Nələr etmək olar?</h3>
+        <ul>
+        <li><b>Fərdi hesablama:</b> GROSS→NET, NET→GROSS və GROSS→SUPERGROSS. Sektor (özəl, dövlət/neft-qaz, Texnopark), iş yeri, həmkar ittifaqı və VM m.102 güzəştləri nəzərə alınır.</li>
+        <li><b>Toplu (Excel):</b> Fayl yükləyərək yüzlərlə işçini birdəfəyə hesablamaq və nəticəni Excel-ə çıxarmaq.</li>
+        <li><b>Transfer & Promotion:</b> Rotasiya və vəzifə artımlarında yeni gross/yemək pulunun təyini.</li>
+        <li><b>Kütləvi artımlar:</b> Net artımlara görə yeni grossların hesablanması.</li>
+        <li><b>Texnopar:</b> Texnopark rezidentləri üçün güzəştli hesablama.</li>
+        <li><b>İşə qəbul rejimi (Recruitment):</b> Namizədlərə təklif üçün şkala uyğunluğu və yemək pulu məntiqi.</li>
+        </ul>
+        <h3>Maya (MyAI) AI Assistenti</h3>
+        Sərbəst dildə sual verə bilərsiniz — məsələn "2500 gross nə qədər net edir?". Maya lazım olduqda dəqiqləşdirici sual verir və nəticəni detalları ilə göstərir.
+        <h3>Şirkət profilləri</h3>
+        Birbank, Pashapay və Birmarket üçün fərqli baza dəyərləri dəstəklənir.`;
+
+    async function platformExplain() {
+        const overlay = document.getElementById('platOverlay');
+        const body = document.getElementById('platBody');
+        overlay.classList.add('open');
+        body.innerHTML = `<div class="maya-typing" style="border:none;background:none;padding:0;"><span></span><span></span><span></span></div>`;
+        try {
+            const resp = await fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    messages: [
+                        { role: 'system', content: 'Sən Maya-san, BirCalc əmək haqqı kalkulyatorunun AI assistenti. Yalnız Azərbaycan dilində cavab ver.' },
+                        { role: 'user', content: `BirCalc platformasını istifadəçiyə ətraflı izah et. Bu bölmələri əhatə et və hər başlığı <h3> teqi ilə ver: 1) BirCalc nədir və nəyə yarayır; 2) Hansı hesablamaları aparır (GROSS→NET, NET→GROSS, GROSS→SUPERGROSS); 3) Tablar — Fərdi, Toplu (Excel), Transfer & Promotion, Kütləvi artımlar, Texnopar; 4) Sektorlar (özəl/qeyri-neft, dövlət/neft-qaz, Texnopark), həmkar ittifaqı, VM m.102 vergi güzəştləri; 5) İşə qəbul (Recruitment) rejimi; 6) Maya AI assistenti nə edir; 7) Birbank/Pashapay/Birmarket profilləri. Aydın, səmimi dildə, <b> və <ul><li> istifadə et. Markdown deyil, HTML teqləri ilə yaz.` }
+                    ]
+                })
+            });
+            if (!resp.ok) throw new Error('api');
+            const data = await resp.json();
+            const txt = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
+            body.innerHTML = txt ? txt.replace(/```html|```/g, '').replace(/\*\*(.+?)\*\*/g, '<b>$1</b>') : PLATFORM_FALLBACK;
+        } catch (e) {
+            body.innerHTML = PLATFORM_FALLBACK;
+        }
     }
 
     /* ============================================================
@@ -2132,7 +2386,7 @@
    - İstifadəçi lazımi məlumatı artıq veribsə → HEÇ BİR SUAL VERMƏDƏN dərhal hesabla.
    - gross_to_supergross üçün həmkarlar sualı VERMƏ — bu, işəgötürən tərəfinin xərcidir, işçidən tutulma yoxdur.
 
-5. İstifadəçi qeyd edərsə parametrləri ötür: il (2025/2026), dövlət və ya neft-qaz sektoru → sector=state, əlavə iş yeri → workplace=secondary, vergi güzəşti (VM maddə 102) → benefit məbləği. Güzəşt məbləğləri: 800 (şəhid ailəsi), 400 (müharibə əlili, qəhrəman, veteran, Çernobıl), 200 (61-100% əlillik), 100 (məcburi köçkün), 50 (himayəsində 3+ nəfər, digərləri ilə cəmlənə bilər, məs. 400+50=450).
+5. İstifadəçi qeyd edərsə parametrləri ötür: il (2025/2026), dövlət və ya neft-qaz sektoru → sector=state, Texnopark rezidenti → sector=texnopark (5% gəlir vergisi, işəgötürən DSMF-siz supergross), əlavə iş yeri → workplace=secondary, vergi güzəşti (VM maddə 102) → benefit məbləği. Güzəşt məbləğləri: 800 (şəhid ailəsi), 400 (müharibə əlili, qəhrəman, veteran, Çernobıl), 200 (61-100% əlillik), 100 (məcburi köçkün), 50 (himayəsində 3+ nəfər, digərləri ilə cəmlənə bilər, məs. 400+50=450).
 6. Müqayisə istənilsə (məs. 2025 vs 2026) aləti hər variant üçün ayrıca çağır.
 7. Cavab formatı: qısa və dəqiq. Nəticəni belə təqdim et — GROSS, tutulmalar sətir-sətir (Gəlir vergisi, DSMF, İşsizlik sığortası, İTS, Həmkarlar haqqı), NET. Supergross üçün: GROSS, işəgötürən ödənişləri sətir-sətir, SUPERGROSS. Vacib rəqəmləri **qalın** yaz. AZN valyutasını göstər.
 8. Vergi qaydaları haqqında ümumi suallara qısa izah verə bilərsən. Mövzudan tam kənar suallarda nəzakətlə bildir ki, yalnız əmək haqqı hesablamaları üzrə köməklik edirsən.`;
@@ -2148,7 +2402,7 @@
                     direction: { type: "string", enum: ["gross_to_net", "net_to_gross", "gross_to_supergross"], description: "Hesablama istiqaməti" },
                     amount: { type: "number", description: "Məbləğ (AZN). gross_to_net/gross_to_supergross üçün GROSS, net_to_gross üçün NET" },
                     year: { type: "string", enum: ["2025", "2026"], description: "Hesablama ili. Defolt: 2026" },
-                    sector: { type: "string", enum: ["private", "state"], description: "private = özəl/qeyri-neft, state = dövlət/neft-qaz. Defolt: private" },
+                    sector: { type: "string", enum: ["private", "state", "texnopark"], description: "private = özəl/qeyri-neft, state = dövlət/neft-qaz, texnopark = Texnopark rezidenti (işəgötürən DSMF-siz, 5% gəlir vergisi). Defolt: private" },
                     workplace: { type: "string", enum: ["main", "secondary"], description: "main = əsas iş yeri, secondary = əlavə iş yeri. Defolt: main" },
                     union_percent: { type: "number", description: "Həmkarlar ittifaqı üzvlük haqqı faizi (0-30). Üzvlük yoxdursa 0" },
                     benefit: { type: "number", description: "Aylıq vergi güzəşti (VM m.102), AZN: 0, 800, 400, 200, 100, 50 və ya cəmi (məs. 450). Defolt: 0" }
@@ -2162,7 +2416,7 @@
         const r2 = v => Math.round((v + Number.EPSILON) * 100) / 100;
         const amount = Number(a.amount);
         const year = (String(a.year) === '2025') ? '2025' : '2026';
-        const sector = (a.sector === 'state') ? 'state' : 'private';
+        const sector = (a.sector === 'state' || a.sector === 'texnopark') ? a.sector : 'private';
         const workplace = (a.workplace === 'secondary' || a.workplace === 'additional') ? 'secondary' : 'main';
         const unionPct = Math.min(30, Math.max(0, Number(a.union_percent) || 0));
         const benefit = Math.max(0, Number(a.benefit) || 0);
