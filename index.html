@@ -407,8 +407,28 @@
             box-shadow: 0 10px 30px rgba(255, 45, 85, 0.35); transition: 0.25s ease;
         }
         .maya-fab:hover { transform: translateY(-3px); box-shadow: 0 14px 34px rgba(255, 45, 85, 0.45); }
-        .maya-fab i { font-size: 1rem; }
+        .maya-fab i { font-size: 1rem; animation: mayaIconWiggle 2.4s ease-in-out infinite; transform-origin: center; }
         .maya-fab.hidden { display: none; }
+        /* Diqqət çəkən pulse halqası */
+        .maya-fab::after {
+            content: ''; position: absolute; inset: 0; border-radius: 50px; z-index: -1;
+            box-shadow: 0 0 0 0 rgba(255, 45, 85, 0.5); animation: mayaRing 2.2s ease-out infinite;
+        }
+        @keyframes mayaRing {
+            0% { box-shadow: 0 0 0 0 rgba(255, 45, 85, 0.5); }
+            70% { box-shadow: 0 0 0 16px rgba(255, 45, 85, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 45, 85, 0); }
+        }
+        @keyframes mayaIconWiggle {
+            0%, 55%, 100% { transform: rotate(0) scale(1); }
+            62% { transform: rotate(-16deg) scale(1.18); }
+            72% { transform: rotate(14deg) scale(1.18); }
+            82% { transform: rotate(-8deg) scale(1.1); }
+            92% { transform: rotate(4deg) scale(1.05); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .maya-fab::after, .maya-fab i { animation: none; }
+        }
 
         .maya-panel {
             position: fixed; bottom: 24px; right: 24px; z-index: 950;
@@ -480,10 +500,15 @@
         .izahat-note { margin-top: 15px; padding-top: 12px; border-top: 1px solid #f1f3f5; font-size: 0.66rem; font-weight: 600; color: #94a3b8; line-height: 1.7; position: relative; z-index: 1; }
         .izahat-note b { color: #64748b; }
 
-        /* AI explain button (below details) */
+        /* AI explain + Print buttons row (never overlap) */
+        .details-actions { display: flex; gap: 10px; margin-top: 14px; align-items: stretch; }
+        .details-actions .btn-print {
+            width: auto; flex: 0 0 auto; padding: 11px 18px; font-size: 0.75rem;
+            display: flex; align-items: center; justify-content: center; gap: 7px; margin: 0;
+        }
         .btn-ai-explain {
-            width: 100%; padding: 11px; margin-bottom: 8px; border: none; cursor: pointer;
-            border-radius: 10px; font-family: 'Montserrat'; font-weight: 800; font-size: 0.72rem; letter-spacing: 0.3px;
+            flex: 1 1 auto; padding: 11px; border: none; cursor: pointer;
+            border-radius: 12px; font-family: 'Montserrat'; font-weight: 800; font-size: 0.75rem; letter-spacing: 0.3px;
             background: #1e293b; color: white; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;
         }
         .btn-ai-explain:hover { background: #0f172a; }
@@ -699,8 +724,10 @@
                 <div class="card" style="margin-bottom:0; padding: 20px;">
                     <label style="font-size:0.6rem; font-weight:800; color:#aaa; margin-bottom:10px; display:block;">HESABLANMIŞ DETALLAR</label>
                     <table class="details-table" id="reportTable"></table>
-                    <button class="btn-ai-explain" onclick="mayaExplainCalc()"><i class="fa-solid fa-wand-magic-sparkles"></i> AI izah et</button>
-                    <button class="btn-action" onclick="window.print()">ÇAP ET</button>
+                    <div class="details-actions">
+                        <button class="btn-action btn-print" onclick="window.print()"><i class="fa-solid fa-print"></i> ÇAP ET</button>
+                        <button class="btn-ai-explain" onclick="mayaExplainCalc()"><i class="fa-solid fa-wand-magic-sparkles"></i> AI izah et</button>
+                    </div>
                 </div>
             </div>
 
