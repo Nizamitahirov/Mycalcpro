@@ -31,7 +31,7 @@ export default async function handler(req, res) {
                 tools: Array.isArray(tools) ? tools : undefined,
                 tool_choice: 'auto',
                 temperature: 0.2,
-                max_tokens: 1024,
+                max_tokens: 700,
             }),
         });
 

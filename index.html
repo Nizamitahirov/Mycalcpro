@@ -2446,47 +2446,37 @@
     /* ============================================================
        MAYA (MyAI) — AI ASSISTANT
     ============================================================ */
-    const MAYA_SYSTEM = `Sən Maya-san (MyAI) — BirCalc əmək haqqı kalkulyatorunun AI assistenti. Azərbaycan üzrə 2025 və 2026 il qaydaları ilə əmək haqqı hesablamalarında kömək edirsən. Yalnız Azərbaycan dilində cavab ver.
+    const MAYA_SYSTEM = `Sən Maya-san — BirCalc əmək haqqı kalkulyatorunun AI assistenti (Azərbaycan, 2025/2026). Yalnız Azərbaycan dilində cavab ver.
 
-ƏSAS QAYDALAR:
-1. BÜTÜN rəqəmsal hesablamalar üçün MÜTLƏQ uyğun aləti çağır. Heç vaxt özün riyazi hesablama aparma — bütün rəqəmləri yalnız alətin nəticəsindən götür. Platformadakı hər hesablama metodu üçün ayrıca alət var:
-   • calculate_salary — sadə GROSS→NET, NET→GROSS, GROSS→SUPERGROSS (Fərdi tab).
-   • calculate_recruitment — İŞƏ QƏBUL (Recruitment) rejimi: namizədə təklif olunan CƏMI net verilir → baza, yemək pulu (max 100 AZN) və baza gross hesablanır. "İşə qəbul", "namizəd", "təklif", "yemək pulu ilə net", "HİK X, N net üçün gross və yemək pulu nə qədər" kimi suallarda BUNU çağır.
-   • calculate_transfer — TRANSFER & PROMOTION: cari gross + cari yemək pulu var, təklif olunan yeni net (mode=net) və ya yeni gross (mode=gross) əsasında yeni gross/yemək pulu.
-   • calculate_mass_growth — KÜTLƏVİ ARTIMLAR: cari gross + yemək pulu + net artım → yeni gross/yemək pulu.
-   • calculate_texnopar_transfer — TEXNOPAR: Texnopar net artımına görə yeni gross/yemək pulu (5% vergi).
-   İstifadəçinin sualına ən uyğun aləti seç. Şübhə varsa dəqiqləşdirici sual ver.
-2. calculate_salary istiqamətləri: gross_to_net (GROSS→NET), net_to_gross (NET→GROSS), gross_to_supergross (GROSS→SUPERGROSS — işəgötürənin cəmi xərci: gross + işəgötürənin DSMF, işsizlik və İTS ödənişləri).
-3. Defolt fərziyyələr (istifadəçi başqa cür deməyibsə): il 2026, sektor özəl/qeyri-neft (private), əsas iş yeri (main), vergi güzəşti yoxdur (benefit=0). İstifadə etdiyin fərziyyələri cavabın sonunda bir sətirdə qeyd et.
+QAYDALAR:
+1. Rəqəmsal hesablama üçün MÜTLƏQ uyğun aləti çağır, özün riyaziyyat etmə:
+• calculate_salary — GROSS→NET, NET→GROSS, GROSS→SUPERGROSS.
+• calculate_recruitment — işə qəbul: təklif olunan CƏMİ net → baza net + yemək pulu (max 100) + baza gross. "namizəd/təklif/HİK X, N net üçün gross və yemək pulu" tipli suallarda.
+• calculate_transfer — Transfer & Promotion (cari gross+yemək; təklif net və ya gross).
+• calculate_mass_growth — kütləvi net artım.
+• calculate_texnopar_transfer — Texnopar net artım.
+2. Defolt: il 2026, sektor private, əsas iş yeri, güzəşt 0. Fərziyyələri qısaca qeyd et.
+3. Həmkar (yalnız net↔gross): istifadəçi deməyibsə soruş (var/yox, faiz); "yoxdur" desə 0 ilə hesabla; verilibsə soruşma. Supergross üçün soruşma.
+4. Parametrlər: dövlət/neft→state, Texnopark→texnopark, əlavə iş→secondary. Güzəşt AZN: 800/400/200/100/50 (cəmlənə bilər, məs. 450).
+5. CAVAB: alətin qaytardığı 'answer_text' sətirlərini OLDUĞU KİMI göstər (vacib rəqəmləri **qalın** et, qısa giriş cümləsi olar). Özün heç bir hesablama etmə, olmayan rəqəm yazma. Recruitment-də: cəmi net = baza net + yemək; gross yalnız baza netdən; namizədin əlinə keçən cəmi net = təklif. Şirkət deyilməyibsə Birbank.
+6. Müqayisədə aləti hər variant üçün ayrıca çağır. Mövzudan kənar suallarda nəzakətlə yalnız əmək haqqı üzrə kömək etdiyini bildir.`;
 
-4. HƏMKARLAR İTTİFAQI QAYDASI (yalnız gross_to_net və net_to_gross üçün):
-   - İstifadəçi həmkarlar ittifaqı barədə HEÇ NƏ deməyibsə → hesablamadan ƏVVƏL soruş: "Həmkarlar ittifaqına üzvlük var, yoxsa yox?"
-   - "Var" deyibsə, amma faiz deməyibsə → faizi soruş (adətən 1% və ya 2%, maksimum 30%).
-   - "Yoxdur", "həmkarlarsız", "həmkarlar olmadan" deyibsə → union_percent=0 ilə DƏRHAL hesabla, sual vermə.
-   - İstifadəçi lazımi məlumatı artıq veribsə → HEÇ BİR SUAL VERMƏDƏN dərhal hesabla.
-   - gross_to_supergross üçün həmkarlar sualı VERMƏ — bu, işəgötürən tərəfinin xərcidir, işçidən tutulma yoxdur.
-
-5. İstifadəçi qeyd edərsə parametrləri ötür: il (2025/2026), dövlət və ya neft-qaz sektoru → sector=state, Texnopark rezidenti → sector=texnopark (5% gəlir vergisi, işəgötürən DSMF-siz supergross), əlavə iş yeri → workplace=secondary, vergi güzəşti (VM maddə 102) → benefit məbləği. Güzəşt məbləğləri: 800 (şəhid ailəsi), 400 (müharibə əlili, qəhrəman, veteran, Çernobıl), 200 (61-100% əlillik), 100 (məcburi köçkün), 50 (himayəsində 3+ nəfər, digərləri ilə cəmlənə bilər, məs. 400+50=450).
-6. Müqayisə istənilsə (məs. 2025 vs 2026) aləti hər variant üçün ayrıca çağır.
-7. ÇOX VACİB — CAVAB VERMƏ QAYDASI: Hər alət nəticəsində 'answer_text' sahəsi var. Nəticəni istifadəçiyə təqdim edərkən rəqəmləri MƏHZ bu 'answer_text' sahəsindən, DƏYİŞDİRMƏDƏN götür. 'answer_text'-in sətirlərini olduğu kimi göstər (istəsən vacib rəqəmləri **qalın** edə, əvvəlinə qısa bir cümlə əlavə edə bilərsən). ÖZ-ÖZÜNƏ heç bir toplama, çıxma, vurma və ya hesablama APARMA. 'answer_text'-də (və digər sahələrdə) OLMAYAN heç bir rəqəm YAZMA — xüsusən yeni "NET" və ya başqa məbləğ uydurma. Bir neçə hesablama varsa (müqayisə), hər birinin 'answer_text'-ini ayrıca göstər.
-   Recruitment sualında istifadəçi şirkət deməyibsə Birbank götür və bunu qeyd et; həmkar faizini (HİK) desə tətbiq et. Recruitment-də əsas məqam: təklif olunan CƏMİ net = baza net + yemək pulu; gross yalnız BAZA net-dən hesablanır. Namizədin əlinə keçən cəmi məbləğ təklif olunan netdir.
-8. Vergi qaydaları haqqında ümumi suallara qısa izah verə bilərsən. Mövzudan tam kənar suallarda nəzakətlə bildir ki, yalnız əmək haqqı hesablamaları üzrə köməklik edirsən.`;
-
+    const N = { type: ["number", "string"] };
+    const B = { type: ["boolean", "string"] };
+    const E_YEAR = { type: "string", enum: ["2025", "2026"] };
+    const E_SECTOR = { type: "string", enum: ["private", "state", "texnopark"] };
+    const E_WP = { type: "string", enum: ["main", "secondary"] };
     const MAYA_TOOLS = [{
         type: "function",
         function: {
             name: "calculate_salary",
-            description: "Azərbaycan üzrə əmək haqqı hesablayır (BirCalc düsturları ilə). GROSS→NET, NET→GROSS və GROSS→SUPERGROSS istiqamətlərini dəstəkləyir.",
+            description: "Əmək haqqı: GROSS→NET, NET→GROSS, GROSS→SUPERGROSS.",
             parameters: {
                 type: "object",
                 properties: {
-                    direction: { type: "string", enum: ["gross_to_net", "net_to_gross", "gross_to_supergross"], description: "Hesablama istiqaməti" },
-                    amount: { type: ["number", "string"], description: "Məbləğ (AZN). gross_to_net/gross_to_supergross üçün GROSS, net_to_gross üçün NET" },
-                    year: { type: "string", enum: ["2025", "2026"], description: "Hesablama ili. Defolt: 2026" },
-                    sector: { type: "string", enum: ["private", "state", "texnopark"], description: "private = özəl/qeyri-neft, state = dövlət/neft-qaz, texnopark = Texnopark rezidenti (işəgötürən DSMF-siz, 5% gəlir vergisi). Defolt: private" },
-                    workplace: { type: "string", enum: ["main", "secondary"], description: "main = əsas iş yeri, secondary = əlavə iş yeri. Defolt: main" },
-                    union_percent: { type: ["number", "string"], description: "Həmkarlar ittifaqı üzvlük haqqı faizi (0-30). Üzvlük yoxdursa 0" },
-                    benefit: { type: ["number", "string"], description: "Aylıq vergi güzəşti (VM m.102), AZN: 0, 800, 400, 200, 100, 50 və ya cəmi (məs. 450). Defolt: 0" }
+                    direction: { type: "string", enum: ["gross_to_net", "net_to_gross", "gross_to_supergross"] },
+                    amount: N, year: E_YEAR, sector: E_SECTOR, workplace: E_WP,
+                    union_percent: N, benefit: N
                 },
                 required: ["direction", "amount"]
             }
@@ -2495,17 +2485,13 @@
         type: "function",
         function: {
             name: "calculate_recruitment",
-            description: "İŞƏ QƏBUL (Recruitment) rejimi — NET→GROSS. Namizədə təklif olunan CƏMI net məbləğ verilir; alət bazanı, yemək pulunu (max 100 AZN) və baza grossu hesablayır. Recruitment tabındakı 'NETT → GROSS' məntiqi ilə eynidir.",
+            description: "İşə qəbul NET→GROSS: təklif olunan CƏMİ net → baza net + yemək pulu (max 100) + baza gross.",
             parameters: {
                 type: "object",
                 properties: {
-                    total_net: { type: ["number", "string"], description: "Namizədə təklif olunan CƏMI net (baza net + yemək pulu), AZN" },
-                    company: { type: "string", enum: ["Birbank", "Pashapay", "Birmarket"], description: "Şirkət profili (baza dəyərini təyin edir). Defolt: Birbank" },
-                    union_percent: { type: ["number", "string"], description: "Həmkarlar ittifaqı (HİK) üzvlük faizi (0-30). Defolt: Birbank üçün 1, digərləri 0" },
-                    workplace: { type: "string", enum: ["main", "secondary"], description: "main = əsas iş yeri, secondary = əlavə iş yeri. Defolt: main" },
-                    year: { type: "string", enum: ["2025", "2026"], description: "Defolt: 2026" },
-                    sector: { type: "string", enum: ["private", "state", "texnopark"], description: "Defolt: private" },
-                    benefit: { type: ["number", "string"], description: "Vergi güzəşti (VM m.102), AZN. Defolt: 0" }
+                    total_net: N,
+                    company: { type: "string", enum: ["Birbank", "Pashapay", "Birmarket"] },
+                    union_percent: N, workplace: E_WP, year: E_YEAR, sector: E_SECTOR, benefit: N
                 },
                 required: ["total_net"]
             }
@@ -2514,19 +2500,13 @@
         type: "function",
         function: {
             name: "calculate_transfer",
-            description: "TRANSFER & PROMOTION — rotasiya/vəzifə artımı. Cari gross və cari yemək pulu verilir; təklif olunan yeni CƏMI net (mode=net) VƏ YA yeni gross (mode=gross) əsasında yeni gross və yeni yemək pulu hesablanır. Transfer & Promotion tabındakı məntiqlə eynidir.",
+            description: "Transfer & Promotion: cari gross+yemək; təklif net (mode=net) və ya gross (mode=gross) → yeni gross/yemək.",
             parameters: {
                 type: "object",
                 properties: {
-                    current_gross: { type: ["number", "string"], description: "Cari gross, AZN" },
-                    current_meal: { type: ["number", "string"], description: "Cari yemək pulu, AZN (0-100). Defolt: 0" },
-                    mode: { type: "string", enum: ["net", "gross"], description: "net = təklif olunan cəmi net verilir; gross = təklif olunan gross verilir" },
-                    proposed_value: { type: ["number", "string"], description: "mode=net üçün təklif olunan CƏMI net; mode=gross üçün təklif olunan gross" },
-                    year: { type: "string", enum: ["2025", "2026"], description: "Defolt: 2026" },
-                    sector: { type: "string", enum: ["private", "state", "texnopark"], description: "Defolt: private" },
-                    workplace: { type: "string", enum: ["main", "secondary"], description: "Defolt: main" },
-                    union_percent: { type: ["number", "string"], description: "Həmkarlar faizi (0-30). Defolt: 0" },
-                    benefit: { type: ["number", "string"], description: "Vergi güzəşti (VM m.102). Defolt: 0" }
+                    current_gross: N, current_meal: N,
+                    mode: { type: "string", enum: ["net", "gross"] },
+                    proposed_value: N, year: E_YEAR, sector: E_SECTOR, workplace: E_WP, union_percent: N, benefit: N
                 },
                 required: ["current_gross", "mode", "proposed_value"]
             }
@@ -2535,19 +2515,12 @@
         type: "function",
         function: {
             name: "calculate_mass_growth",
-            description: "KÜTLƏVİ ARTIMLAR — net artıma görə yeni gross/yemək pulu. Cari gross, cari yemək pulu və net artım məbləği verilir; yemək pulu əvvəl 100-ə qədər doldurulur, artan hissə grossa keçir (baş ofis üçün min. artım 50, filial üçün 20 AZN). Kütləvi artımlar tabındakı məntiqlə eynidir.",
+            description: "Kütləvi artım: cari gross+yemək+net artım → yeni gross/yemək (yemək əvvəl 100-ə, artıq grossa; min artım baş ofis 50/filial 20).",
             parameters: {
                 type: "object",
                 properties: {
-                    current_gross: { type: ["number", "string"], description: "Cari gross, AZN" },
-                    current_meal: { type: ["number", "string"], description: "Cari yemək pulu, AZN. Defolt: 0" },
-                    net_increase: { type: ["number", "string"], description: "Net artım məbləği, AZN" },
-                    is_head_office: { type: ["boolean", "string"], description: "true = baş ofis (min. gross artımı 50), false = filial (20). Defolt: false" },
-                    year: { type: "string", enum: ["2025", "2026"], description: "Defolt: 2026" },
-                    sector: { type: "string", enum: ["private", "state", "texnopark"], description: "Defolt: private" },
-                    workplace: { type: "string", enum: ["main", "secondary"], description: "Defolt: main" },
-                    union_percent: { type: ["number", "string"], description: "Həmkarlar faizi (0-30). Defolt: 0" },
-                    benefit: { type: ["number", "string"], description: "Vergi güzəşti. Defolt: 0" }
+                    current_gross: N, current_meal: N, net_increase: N,
+                    is_head_office: B, year: E_YEAR, sector: E_SECTOR, workplace: E_WP, union_percent: N, benefit: N
                 },
                 required: ["current_gross", "net_increase"]
             }
@@ -2556,16 +2529,14 @@
         type: "function",
         function: {
             name: "calculate_texnopar_transfer",
-            description: "TEXNOPAR — net artıma görə yeni gross/yemək pulu (Texnopar güzəştli vergi rejimi ilə: 5% gəlir vergisi). Cari gross, cari yemək pulu, net artım verilir. Texnopar tabındakı məntiqlə eynidir.",
+            description: "Texnopar net artım (5% vergi): cari gross+yemək+net artım → yeni gross/yemək.",
             parameters: {
                 type: "object",
                 properties: {
-                    current_gross: { type: ["number", "string"], description: "Cari gross, AZN" },
-                    current_meal: { type: ["number", "string"], description: "Cari yemək pulu, AZN. Defolt: 0" },
-                    net_increase: { type: ["number", "string"], description: "Net artım məbləği, AZN" },
-                    is_head_office: { type: ["boolean", "string"], description: "true = baş ofis (min. gross artımı 50), false = filial (20). Defolt: false" },
-                    worker_type: { type: "string", enum: ["local", "expat"], description: "local = yerli işçi (DSMF var), expat = əcnəbi (DSMF yoxdur). Defolt: local" },
-                    union_percent: { type: ["number", "string"], description: "Həmkarlar faizi (0-30). Defolt: 0" }
+                    current_gross: N, current_meal: N, net_increase: N,
+                    is_head_office: B,
+                    worker_type: { type: "string", enum: ["local", "expat"] },
+                    union_percent: N
                 },
                 required: ["current_gross", "net_increase"]
             }
@@ -2834,6 +2805,23 @@ Status: ${r.status}`;
     let mayaMessages = [];
     let mayaBusy = false;
     let mayaAuthed = false;
+
+    // Token istifadəsini azaltmaq üçün yalnız son mesajları göndər (orphan 'tool' ilə başlama)
+    function mayaHistory() {
+        let h = mayaMessages.slice(-8);
+        while (h.length && h[0].role === 'tool') h = h.slice(1);
+        // köhnə tool nəticələrindən böyük answer_text-i çıxar (kontekst kifayətdir)
+        h = h.map((m, i) => {
+            if (m.role === 'tool' && i < h.length - 1) {
+                try {
+                    const o = JSON.parse(m.content);
+                    if (o && o.answer_text) { const c = { ...o }; delete c.answer_text; return { ...m, content: JSON.stringify(c) }; }
+                } catch (e) {}
+            }
+            return m;
+        });
+        return [{ role: 'system', content: MAYA_SYSTEM }, ...h];
+    }
     let mayaPendingExplain = null;
     const MAYA_PASSWORD = '2026';
 
@@ -2947,7 +2935,7 @@ Status: ${r.status}`;
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        messages: [{ role: 'system', content: MAYA_SYSTEM }, ...mayaMessages],
+                        messages: mayaHistory(),
                         tools: MAYA_TOOLS
                     })
                 });
@@ -2982,7 +2970,17 @@ Status: ${r.status}`;
             throw new Error('Hesablama dövrü limitə çatdı.');
         } catch (e) {
             mayaShowTyping(false);
-            mayaAddBubble('err', 'Bağışlayın, xəta baş verdi: ' + mayaEscape(e.message) + '<br>Zəhmət olmasa yenidən cəhd edin. Problem davam edərsə, Vercel-də <b>GROQ_API_KEY</b> mühit dəyişəninin təyin olunduğunu yoxlayın.');
+            const emsg = e.message || '';
+            let out;
+            if (/rate limit|too many|\b429\b|tokens per minute|TPM|requests per/i.test(emsg)) {
+                const m = emsg.match(/try again in ([\d.]+)\s*s/i);
+                const wait = m ? Math.ceil(parseFloat(m[1])) : null;
+                out = '⏳ AI xidmətinin dəqiqəlik sorğu limitinə çatıldı. ' +
+                    (wait ? ('Zəhmət olmasa <b>' + wait + ' saniyə</b> gözləyib yenidən yazın.') : 'Bir az sonra yenidən cəhd edin.');
+            } else {
+                out = 'Bağışlayın, xəta baş verdi: ' + mayaEscape(emsg) + '<br>Zəhmət olmasa yenidən cəhd edin. Problem davam edərsə, Vercel-də <b>GROQ_API_KEY</b> təyin olunduğunu yoxlayın.';
+            }
+            mayaAddBubble('err', out);
             mayaBusy = false;
             document.getElementById('mayaSendBtn').disabled = false;
         }
