@@ -2463,7 +2463,7 @@ QAYDALAR:
 
     const N = { type: ["number", "string"] };
     const B = { type: ["boolean", "string"] };
-    const E_YEAR = { type: "string", enum: ["2025", "2026"] };
+    const E_YEAR = { type: ["string", "number"], description: "2025 və ya 2026 (defolt 2026)" };
     const E_SECTOR = { type: "string", enum: ["private", "state", "texnopark"] };
     const E_WP = { type: "string", enum: ["main", "secondary"] };
     const MAYA_TOOLS = [{
