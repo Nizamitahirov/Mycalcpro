@@ -2481,12 +2481,12 @@
                 type: "object",
                 properties: {
                     direction: { type: "string", enum: ["gross_to_net", "net_to_gross", "gross_to_supergross"], description: "Hesablama istiqaməti" },
-                    amount: { type: "number", description: "Məbləğ (AZN). gross_to_net/gross_to_supergross üçün GROSS, net_to_gross üçün NET" },
+                    amount: { type: ["number", "string"], description: "Məbləğ (AZN). gross_to_net/gross_to_supergross üçün GROSS, net_to_gross üçün NET" },
                     year: { type: "string", enum: ["2025", "2026"], description: "Hesablama ili. Defolt: 2026" },
                     sector: { type: "string", enum: ["private", "state", "texnopark"], description: "private = özəl/qeyri-neft, state = dövlət/neft-qaz, texnopark = Texnopark rezidenti (işəgötürən DSMF-siz, 5% gəlir vergisi). Defolt: private" },
                     workplace: { type: "string", enum: ["main", "secondary"], description: "main = əsas iş yeri, secondary = əlavə iş yeri. Defolt: main" },
-                    union_percent: { type: "number", description: "Həmkarlar ittifaqı üzvlük haqqı faizi (0-30). Üzvlük yoxdursa 0" },
-                    benefit: { type: "number", description: "Aylıq vergi güzəşti (VM m.102), AZN: 0, 800, 400, 200, 100, 50 və ya cəmi (məs. 450). Defolt: 0" }
+                    union_percent: { type: ["number", "string"], description: "Həmkarlar ittifaqı üzvlük haqqı faizi (0-30). Üzvlük yoxdursa 0" },
+                    benefit: { type: ["number", "string"], description: "Aylıq vergi güzəşti (VM m.102), AZN: 0, 800, 400, 200, 100, 50 və ya cəmi (məs. 450). Defolt: 0" }
                 },
                 required: ["direction", "amount"]
             }
@@ -2499,13 +2499,13 @@
             parameters: {
                 type: "object",
                 properties: {
-                    total_net: { type: "number", description: "Namizədə təklif olunan CƏMI net (baza net + yemək pulu), AZN" },
+                    total_net: { type: ["number", "string"], description: "Namizədə təklif olunan CƏMI net (baza net + yemək pulu), AZN" },
                     company: { type: "string", enum: ["Birbank", "Pashapay", "Birmarket"], description: "Şirkət profili (baza dəyərini təyin edir). Defolt: Birbank" },
-                    union_percent: { type: "number", description: "Həmkarlar ittifaqı (HİK) üzvlük faizi (0-30). Defolt: Birbank üçün 1, digərləri 0" },
+                    union_percent: { type: ["number", "string"], description: "Həmkarlar ittifaqı (HİK) üzvlük faizi (0-30). Defolt: Birbank üçün 1, digərləri 0" },
                     workplace: { type: "string", enum: ["main", "secondary"], description: "main = əsas iş yeri, secondary = əlavə iş yeri. Defolt: main" },
                     year: { type: "string", enum: ["2025", "2026"], description: "Defolt: 2026" },
                     sector: { type: "string", enum: ["private", "state", "texnopark"], description: "Defolt: private" },
-                    benefit: { type: "number", description: "Vergi güzəşti (VM m.102), AZN. Defolt: 0" }
+                    benefit: { type: ["number", "string"], description: "Vergi güzəşti (VM m.102), AZN. Defolt: 0" }
                 },
                 required: ["total_net"]
             }
@@ -2518,15 +2518,15 @@
             parameters: {
                 type: "object",
                 properties: {
-                    current_gross: { type: "number", description: "Cari gross, AZN" },
-                    current_meal: { type: "number", description: "Cari yemək pulu, AZN (0-100). Defolt: 0" },
+                    current_gross: { type: ["number", "string"], description: "Cari gross, AZN" },
+                    current_meal: { type: ["number", "string"], description: "Cari yemək pulu, AZN (0-100). Defolt: 0" },
                     mode: { type: "string", enum: ["net", "gross"], description: "net = təklif olunan cəmi net verilir; gross = təklif olunan gross verilir" },
-                    proposed_value: { type: "number", description: "mode=net üçün təklif olunan CƏMI net; mode=gross üçün təklif olunan gross" },
+                    proposed_value: { type: ["number", "string"], description: "mode=net üçün təklif olunan CƏMI net; mode=gross üçün təklif olunan gross" },
                     year: { type: "string", enum: ["2025", "2026"], description: "Defolt: 2026" },
                     sector: { type: "string", enum: ["private", "state", "texnopark"], description: "Defolt: private" },
                     workplace: { type: "string", enum: ["main", "secondary"], description: "Defolt: main" },
-                    union_percent: { type: "number", description: "Həmkarlar faizi (0-30). Defolt: 0" },
-                    benefit: { type: "number", description: "Vergi güzəşti (VM m.102). Defolt: 0" }
+                    union_percent: { type: ["number", "string"], description: "Həmkarlar faizi (0-30). Defolt: 0" },
+                    benefit: { type: ["number", "string"], description: "Vergi güzəşti (VM m.102). Defolt: 0" }
                 },
                 required: ["current_gross", "mode", "proposed_value"]
             }
@@ -2539,15 +2539,15 @@
             parameters: {
                 type: "object",
                 properties: {
-                    current_gross: { type: "number", description: "Cari gross, AZN" },
-                    current_meal: { type: "number", description: "Cari yemək pulu, AZN. Defolt: 0" },
-                    net_increase: { type: "number", description: "Net artım məbləği, AZN" },
-                    is_head_office: { type: "boolean", description: "true = baş ofis (min. gross artımı 50), false = filial (20). Defolt: false" },
+                    current_gross: { type: ["number", "string"], description: "Cari gross, AZN" },
+                    current_meal: { type: ["number", "string"], description: "Cari yemək pulu, AZN. Defolt: 0" },
+                    net_increase: { type: ["number", "string"], description: "Net artım məbləği, AZN" },
+                    is_head_office: { type: ["boolean", "string"], description: "true = baş ofis (min. gross artımı 50), false = filial (20). Defolt: false" },
                     year: { type: "string", enum: ["2025", "2026"], description: "Defolt: 2026" },
                     sector: { type: "string", enum: ["private", "state", "texnopark"], description: "Defolt: private" },
                     workplace: { type: "string", enum: ["main", "secondary"], description: "Defolt: main" },
-                    union_percent: { type: "number", description: "Həmkarlar faizi (0-30). Defolt: 0" },
-                    benefit: { type: "number", description: "Vergi güzəşti. Defolt: 0" }
+                    union_percent: { type: ["number", "string"], description: "Həmkarlar faizi (0-30). Defolt: 0" },
+                    benefit: { type: ["number", "string"], description: "Vergi güzəşti. Defolt: 0" }
                 },
                 required: ["current_gross", "net_increase"]
             }
@@ -2560,12 +2560,12 @@
             parameters: {
                 type: "object",
                 properties: {
-                    current_gross: { type: "number", description: "Cari gross, AZN" },
-                    current_meal: { type: "number", description: "Cari yemək pulu, AZN. Defolt: 0" },
-                    net_increase: { type: "number", description: "Net artım məbləği, AZN" },
-                    is_head_office: { type: "boolean", description: "true = baş ofis (min. gross artımı 50), false = filial (20). Defolt: false" },
+                    current_gross: { type: ["number", "string"], description: "Cari gross, AZN" },
+                    current_meal: { type: ["number", "string"], description: "Cari yemək pulu, AZN. Defolt: 0" },
+                    net_increase: { type: ["number", "string"], description: "Net artım məbləği, AZN" },
+                    is_head_office: { type: ["boolean", "string"], description: "true = baş ofis (min. gross artımı 50), false = filial (20). Defolt: false" },
                     worker_type: { type: "string", enum: ["local", "expat"], description: "local = yerli işçi (DSMF var), expat = əcnəbi (DSMF yoxdur). Defolt: local" },
-                    union_percent: { type: "number", description: "Həmkarlar faizi (0-30). Defolt: 0" }
+                    union_percent: { type: ["number", "string"], description: "Həmkarlar faizi (0-30). Defolt: 0" }
                 },
                 required: ["current_gross", "net_increase"]
             }
