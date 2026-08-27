@@ -514,6 +514,58 @@
         .maya-auth-ok { background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%); color: white; }
         .maya-auth-ok:hover { opacity: 0.92; }
 
+        /* ===== Transfer by Firuza ===== */
+        .fz-intro { margin-bottom: 16px; position: relative; z-index: 1; }
+        .fz-intro h3 { margin: 0 0 6px; font-size: 1rem; font-weight: 800; color: #1e293b; display: flex; align-items: center; gap: 8px; }
+        .fz-intro h3 i { color: var(--bir-red); }
+        .fz-intro p { margin: 0; font-size: 0.75rem; font-weight: 600; color: var(--text-muted); line-height: 1.55; }
+        .fz-sub { display: inline-flex; gap: 4px; background: #f1f3f5; padding: 4px; border-radius: 12px; margin-bottom: 18px; position: relative; z-index: 1; }
+        .fz-sub button { padding: 8px 16px; font-size: 0.72rem; font-weight: 800; border-radius: 10px; border: none; background: none; cursor: pointer; color: #777; font-family: 'Montserrat'; transition: 0.25s; white-space: nowrap; }
+        .fz-sub button.active { background: var(--bir-gradient); color: white; box-shadow: 0 4px 10px rgba(255,45,85,0.2); }
+        .fz-form { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 14px; position: relative; z-index: 1; }
+        .fz-field label { font-size: 0.6rem; font-weight: 800; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 5px; }
+        .fz-field input { width: 100%; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-family: 'Montserrat'; font-weight: 700; font-size: 0.85rem; color: #333; background: #fafbfc; outline: none; transition: 0.2s; }
+        .fz-field input:focus { border-color: var(--bir-red); background: #fffafa; }
+        .fz-helper { font-size: 0.58rem; color: #94a3b8; margin-top: 5px; font-weight: 600; line-height: 1.35; }
+        .fz-err { display: none; color: #c53030; font-size: 0.72rem; font-weight: 700; margin-bottom: 12px; padding: 10px 14px; background: #fff5f5; border: 1px solid #fed7d7; border-radius: 10px; }
+        .fz-actions { display: flex; gap: 10px; position: relative; z-index: 1; }
+        .fz-btn { padding: 11px 24px; border: none; border-radius: 10px; font-family: 'Montserrat'; font-weight: 800; font-size: 0.75rem; cursor: pointer; transition: 0.2s; }
+        .fz-btn.primary { background: var(--bir-gradient); color: white; }
+        .fz-btn.primary:hover { opacity: 0.92; }
+        .fz-btn.ghost { background: #f1f3f5; color: #64748b; }
+        .fz-btn.ghost:hover { background: #e2e8f0; }
+        .fz-results { display: none; margin-top: 22px; position: relative; z-index: 1; }
+        .fz-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .fz-rcard { border: 1px solid var(--border); border-radius: 16px; padding: 18px; background: var(--bg-card); box-shadow: 0 4px 16px rgba(0,0,0,0.03); }
+        .fz-rcard.rec { border-color: #9ae6b4; }
+        .fz-rtag { float: right; font-size: 0.58rem; font-weight: 800; padding: 3px 10px; border-radius: 20px; }
+        .fz-rcard.rec .fz-rtag { background: #f0fff4; color: #38a169; }
+        .fz-rcard.max .fz-rtag { background: #edf2f7; color: #64748b; }
+        .fz-rtitle { font-size: 0.85rem; font-weight: 800; color: #1e293b; }
+        .fz-rsub { font-size: 0.62rem; color: #94a3b8; font-weight: 600; margin: 2px 0 12px; line-height: 1.4; }
+        .fz-row { display: flex; justify-content: space-between; gap: 10px; padding: 8px 0; border-bottom: 1px solid #f1f3f5; font-size: 0.72rem; }
+        .fz-row .k { color: #64748b; font-weight: 600; }
+        .fz-row .v { color: #1e293b; font-weight: 800; white-space: nowrap; }
+        .fz-big { margin-top: 14px; padding: 14px 16px; border-radius: 12px; background: #f0fff4; }
+        .fz-rcard.max .fz-big { background: #f7fafc; }
+        .fz-big .lbl { font-size: 0.56rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: #38a169; }
+        .fz-rcard.max .fz-big .lbl { color: #64748b; }
+        .fz-big .amt { margin-top: 3px; font-size: 1.55rem; font-weight: 800; color: #38a169; }
+        .fz-rcard.max .fz-big .amt { color: #1e293b; }
+        .fz-note { margin-top: 16px; padding: 12px 16px; border-radius: 12px; background: #fffaf5; border: 1px solid #fde8d0; font-size: 0.72rem; font-weight: 700; color: #b45309; line-height: 1.55; }
+        .fz-details { margin-top: 16px; border: 1px solid var(--border); border-radius: 14px; padding: 0 16px; }
+        .fz-details summary { cursor: pointer; font-weight: 800; font-size: 0.8rem; color: var(--bir-red); padding: 14px 0; list-style: none; }
+        .fz-details summary::-webkit-details-marker { display: none; }
+        .fz-details summary::before { content: '\25B8'; margin-right: 8px; display: inline-block; transition: 0.2s; }
+        .fz-details[open] summary::before { transform: rotate(90deg); }
+        .fz-step { border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; margin-bottom: 12px; font-size: 0.72rem; line-height: 1.65; color: #444; background: #fcfdfe; }
+        .fz-step .st { font-size: 0.58rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: var(--bir-red); }
+        .fz-step .st-title { font-weight: 800; color: #1e293b; margin: 2px 0 6px; font-size: 0.78rem; }
+        .fz-step b { color: #1e293b; }
+        .fz-step ul { margin: 6px 0; padding-left: 18px; }
+        .fz-step .fz-formula { font-family: monospace; font-size: 0.68rem; color: #1e293b; background: #f1f5f9; padding: 6px 8px; border-radius: 6px; margin-top: 6px; word-break: break-word; }
+        @media (max-width: 760px) { .fz-form { grid-template-columns: 1fr; } .fz-grid2 { grid-template-columns: 1fr; } }
+
         /* ===== İzahat card ===== */
         .izahat-card { position: relative; }
         .izahat-head { font-size: 0.85rem; font-weight: 800; color: var(--bir-red); display: flex; align-items: center; gap: 8px; margin-bottom: 12px; position: relative; z-index: 1; }
@@ -595,6 +647,7 @@
             <button class="tab-btn" id="tabTP" onclick="switchTab('transfer', this)">Transfer & Promotion</button>
             <button class="tab-btn" id="tabMG" onclick="switchTab('massgrowth', this)">Kütləvi artımlar</button>
             <button class="tab-btn" id="tabTX" onclick="switchTab('texnopar', this)">Texnopar</button>
+            <button class="tab-btn" id="tabFZ" onclick="switchTab('firuza', this)">Transfer by Firuza</button>
         </div>
 
         <!-- Company Toggle -->
@@ -1258,6 +1311,75 @@
                     </div>
                 </div>
 
+            </div>
+        </div>
+
+        <!-- TAB CONTENT: TRANSFER BY FIRUZA -->
+        <div id="firuza" class="tab-pane">
+            <div class="card">
+                <div class="fz-intro">
+                    <h3><i class="fa-solid fa-arrow-right-arrow-left"></i> Transfer by Firuza — Rotasiya zamanı əməkhaqqı təyinatı</h3>
+                    <p>Əməkdaşların rotasiyası zamanı əməkhaqqının müəyyən edilməsinə dəstək aləti. Bütün məbləğlər AZN ilə daxil edilməlidir.</p>
+                </div>
+
+                <div class="fz-sub">
+                    <button class="active" id="fzTabA" onclick="fzSwitchMode('A', this)">Aylıq/Rüblük → İllik</button>
+                    <button id="fzTabB" onclick="fzSwitchMode('B', this)">İllik → Aylıq/Rüblük</button>
+                </div>
+
+                <!-- Mode A: Aylıq/Rüblük bonus → İllik bonus -->
+                <div id="fzPaneA">
+                    <div class="fz-form">
+                        <div class="fz-field">
+                            <label>Gross əməkhaqqı</label>
+                            <input type="number" id="fzA-gross" inputmode="decimal" min="0" step="0.01" placeholder="0.00">
+                            <div class="fz-helper">Əməkdaşın mövcud aylıq gross əməkhaqqısı</div>
+                        </div>
+                        <div class="fz-field">
+                            <label>Ortalama bonus məbləği</label>
+                            <input type="number" id="fzA-bonus" inputmode="decimal" min="0" step="0.01" placeholder="0.00">
+                            <div class="fz-helper">Orta aylıq/rüblük bonus göstəricisinə əsasən hesablanan orta bonus məbləği</div>
+                        </div>
+                        <div class="fz-field">
+                            <label>Yeməkpulu</label>
+                            <input type="number" id="fzA-meal" inputmode="decimal" min="0" step="0.01" placeholder="0.00">
+                            <div class="fz-helper">Əməkdaşın mövcud yeməkpulu məbləği</div>
+                        </div>
+                    </div>
+                    <div class="fz-err" id="fzA-err"></div>
+                    <div class="fz-actions">
+                        <button class="fz-btn primary" onclick="fzCalcA()">Hesabla</button>
+                        <button class="fz-btn ghost" onclick="fzReset('A')">Sıfırla</button>
+                    </div>
+                    <div class="fz-results" id="fzA-results"></div>
+                </div>
+
+                <!-- Mode B: İllik bonus → Aylıq/Rüblük bonus -->
+                <div id="fzPaneB" style="display:none;">
+                    <div class="fz-form">
+                        <div class="fz-field">
+                            <label>Gross əməkhaqqı</label>
+                            <input type="number" id="fzB-gross" inputmode="decimal" min="0" step="0.01" placeholder="0.00">
+                            <div class="fz-helper">Əməkdaşın mövcud gross əməkhaqqısı</div>
+                        </div>
+                        <div class="fz-field">
+                            <label>Yeməkpulu</label>
+                            <input type="number" id="fzB-meal" inputmode="decimal" min="0" step="0.01" placeholder="0.00">
+                            <div class="fz-helper">Əməkdaşın mövcud yeməkpulu</div>
+                        </div>
+                        <div class="fz-field">
+                            <label>Keçid vəzifə üçün təqribi aylıq gross orta bonus</label>
+                            <input type="number" id="fzB-bonus" inputmode="decimal" min="0" step="0.01" placeholder="0.00">
+                            <div class="fz-helper">Keçid ediləcək vəzifə üçün təqribi aylıq gross orta bonus məbləği</div>
+                        </div>
+                    </div>
+                    <div class="fz-err" id="fzB-err"></div>
+                    <div class="fz-actions">
+                        <button class="fz-btn primary" onclick="fzCalcB()">Hesabla</button>
+                        <button class="fz-btn ghost" onclick="fzReset('B')">Sıfırla</button>
+                    </div>
+                    <div class="fz-results" id="fzB-results"></div>
+                </div>
             </div>
         </div>
 
@@ -2984,6 +3106,197 @@ Status: ${r.status}`;
             mayaBusy = false;
             document.getElementById('mayaSendBtn').disabled = false;
         }
+    }
+
+    /* ============================================================
+       TRANSFER BY FIRUZA — rotasiya hesablaması
+       (New Text Document (2).txt məntiqi ilə eyni)
+    ============================================================ */
+    const fzFmt = e => (typeof e === 'number' && isFinite(e))
+        ? e.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' AZN' : '—';
+
+    // Tək məbləğin neti (si) — gəlir vergisi + DSMF + işsizlik + İTS + 1%
+    function fzNet(e) {
+        if (!e || e === 0) return 0;
+        const tax = e <= 2500 ? (e - 200) * 0.03 : e <= 8000 ? 75 + (e - 2500) * 0.1 : (e - 8000) * 0.14 + 625;
+        const social = e < 200 ? e * 0.03 : 6 + (e - 200) * 0.1;
+        const unemp = e * 0.005;
+        const med = e <= 2500 ? e * 0.02 : 50 + (e - 2500) * 0.005;
+        const other = e * 0.01;
+        return e - tax - social - unemp - med - other;
+    }
+    // Net əsas əməkhaqqıdan gross-a tərs çevirmə (Gt / di)
+    function fzGross(netBase) {
+        const t = netBase - 100;
+        return t <= 2107.5 ? t / 0.835 - 23.9520958083831
+            : t <= 6391.5 ? (t - 2107.5) / 0.78 + 7.69230769230713 + 2500
+            : (t - 6391.5) / 0.74 + 8000;
+    }
+    function fzBracket(netBase) {
+        const t = netBase - 100;
+        return t <= 2107.5 ? 1 : t <= 6391.5 ? 2 : 3;
+    }
+    // Mode A üçün: net(gross+bonus) + yeməkpulu (Vt)
+    function fzVt(gross, bonus, meal) {
+        const r = gross + bonus;
+        if (!r || r === 0) return 0;
+        const tax = r <= 2500 ? (r - 200) * 0.03 : r <= 8000 ? 75 + (r - 2500) * 0.1 : (r - 8000) * 0.14 + 625;
+        const social = r < 200 ? r * 0.03 : 6 + (r - 200) * 0.1;
+        const unemp = r * 0.005;
+        const med = r <= 2500 ? r * 0.02 : 50 + (r - 2500) * 0.005;
+        const other = r * 0.01;
+        return r - tax - social - unemp - med - other + meal;
+    }
+
+    function fzSwitchMode(mode, el) {
+        document.querySelectorAll('.fz-sub button').forEach(b => b.classList.remove('active'));
+        el.classList.add('active');
+        document.getElementById('fzPaneA').style.display = (mode === 'A') ? 'block' : 'none';
+        document.getElementById('fzPaneB').style.display = (mode === 'B') ? 'block' : 'none';
+    }
+
+    function fzReset(mode) {
+        ['gross', mode === 'A' ? 'bonus' : 'meal', mode === 'A' ? 'meal' : 'bonus'].forEach(k => {
+            const el = document.getElementById('fz' + mode + '-' + k); if (el) el.value = '';
+        });
+        document.getElementById('fz' + mode + '-results').style.display = 'none';
+        document.getElementById('fz' + mode + '-err').style.display = 'none';
+    }
+
+    function fzReadInputs(mode, keys) {
+        const errBox = document.getElementById('fz' + mode + '-err');
+        const vals = {};
+        for (const k of keys) {
+            const raw = document.getElementById('fz' + mode + '-' + k).value.trim();
+            const num = parseFloat(raw);
+            if (raw === '' || isNaN(num) || num < 0) {
+                errBox.innerText = 'Zəhmət olmasa bütün sahələri düzgün (mənfi olmayan) rəqəmlə doldurun.';
+                errBox.style.display = 'block';
+                document.getElementById('fz' + mode + '-results').style.display = 'none';
+                return null;
+            }
+            vals[k] = num;
+        }
+        errBox.style.display = 'none';
+        return vals;
+    }
+
+    // Mode A: Aylıq/Rüblük bonus alan strukturdan İllik bonus alan struktura rotasiya
+    function fzCalcA() {
+        const v = fzReadInputs('A', ['gross', 'bonus', 'meal']);
+        if (!v) return;
+        const maxNet = fzVt(v.gross, v.bonus, v.meal);       // 10/12 tətbiq edilmir → maksimum
+        const recNet = maxNet * 10 / 12;                     // təklif olunan
+        const recGross = fzGross(recNet);
+        const maxGross = fzGross(maxNet);
+        if (![recNet, recGross, maxNet, maxGross].every(x => typeof x === 'number' && isFinite(x))) {
+            const e = document.getElementById('fzA-err'); e.innerText = 'Hesablama mümkün olmadı. Daxil edilən dəyərləri yoxlayın.'; e.style.display = 'block'; return;
+        }
+        const diff = maxGross - recGross;
+        const box = document.getElementById('fzA-results');
+        box.innerHTML =
+            `<div class="fz-grid2">
+                <div class="fz-rcard rec">
+                    <span class="fz-rtag">Təklif</span>
+                    <div class="fz-rtitle">Təklif olunan əməkhaqqı</div>
+                    <div class="fz-rsub">Rotasiya zamanı təklif edilə biləcək əməkhaqqı</div>
+                    <div class="fz-row"><span class="k">Net əməkhaqqı</span><span class="v">${fzFmt(recNet)}</span></div>
+                    <div class="fz-row"><span class="k">Yeməkpulu</span><span class="v">${fzFmt(100)}</span></div>
+                    <div class="fz-big"><div class="lbl">Təklif olunan Gross əməkhaqqı</div><div class="amt">${fzFmt(recGross)}</div></div>
+                </div>
+                <div class="fz-rcard max">
+                    <span class="fz-rtag">Maksimum</span>
+                    <div class="fz-rtitle">Mümkün olan maksimum əməkhaqqı</div>
+                    <div class="fz-rsub">Hesablama əsasında mümkün olan maksimum əməkhaqqı</div>
+                    <div class="fz-row"><span class="k">Net əməkhaqqı</span><span class="v">${fzFmt(maxNet)}</span></div>
+                    <div class="fz-row"><span class="k">Yeməkpulu</span><span class="v">${fzFmt(100)}</span></div>
+                    <div class="fz-big"><div class="lbl">Maksimum Gross əməkhaqqı</div><div class="amt">${fzFmt(maxGross)}</div></div>
+                </div>
+            </div>
+            <div class="fz-note">Təklif olunan və maksimum Gross arasındakı fərq: <b>${fzFmt(diff)}</b>. Təklif olunan əməkhaqqının hesablanmasında 10/12 əmsalı tətbiq edilir; maksimum əməkhaqqıda tətbiq edilmir.</div>
+            <details class="fz-details">
+                <summary>Hesablama detalları</summary>
+                <div class="fz-step">
+                    <div class="st">Addım 1</div><div class="st-title">Net baza (maksimum)</div>
+                    <p>Gross (${fzFmt(v.gross)}) və orta bonus (${fzFmt(v.bonus)}) cəmindən tutulmalar çıxılır, yeməkpulu (${fzFmt(v.meal)}) əlavə edilir:</p>
+                    <ul>
+                        <li>Gəlir vergisi: ≤2,500 → (məbləğ−200)×3%; ≤8,000 → 75+(məbləğ−2,500)×10%; digər → (məbləğ−8,000)×14%+625</li>
+                        <li>Sosial sığorta: &lt;200 → məbləğ×3%; digər → 6+(məbləğ−200)×10%</li>
+                        <li>İşsizlikdən sığorta: məbləğ×0.5%</li>
+                        <li>İcbari tibbi sığorta: ≤2,500 → məbləğ×2%; digər → 50+(məbləğ−2,500)×0.5%</li>
+                        <li>Digər ayırma: məbləğ×1% &nbsp;•&nbsp; Yeməkpulu: +${fzFmt(v.meal)}</li>
+                    </ul>
+                    <p><b>Maksimum net = ${fzFmt(maxNet)}</b></p>
+                </div>
+                <div class="fz-step">
+                    <div class="st">Addım 2</div><div class="st-title">Təklif olunan net (10/12 əmsalı)</div>
+                    <p>Təklif olunan net = Maksimum net × 10/12 = ${fzFmt(maxNet)} × 10/12 = <b>${fzFmt(recNet)}</b></p>
+                </div>
+                <div class="fz-step">
+                    <div class="st">Addım 3</div><div class="st-title">Gross əməkhaqqının hesablanması</div>
+                    <p>Hər net üçün (net−100) intervalına görə tərs düstur tətbiq olunur:</p>
+                    <div class="fz-formula">≤2,107.50 → (net−100)/0.835 − 23.9520958083831 &nbsp;|&nbsp; ≤6,391.50 → ((net−100)−2107.5)/0.78 + 2507.6923 &nbsp;|&nbsp; &gt; → ((net−100)−6391.5)/0.74 + 8000</div>
+                    <p style="margin-top:6px"><b>Təklif Gross = ${fzFmt(recGross)}</b> &nbsp;•&nbsp; <b>Maksimum Gross = ${fzFmt(maxGross)}</b></p>
+                </div>
+            </details>`;
+        box.style.display = 'block';
+    }
+
+    // Mode B: İllik bonus alan strukturdan Aylıq/Rüblük bonus alan struktura rotasiya
+    function fzCalcB() {
+        const v = fzReadInputs('B', ['gross', 'meal', 'bonus']);
+        if (!v) return;
+        const netTotal = (fzNet(v.gross) + v.meal) * 12 / 10;
+        const netBonus = fzNet(v.bonus);
+        const netBase = netTotal - netBonus;
+        const newGross = fzGross(netBase);
+        if (![netTotal, netBonus, netBase, newGross].every(x => typeof x === 'number' && isFinite(x))) {
+            const e = document.getElementById('fzB-err'); e.innerText = 'Hesablama mümkün olmadı. Daxil edilən dəyərləri yoxlayın.'; e.style.display = 'block'; return;
+        }
+        const brk = fzBracket(netBase);
+        const brkCond = brk === 1 ? `Net əsas − 100 = ${fzFmt(netBase - 100)} ≤ 2,107.50 AZN`
+            : brk === 2 ? `Net əsas − 100 = ${fzFmt(netBase - 100)} ≤ 6,391.50 AZN`
+            : `Net əsas − 100 = ${fzFmt(netBase - 100)} > 6,391.50 AZN`;
+        const brkFormula = brk === 1 ? `((Net əsas − 100) / 0.835) − 23.9520958083831`
+            : brk === 2 ? `((Net əsas − 100) − 2107.5) / 0.78 + 7.69230769230713 + 2500`
+            : `((Net əsas − 100) − 6391.5) / 0.74 + 8000`;
+        const box = document.getElementById('fzB-results');
+        box.innerHTML =
+            `<div class="fz-rcard rec">
+                <span class="fz-rtag">Yeni struktur</span>
+                <div class="fz-rtitle">Yeni əməkhaqqı strukturu</div>
+                <div class="fz-rsub">Aylıq/Rüblük bonus alan struktura uyğun hesablanmış əməkhaqqı</div>
+                <div class="fz-big"><div class="lbl">Gross əməkhaqqı</div><div class="amt">${fzFmt(newGross)}</div></div>
+                <div class="fz-grid2" style="margin-top:14px">
+                    <div class="fz-row"><span class="k">Yeməkpulu</span><span class="v">${fzFmt(100)}</span></div>
+                    <div class="fz-row"><span class="k">Təqribi aylıq gross orta bonus</span><span class="v">${fzFmt(v.bonus)}</span></div>
+                </div>
+            </div>
+            <details class="fz-details">
+                <summary>Hesablama detalları</summary>
+                <div class="fz-step">
+                    <div class="st">Addım 1</div><div class="st-title">Net total məbləğ</div>
+                    <p>Mövcud Gross (${fzFmt(v.gross)}) üzərindən tutulmalar çıxılır, Yeməkpulu (${fzFmt(v.meal)}) əlavə edilir və net məbləğə 12/10 əmsalı tətbiq olunur.</p>
+                    <p><b>Net total məbləğ = ${fzFmt(netTotal)}</b></p>
+                </div>
+                <div class="fz-step">
+                    <div class="st">Addım 2</div><div class="st-title">Net bonus məbləği</div>
+                    <p>Keçid vəzifə üçün təqribi aylıq gross orta bonus (${fzFmt(v.bonus)}) eyni tutulmalar çıxılmaqla net məbləğə çevrilir (12/10 əmsalı tətbiq edilmir).</p>
+                    <p><b>Net bonus məbləği = ${fzFmt(netBonus)}</b></p>
+                </div>
+                <div class="fz-step">
+                    <div class="st">Addım 3</div><div class="st-title">Net əsas əməkhaqqı</div>
+                    <p>Net əsas = Net total − Net bonus = ${fzFmt(netTotal)} − ${fzFmt(netBonus)}</p>
+                    <p><b>Net əsas əməkhaqqı = ${fzFmt(netBase)}</b></p>
+                </div>
+                <div class="fz-step">
+                    <div class="st">Addım 4</div><div class="st-title">Gross əməkhaqqının hesablanması (${brk}-ci interval)</div>
+                    <p>${brkCond}</p>
+                    <div class="fz-formula">${brkFormula}</div>
+                    <p style="margin-top:6px"><b>Hesablanmış Gross əməkhaqqı = ${fzFmt(newGross)}</b></p>
+                </div>
+            </details>`;
+        box.style.display = 'block';
     }
 
     calc();
