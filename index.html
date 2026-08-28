@@ -514,57 +514,83 @@
         .maya-auth-ok { background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%); color: white; }
         .maya-auth-ok:hover { opacity: 0.92; }
 
-        /* ===== Transfer by Firuza ===== */
-        .fz-intro { margin-bottom: 16px; position: relative; z-index: 1; }
-        .fz-intro h3 { margin: 0 0 6px; font-size: 1rem; font-weight: 800; color: #1e293b; display: flex; align-items: center; gap: 8px; }
-        .fz-intro h3 i { color: var(--bir-red); }
-        .fz-intro p { margin: 0; font-size: 0.75rem; font-weight: 600; color: var(--text-muted); line-height: 1.55; }
-        .fz-sub { display: inline-flex; gap: 4px; background: #f1f3f5; padding: 4px; border-radius: 12px; margin-bottom: 18px; position: relative; z-index: 1; }
-        .fz-sub button { padding: 8px 16px; font-size: 0.72rem; font-weight: 800; border-radius: 10px; border: none; background: none; cursor: pointer; color: #777; font-family: 'Montserrat'; transition: 0.25s; white-space: nowrap; }
-        .fz-sub button.active { background: var(--bir-gradient); color: white; box-shadow: 0 4px 10px rgba(255,45,85,0.2); }
-        .fz-form { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 14px; position: relative; z-index: 1; }
-        .fz-field label { font-size: 0.6rem; font-weight: 800; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 5px; }
-        .fz-field input { width: 100%; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-family: 'Montserrat'; font-weight: 700; font-size: 0.85rem; color: #333; background: #fafbfc; outline: none; transition: 0.2s; }
-        .fz-field input:focus { border-color: var(--bir-red); background: #fffafa; }
-        .fz-helper { font-size: 0.58rem; color: #94a3b8; margin-top: 5px; font-weight: 600; line-height: 1.35; }
-        .fz-err { display: none; color: #c53030; font-size: 0.72rem; font-weight: 700; margin-bottom: 12px; padding: 10px 14px; background: #fff5f5; border: 1px solid #fed7d7; border-radius: 10px; }
-        .fz-actions { display: flex; gap: 10px; position: relative; z-index: 1; }
-        .fz-btn { padding: 11px 24px; border: none; border-radius: 10px; font-family: 'Montserrat'; font-weight: 800; font-size: 0.75rem; cursor: pointer; transition: 0.2s; }
-        .fz-btn.primary { background: var(--bir-gradient); color: white; }
-        .fz-btn.primary:hover { opacity: 0.92; }
-        .fz-btn.ghost { background: #f1f3f5; color: #64748b; }
-        .fz-btn.ghost:hover { background: #e2e8f0; }
-        .fz-results { display: none; margin-top: 22px; position: relative; z-index: 1; }
-        .fz-params { font-size: 0.62rem; font-weight: 700; color: #64748b; background: #f1f5f9; padding: 8px 12px; border-radius: 8px; margin-bottom: 14px; }
-        .fz-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-        .fz-rcard { border: 1px solid var(--border); border-radius: 16px; padding: 18px; background: var(--bg-card); box-shadow: 0 4px 16px rgba(0,0,0,0.03); }
-        .fz-rcard.rec { border-color: #9ae6b4; }
-        .fz-rtag { float: right; font-size: 0.58rem; font-weight: 800; padding: 3px 10px; border-radius: 20px; }
-        .fz-rcard.rec .fz-rtag { background: #f0fff4; color: #38a169; }
-        .fz-rcard.max .fz-rtag { background: #edf2f7; color: #64748b; }
-        .fz-rtitle { font-size: 0.85rem; font-weight: 800; color: #1e293b; }
-        .fz-rsub { font-size: 0.62rem; color: #94a3b8; font-weight: 600; margin: 2px 0 12px; line-height: 1.4; }
-        .fz-row { display: flex; justify-content: space-between; gap: 10px; padding: 8px 0; border-bottom: 1px solid #f1f3f5; font-size: 0.72rem; }
-        .fz-row .k { color: #64748b; font-weight: 600; }
-        .fz-row .v { color: #1e293b; font-weight: 800; white-space: nowrap; }
-        .fz-big { margin-top: 14px; padding: 14px 16px; border-radius: 12px; background: #f0fff4; }
-        .fz-rcard.max .fz-big { background: #f7fafc; }
-        .fz-big .lbl { font-size: 0.56rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: #38a169; }
-        .fz-rcard.max .fz-big .lbl { color: #64748b; }
-        .fz-big .amt { margin-top: 3px; font-size: 1.55rem; font-weight: 800; color: #38a169; }
-        .fz-rcard.max .fz-big .amt { color: #1e293b; }
-        .fz-note { margin-top: 16px; padding: 12px 16px; border-radius: 12px; background: #fffaf5; border: 1px solid #fde8d0; font-size: 0.72rem; font-weight: 700; color: #b45309; line-height: 1.55; }
-        .fz-details { margin-top: 16px; border: 1px solid var(--border); border-radius: 14px; padding: 0 16px; }
-        .fz-details summary { cursor: pointer; font-weight: 800; font-size: 0.8rem; color: var(--bir-red); padding: 14px 0; list-style: none; }
+        /* ===== Transfer by Firuza — orijinal dizayn (txt-dəki palitra) ===== */
+        #firuza {
+            --fz-fg: oklch(23% .045 258);
+            --fz-card: oklch(100% 0 0);
+            --fz-primary: oklch(31% .075 259);
+            --fz-primary-fg: oklch(98.5% .002 247);
+            --fz-secondary: oklch(95.5% .008 247);
+            --fz-muted: oklch(95.8% .006 247);
+            --fz-muted-fg: oklch(53% .03 257);
+            --fz-accent: oklch(63% .093 195);
+            --fz-success: oklch(56% .115 158);
+            --fz-success-soft: oklch(96.5% .03 160);
+            --fz-destructive: oklch(57.7% .245 27.325);
+            --fz-border: oklch(91.2% .011 255);
+            --fz-input: oklch(90% .013 255);
+            --fz-ring: oklch(63% .093 195);
+            --fz-shadow: 0 1px 2px oklch(23% .045 258 / .04), 0 8px 24px -12px oklch(23% .045 258 / .14);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            color: var(--fz-fg);
+        }
+        .fz-app { display: flex; flex-direction: column; gap: 20px; }
+        .fz-header h2 { margin: 0 0 6px; font-size: 1.35rem; font-weight: 700; letter-spacing: -0.01em; color: var(--fz-fg); }
+        .fz-header p { margin: 0; font-size: 0.9rem; color: var(--fz-muted-fg); line-height: 1.6; }
+        .fz-sub { display: inline-flex; gap: 4px; background: var(--fz-secondary); padding: 4px; border-radius: 10px; }
+        .fz-sub button { padding: 8px 16px; font-size: 0.82rem; font-weight: 600; border-radius: 8px; border: none; background: transparent; cursor: pointer; color: var(--fz-muted-fg); font-family: inherit; transition: 0.2s; white-space: nowrap; }
+        .fz-sub button.active { background: var(--fz-card); color: var(--fz-fg); box-shadow: 0 1px 3px oklch(23% .045 258 / .12); }
+        .fz-section { background: var(--fz-card); border: 1px solid var(--fz-border); border-radius: 16px; padding: 24px; box-shadow: var(--fz-shadow); }
+        .fz-section h3 { margin: 0 0 4px; font-size: 1.05rem; font-weight: 600; color: var(--fz-fg); }
+        .fz-section-sub { margin: 0 0 20px; font-size: 0.85rem; color: var(--fz-muted-fg); }
+        .fz-form { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .fz-field label { font-size: 0.85rem; font-weight: 500; color: var(--fz-fg); display: block; margin-bottom: 8px; }
+        .fz-field input { width: 100%; height: 2.75rem; padding: 0 14px; border: 1px solid var(--fz-input); border-radius: 8px; font-family: inherit; font-size: 0.95rem; color: var(--fz-fg); background: var(--fz-card); outline: none; transition: 0.15s; box-shadow: 0 1px 2px oklch(23% .045 258 / .05); }
+        .fz-field input::placeholder { color: var(--fz-muted-fg); opacity: 0.6; }
+        .fz-field input:focus { border-color: var(--fz-ring); box-shadow: 0 0 0 3px oklch(63% .093 195 / .25); }
+        .fz-helper { font-size: 0.78rem; color: var(--fz-muted-fg); margin-top: 8px; line-height: 1.4; }
+        .fz-err { display: none; margin-top: 16px; font-size: 0.85rem; font-weight: 500; padding: 12px 16px; color: var(--fz-destructive); background: oklch(57.7% .245 27.325 / .06); border: 1px solid oklch(57.7% .245 27.325 / .35); border-radius: 12px; }
+        .fz-actions { display: flex; gap: 12px; margin-top: 20px; }
+        .fz-btn { height: 2.5rem; padding: 0 2rem; border: none; border-radius: 8px; font-family: inherit; font-weight: 500; font-size: 0.9rem; cursor: pointer; transition: 0.15s; }
+        .fz-btn.primary { background: var(--fz-primary); color: var(--fz-primary-fg); box-shadow: 0 1px 3px oklch(23% .045 258 / .2); }
+        .fz-btn.primary:hover { background: oklch(31% .075 259 / .9); }
+        .fz-btn.ghost { background: var(--fz-card); color: var(--fz-fg); border: 1px solid var(--fz-input); box-shadow: 0 1px 2px oklch(23% .045 258 / .05); }
+        .fz-btn.ghost:hover { background: var(--fz-accent); color: #fff; border-color: var(--fz-accent); }
+        .fz-results { display: none; margin-top: 20px; }
+        .fz-params { font-size: 0.8rem; font-weight: 500; color: var(--fz-muted-fg); background: var(--fz-secondary); padding: 10px 14px; border-radius: 10px; margin-bottom: 20px; }
+        .fz-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+        .fz-rcard { border: 1px solid var(--fz-border); border-radius: 16px; padding: 24px; background: var(--fz-card); box-shadow: var(--fz-shadow); }
+        .fz-rcard.rec { border-color: oklch(56% .115 158 / .4); }
+        .fz-rtag { float: right; font-size: 0.72rem; font-weight: 500; padding: 4px 12px; border-radius: 9999px; }
+        .fz-rcard.rec .fz-rtag { background: var(--fz-success-soft); color: var(--fz-success); }
+        .fz-rcard.max .fz-rtag { background: var(--fz-muted); color: var(--fz-muted-fg); }
+        .fz-rtitle { font-size: 1rem; font-weight: 600; color: var(--fz-fg); }
+        .fz-rsub { font-size: 0.82rem; color: var(--fz-muted-fg); margin: 4px 0 20px; line-height: 1.45; }
+        .fz-row { display: flex; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--fz-border); font-size: 0.9rem; }
+        .fz-row .k { color: var(--fz-muted-fg); }
+        .fz-row .v { color: var(--fz-fg); font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
+        .fz-big { margin-top: 24px; padding: 20px; border-radius: 12px; background: var(--fz-success-soft); }
+        .fz-rcard.max .fz-big { background: var(--fz-secondary); }
+        .fz-big .lbl { font-size: 0.72rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; color: var(--fz-success); }
+        .fz-rcard.max .fz-big .lbl { color: var(--fz-muted-fg); }
+        .fz-big .amt { margin-top: 4px; font-size: 2rem; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--fz-success); }
+        .fz-rcard.max .fz-big .amt { color: var(--fz-fg); }
+        .fz-note { margin-top: 16px; padding: 14px 18px; border-radius: 12px; background: var(--fz-secondary); border: 1px solid var(--fz-border); font-size: 0.85rem; color: var(--fz-muted-fg); line-height: 1.6; }
+        .fz-note b { color: var(--fz-fg); font-weight: 600; }
+        .fz-details { margin-top: 16px; border: 1px solid var(--fz-border); border-radius: 16px; padding: 0 24px; background: var(--fz-card); box-shadow: var(--fz-shadow); }
+        .fz-details summary { cursor: pointer; font-weight: 600; font-size: 1rem; color: var(--fz-fg); padding: 20px 0; list-style: none; }
         .fz-details summary::-webkit-details-marker { display: none; }
-        .fz-details summary::before { content: '\25B8'; margin-right: 8px; display: inline-block; transition: 0.2s; }
+        .fz-details summary::before { content: '\25B8'; margin-right: 10px; color: var(--fz-muted-fg); display: inline-block; transition: 0.2s; }
         .fz-details[open] summary::before { transform: rotate(90deg); }
-        .fz-step { border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; margin-bottom: 12px; font-size: 0.72rem; line-height: 1.65; color: #444; background: #fcfdfe; }
-        .fz-step .st { font-size: 0.58rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: var(--bir-red); }
-        .fz-step .st-title { font-weight: 800; color: #1e293b; margin: 2px 0 6px; font-size: 0.78rem; }
-        .fz-step b { color: #1e293b; }
+        .fz-details[open] summary { padding-bottom: 8px; }
+        .fz-step { border: 1px solid var(--fz-border); border-radius: 12px; padding: 16px 18px; margin-bottom: 16px; font-size: 0.85rem; line-height: 1.65; color: var(--fz-muted-fg); background: oklch(95.5% .008 247 / .6); }
+        .fz-step:last-child { margin-bottom: 24px; }
+        .fz-step .st { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--fz-accent); }
+        .fz-step .st-title { font-weight: 600; color: var(--fz-fg); margin: 4px 0 8px; font-size: 0.92rem; }
+        .fz-step b { color: var(--fz-fg); font-weight: 600; }
+        .fz-step p { margin: 6px 0; }
         .fz-step ul { margin: 6px 0; padding-left: 18px; }
-        .fz-step .fz-formula { font-family: monospace; font-size: 0.68rem; color: #1e293b; background: #f1f5f9; padding: 6px 8px; border-radius: 6px; margin-top: 6px; word-break: break-word; }
+        .fz-step .fz-formula { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.78rem; color: var(--fz-fg); background: var(--fz-muted); padding: 8px 10px; border-radius: 8px; margin-top: 8px; word-break: break-word; }
         @media (max-width: 760px) { .fz-form { grid-template-columns: 1fr; } .fz-grid2 { grid-template-columns: 1fr; } }
 
         /* ===== İzahat card ===== */
@@ -1317,10 +1343,10 @@
 
         <!-- TAB CONTENT: TRANSFER BY FIRUZA -->
         <div id="firuza" class="tab-pane">
-            <div class="card">
-                <div class="fz-intro">
-                    <h3><i class="fa-solid fa-arrow-right-arrow-left"></i> Transfer by Firuza — Rotasiya zamanı əməkhaqqı təyinatı</h3>
-                    <p>Əməkdaşların rotasiyası zamanı əməkhaqqının müəyyən edilməsinə dəstək aləti. Bütün məbləğlər AZN ilə daxil edilməlidir.</p>
+            <div class="fz-app">
+                <div class="fz-header">
+                    <h2>Transfer by Firuza</h2>
+                    <p>Əməkdaşların rotasiyası zamanı əməkhaqqının müəyyən edilməsinə dəstək aləti.</p>
                 </div>
 
                 <div class="fz-sub">
@@ -1330,54 +1356,62 @@
 
                 <!-- Mode A: Aylıq/Rüblük bonus → İllik bonus -->
                 <div id="fzPaneA">
-                    <div class="fz-form">
-                        <div class="fz-field">
-                            <label>Gross əməkhaqqı</label>
-                            <input type="number" id="fzA-gross" inputmode="decimal" min="0" step="0.01" placeholder="0.00">
-                            <div class="fz-helper">Əməkdaşın mövcud aylıq gross əməkhaqqısı</div>
+                    <div class="fz-section">
+                        <h3>Əməkdaşın əməkhaqqı məlumatları</h3>
+                        <p class="fz-section-sub">Bütün məbləğlər AZN ilə daxil edilməlidir.</p>
+                        <div class="fz-form">
+                            <div class="fz-field">
+                                <label>Gross əməkhaqqı</label>
+                                <input type="number" id="fzA-gross" inputmode="decimal" min="0" step="0.01" placeholder="0.00">
+                                <div class="fz-helper">Əməkdaşın mövcud aylıq gross əməkhaqqısı</div>
+                            </div>
+                            <div class="fz-field">
+                                <label>Ortalama bonus məbləği</label>
+                                <input type="number" id="fzA-bonus" inputmode="decimal" min="0" step="0.01" placeholder="0.00">
+                                <div class="fz-helper">Orta aylıq/rüblük bonus göstəricisinə əsasən hesablanan orta bonus məbləği</div>
+                            </div>
+                            <div class="fz-field">
+                                <label>Yeməkpulu</label>
+                                <input type="number" id="fzA-meal" inputmode="decimal" min="0" step="0.01" placeholder="0.00">
+                                <div class="fz-helper">Əməkdaşın mövcud yeməkpulu məbləği</div>
+                            </div>
                         </div>
-                        <div class="fz-field">
-                            <label>Ortalama bonus məbləği</label>
-                            <input type="number" id="fzA-bonus" inputmode="decimal" min="0" step="0.01" placeholder="0.00">
-                            <div class="fz-helper">Orta aylıq/rüblük bonus göstəricisinə əsasən hesablanan orta bonus məbləği</div>
+                        <div class="fz-err" id="fzA-err"></div>
+                        <div class="fz-actions">
+                            <button class="fz-btn primary" onclick="fzCalcA()">Hesabla</button>
+                            <button class="fz-btn ghost" onclick="fzReset('A')">Sıfırla</button>
                         </div>
-                        <div class="fz-field">
-                            <label>Yeməkpulu</label>
-                            <input type="number" id="fzA-meal" inputmode="decimal" min="0" step="0.01" placeholder="0.00">
-                            <div class="fz-helper">Əməkdaşın mövcud yeməkpulu məbləği</div>
-                        </div>
-                    </div>
-                    <div class="fz-err" id="fzA-err"></div>
-                    <div class="fz-actions">
-                        <button class="fz-btn primary" onclick="fzCalcA()">Hesabla</button>
-                        <button class="fz-btn ghost" onclick="fzReset('A')">Sıfırla</button>
                     </div>
                     <div class="fz-results" id="fzA-results"></div>
                 </div>
 
                 <!-- Mode B: İllik bonus → Aylıq/Rüblük bonus -->
                 <div id="fzPaneB" style="display:none;">
-                    <div class="fz-form">
-                        <div class="fz-field">
-                            <label>Gross əməkhaqqı</label>
-                            <input type="number" id="fzB-gross" inputmode="decimal" min="0" step="0.01" placeholder="0.00">
-                            <div class="fz-helper">Əməkdaşın mövcud gross əməkhaqqısı</div>
+                    <div class="fz-section">
+                        <h3>Əməkdaşın əməkhaqqı məlumatları</h3>
+                        <p class="fz-section-sub">Bütün məbləğlər AZN ilə daxil edilməlidir.</p>
+                        <div class="fz-form">
+                            <div class="fz-field">
+                                <label>Gross əməkhaqqı</label>
+                                <input type="number" id="fzB-gross" inputmode="decimal" min="0" step="0.01" placeholder="0.00">
+                                <div class="fz-helper">Əməkdaşın mövcud gross əməkhaqqısı</div>
+                            </div>
+                            <div class="fz-field">
+                                <label>Yeməkpulu</label>
+                                <input type="number" id="fzB-meal" inputmode="decimal" min="0" step="0.01" placeholder="0.00">
+                                <div class="fz-helper">Əməkdaşın mövcud yeməkpulu</div>
+                            </div>
+                            <div class="fz-field">
+                                <label>Keçid vəzifə üçün təqribi aylıq gross orta bonus</label>
+                                <input type="number" id="fzB-bonus" inputmode="decimal" min="0" step="0.01" placeholder="0.00">
+                                <div class="fz-helper">Keçid ediləcək vəzifə üçün təqribi aylıq gross orta bonus məbləği</div>
+                            </div>
                         </div>
-                        <div class="fz-field">
-                            <label>Yeməkpulu</label>
-                            <input type="number" id="fzB-meal" inputmode="decimal" min="0" step="0.01" placeholder="0.00">
-                            <div class="fz-helper">Əməkdaşın mövcud yeməkpulu</div>
+                        <div class="fz-err" id="fzB-err"></div>
+                        <div class="fz-actions">
+                            <button class="fz-btn primary" onclick="fzCalcB()">Hesabla</button>
+                            <button class="fz-btn ghost" onclick="fzReset('B')">Sıfırla</button>
                         </div>
-                        <div class="fz-field">
-                            <label>Keçid vəzifə üçün təqribi aylıq gross orta bonus</label>
-                            <input type="number" id="fzB-bonus" inputmode="decimal" min="0" step="0.01" placeholder="0.00">
-                            <div class="fz-helper">Keçid ediləcək vəzifə üçün təqribi aylıq gross orta bonus məbləği</div>
-                        </div>
-                    </div>
-                    <div class="fz-err" id="fzB-err"></div>
-                    <div class="fz-actions">
-                        <button class="fz-btn primary" onclick="fzCalcB()">Hesabla</button>
-                        <button class="fz-btn ghost" onclick="fzReset('B')">Sıfırla</button>
                     </div>
                     <div class="fz-results" id="fzB-results"></div>
                 </div>
