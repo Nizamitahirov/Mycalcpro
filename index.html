@@ -535,6 +535,7 @@
         .fz-btn.ghost { background: #f1f3f5; color: #64748b; }
         .fz-btn.ghost:hover { background: #e2e8f0; }
         .fz-results { display: none; margin-top: 22px; position: relative; z-index: 1; }
+        .fz-params { font-size: 0.62rem; font-weight: 700; color: #64748b; background: #f1f5f9; padding: 8px 12px; border-radius: 8px; margin-bottom: 14px; }
         .fz-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
         .fz-rcard { border: 1px solid var(--border); border-radius: 16px; padding: 18px; background: var(--bg-card); box-shadow: 0 4px 16px rgba(0,0,0,0.03); }
         .fz-rcard.rec { border-color: #9ae6b4; }
@@ -1625,6 +1626,7 @@
             if (typeof mgBulkRecalc === 'function') mgBulkRecalc();
             if (typeof txCalc === 'function') txCalc();
             if (typeof txBulkRecalc === 'function') txBulkRecalc();
+            if (typeof fzRefresh === 'function') fzRefresh();
             return;
         }
         document.getElementById('label-nett').innerText = "NETT";
@@ -1715,6 +1717,7 @@
         if (typeof mgBulkRecalc === 'function') mgBulkRecalc();
         if (typeof txCalc === 'function') txCalc();
         if (typeof txBulkRecalc === 'function') txBulkRecalc();
+        if (typeof fzRefresh === 'function') fzRefresh();
     }
 
     /* ============================================================
@@ -3115,37 +3118,39 @@ Status: ${r.status}`;
     const fzFmt = e => (typeof e === 'number' && isFinite(e))
         ? e.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' AZN' : '—';
 
-    // Tək məbləğin neti (si) — gəlir vergisi + DSMF + işsizlik + İTS + 1%
-    function fzNet(e) {
-        if (!e || e === 0) return 0;
-        const tax = e <= 2500 ? (e - 200) * 0.03 : e <= 8000 ? 75 + (e - 2500) * 0.1 : (e - 8000) * 0.14 + 625;
-        const social = e < 200 ? e * 0.03 : 6 + (e - 200) * 0.1;
-        const unemp = e * 0.005;
-        const med = e <= 2500 ? e * 0.02 : 50 + (e - 2500) * 0.005;
-        const other = e * 0.01;
-        return e - tax - social - unemp - med - other;
+    // Üst parametrləri (İl/Sektor/İş yeri/Həmkar/Güzəşt) oxu — hesablamaya təsir edir
+    function fzParams() {
+        return {
+            year: document.getElementById('year').value,
+            sector: document.getElementById('sector').value,
+            workplace: document.getElementById('workplace').value,
+            benefit: parseFloat(document.querySelector('input[name="benefit"]:checked').value),
+            unionPct: parseFloat(document.getElementById('union').value),
+        };
     }
-    // Net əsas əməkhaqqıdan gross-a tərs çevirmə (Gt / di)
-    function fzGross(netBase) {
-        const t = netBase - 100;
-        return t <= 2107.5 ? t / 0.835 - 23.9520958083831
-            : t <= 6391.5 ? (t - 2107.5) / 0.78 + 7.69230769230713 + 2500
-            : (t - 6391.5) / 0.74 + 8000;
+    // Tək məbləğin neti — mövcud BirCalc tutulma düsturu ilə (bütün parametrləri nəzərə alır).
+    // Qeyd: default (Özəl/2026/əsas iş yeri/həmkar 1%/güzəştsiz) halda bu, txt-dəki si() ilə eynidir.
+    function fzNetP(amount, p) {
+        if (!amount || amount <= 0) return 0;
+        const r = getDeductions(amount, p.benefit, p.unionPct, p.workplace, p.sector, p.year);
+        return amount - r.total;
     }
-    function fzBracket(netBase) {
-        const t = netBase - 100;
-        return t <= 2107.5 ? 1 : t <= 6391.5 ? 2 : 3;
+    // Net əsas əməkhaqqıdan gross-a tərs (dəqiq, binary search) — txt-dəki Gt/di ilə eyni nəticə
+    function fzGrossP(targetNet, p) {
+        if (!(targetNet > 0)) return 0;
+        return solveGross(targetNet, p.benefit, p.unionPct, p.workplace, p.sector, p.year);
     }
-    // Mode A üçün: net(gross+bonus) + yeməkpulu (Vt)
-    function fzVt(gross, bonus, meal) {
-        const r = gross + bonus;
-        if (!r || r === 0) return 0;
-        const tax = r <= 2500 ? (r - 200) * 0.03 : r <= 8000 ? 75 + (r - 2500) * 0.1 : (r - 8000) * 0.14 + 625;
-        const social = r < 200 ? r * 0.03 : 6 + (r - 200) * 0.1;
-        const unemp = r * 0.005;
-        const med = r <= 2500 ? r * 0.02 : 50 + (r - 2500) * 0.005;
-        const other = r * 0.01;
-        return r - tax - social - unemp - med - other + meal;
+    function fzParamLabel(p) {
+        const sec = { private: 'Özəl (Qeyri-neft)', state: 'Dövlət/Neft-Qaz', texnopark: 'Texnopark' }[p.sector] || p.sector;
+        const wp = p.workplace === 'main' ? 'Əsas iş yeri' : 'Əlavə iş yeri';
+        return `${p.year} · ${sec} · ${wp} · Həmkar ${p.unionPct}%` + (p.benefit ? ` · Güzəşt ${fzFmt(p.benefit)}` : '');
+    }
+    // Şkalaya uyğun olması üçün üst parametr dəyişdikdə açıq nəticələri yenilə
+    function fzRefresh() {
+        if (document.getElementById('fzPaneA').style.display !== 'none' &&
+            document.getElementById('fzA-results').style.display === 'block') fzCalcA();
+        if (document.getElementById('fzPaneB').style.display !== 'none' &&
+            document.getElementById('fzB-results').style.display === 'block') fzCalcB();
     }
 
     function fzSwitchMode(mode, el) {
@@ -3185,17 +3190,19 @@ Status: ${r.status}`;
     function fzCalcA() {
         const v = fzReadInputs('A', ['gross', 'bonus', 'meal']);
         if (!v) return;
-        const maxNet = fzVt(v.gross, v.bonus, v.meal);       // 10/12 tətbiq edilmir → maksimum
-        const recNet = maxNet * 10 / 12;                     // təklif olunan
-        const recGross = fzGross(recNet);
-        const maxGross = fzGross(maxNet);
+        const p = fzParams();
+        const maxNet = fzNetP(v.gross + v.bonus, p) + v.meal;   // net(gross+bonus)+yeməkpulu (10/12 yox → maksimum)
+        const recNet = maxNet * 10 / 12;                        // təklif olunan (10/12 əmsalı)
+        const recGross = fzGrossP(recNet - 100, p);             // yeni struktur: sabit 100 yeməkpulu çıxılır
+        const maxGross = fzGrossP(maxNet - 100, p);
         if (![recNet, recGross, maxNet, maxGross].every(x => typeof x === 'number' && isFinite(x))) {
             const e = document.getElementById('fzA-err'); e.innerText = 'Hesablama mümkün olmadı. Daxil edilən dəyərləri yoxlayın.'; e.style.display = 'block'; return;
         }
         const diff = maxGross - recGross;
         const box = document.getElementById('fzA-results');
         box.innerHTML =
-            `<div class="fz-grid2">
+            `<div class="fz-params">Parametrlər: ${fzParamLabel(p)}</div>
+            <div class="fz-grid2">
                 <div class="fz-rcard rec">
                     <span class="fz-rtag">Təklif</span>
                     <div class="fz-rtitle">Təklif olunan əməkhaqqı</div>
@@ -3218,14 +3225,7 @@ Status: ${r.status}`;
                 <summary>Hesablama detalları</summary>
                 <div class="fz-step">
                     <div class="st">Addım 1</div><div class="st-title">Net baza (maksimum)</div>
-                    <p>Gross (${fzFmt(v.gross)}) və orta bonus (${fzFmt(v.bonus)}) cəmindən tutulmalar çıxılır, yeməkpulu (${fzFmt(v.meal)}) əlavə edilir:</p>
-                    <ul>
-                        <li>Gəlir vergisi: ≤2,500 → (məbləğ−200)×3%; ≤8,000 → 75+(məbləğ−2,500)×10%; digər → (məbləğ−8,000)×14%+625</li>
-                        <li>Sosial sığorta: &lt;200 → məbləğ×3%; digər → 6+(məbləğ−200)×10%</li>
-                        <li>İşsizlikdən sığorta: məbləğ×0.5%</li>
-                        <li>İcbari tibbi sığorta: ≤2,500 → məbləğ×2%; digər → 50+(məbləğ−2,500)×0.5%</li>
-                        <li>Digər ayırma: məbləğ×1% &nbsp;•&nbsp; Yeməkpulu: +${fzFmt(v.meal)}</li>
-                    </ul>
+                    <p>Gross (${fzFmt(v.gross)}) və orta bonus (${fzFmt(v.bonus)}) cəmindən seçilmiş parametrlərə (${fzParamLabel(p)}) uyğun tutulmalar çıxılır, yeməkpulu (${fzFmt(v.meal)}) əlavə edilir.</p>
                     <p><b>Maksimum net = ${fzFmt(maxNet)}</b></p>
                 </div>
                 <div class="fz-step">
@@ -3234,8 +3234,7 @@ Status: ${r.status}`;
                 </div>
                 <div class="fz-step">
                     <div class="st">Addım 3</div><div class="st-title">Gross əməkhaqqının hesablanması</div>
-                    <p>Hər net üçün (net−100) intervalına görə tərs düstur tətbiq olunur:</p>
-                    <div class="fz-formula">≤2,107.50 → (net−100)/0.835 − 23.9520958083831 &nbsp;|&nbsp; ≤6,391.50 → ((net−100)−2107.5)/0.78 + 2507.6923 &nbsp;|&nbsp; &gt; → ((net−100)−6391.5)/0.74 + 8000</div>
+                    <p>Yeni strukturda yeməkpulu 100 AZN sabitdir; ona görə hər net məbləğdən 100 çıxılır və seçilmiş parametrlərə uyğun net→gross tərs hesablanır.</p>
                     <p style="margin-top:6px"><b>Təklif Gross = ${fzFmt(recGross)}</b> &nbsp;•&nbsp; <b>Maksimum Gross = ${fzFmt(maxGross)}</b></p>
                 </div>
             </details>`;
@@ -3246,23 +3245,18 @@ Status: ${r.status}`;
     function fzCalcB() {
         const v = fzReadInputs('B', ['gross', 'meal', 'bonus']);
         if (!v) return;
-        const netTotal = (fzNet(v.gross) + v.meal) * 12 / 10;
-        const netBonus = fzNet(v.bonus);
+        const p = fzParams();
+        const netTotal = (fzNetP(v.gross, p) + v.meal) * 12 / 10;
+        const netBonus = fzNetP(v.bonus, p);
         const netBase = netTotal - netBonus;
-        const newGross = fzGross(netBase);
+        const newGross = fzGrossP(netBase - 100, p);          // yeni struktur: sabit 100 yeməkpulu çıxılır
         if (![netTotal, netBonus, netBase, newGross].every(x => typeof x === 'number' && isFinite(x))) {
             const e = document.getElementById('fzB-err'); e.innerText = 'Hesablama mümkün olmadı. Daxil edilən dəyərləri yoxlayın.'; e.style.display = 'block'; return;
         }
-        const brk = fzBracket(netBase);
-        const brkCond = brk === 1 ? `Net əsas − 100 = ${fzFmt(netBase - 100)} ≤ 2,107.50 AZN`
-            : brk === 2 ? `Net əsas − 100 = ${fzFmt(netBase - 100)} ≤ 6,391.50 AZN`
-            : `Net əsas − 100 = ${fzFmt(netBase - 100)} > 6,391.50 AZN`;
-        const brkFormula = brk === 1 ? `((Net əsas − 100) / 0.835) − 23.9520958083831`
-            : brk === 2 ? `((Net əsas − 100) − 2107.5) / 0.78 + 7.69230769230713 + 2500`
-            : `((Net əsas − 100) − 6391.5) / 0.74 + 8000`;
         const box = document.getElementById('fzB-results');
         box.innerHTML =
-            `<div class="fz-rcard rec">
+            `<div class="fz-params">Parametrlər: ${fzParamLabel(p)}</div>
+            <div class="fz-rcard rec">
                 <span class="fz-rtag">Yeni struktur</span>
                 <div class="fz-rtitle">Yeni əməkhaqqı strukturu</div>
                 <div class="fz-rsub">Aylıq/Rüblük bonus alan struktura uyğun hesablanmış əməkhaqqı</div>
@@ -3276,7 +3270,7 @@ Status: ${r.status}`;
                 <summary>Hesablama detalları</summary>
                 <div class="fz-step">
                     <div class="st">Addım 1</div><div class="st-title">Net total məbləğ</div>
-                    <p>Mövcud Gross (${fzFmt(v.gross)}) üzərindən tutulmalar çıxılır, Yeməkpulu (${fzFmt(v.meal)}) əlavə edilir və net məbləğə 12/10 əmsalı tətbiq olunur.</p>
+                    <p>Mövcud Gross (${fzFmt(v.gross)}) üzərindən seçilmiş parametrlərə (${fzParamLabel(p)}) uyğun tutulmalar çıxılır, Yeməkpulu (${fzFmt(v.meal)}) əlavə edilir və net məbləğə 12/10 əmsalı tətbiq olunur.</p>
                     <p><b>Net total məbləğ = ${fzFmt(netTotal)}</b></p>
                 </div>
                 <div class="fz-step">
@@ -3290,9 +3284,8 @@ Status: ${r.status}`;
                     <p><b>Net əsas əməkhaqqı = ${fzFmt(netBase)}</b></p>
                 </div>
                 <div class="fz-step">
-                    <div class="st">Addım 4</div><div class="st-title">Gross əməkhaqqının hesablanması (${brk}-ci interval)</div>
-                    <p>${brkCond}</p>
-                    <div class="fz-formula">${brkFormula}</div>
+                    <div class="st">Addım 4</div><div class="st-title">Gross əməkhaqqının hesablanması</div>
+                    <p>Yeni strukturda yeməkpulu 100 AZN sabitdir; net əsasdan 100 çıxılır və seçilmiş parametrlərə uyğun net→gross tərs hesablanır.</p>
                     <p style="margin-top:6px"><b>Hesablanmış Gross əməkhaqqı = ${fzFmt(newGross)}</b></p>
                 </div>
             </details>`;
