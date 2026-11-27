@@ -4,635 +4,630 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BirCalc</title>
+    <title>BirCalc — Əmək haqqı kalkulyatoru</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta name="theme-color" content="#E30613">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23FF7A1A'/%3E%3Cstop offset='1' stop-color='%23E30613'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='8' fill='url(%23g)'/%3E%3Cpath d='M11 8h6a4 4 0 0 1 0 8h-6zM11 16h7a4 4 0 0 1 0 8h-7z' fill='none' stroke='%23fff' stroke-width='2.6' stroke-linejoin='round'/%3E%3C/svg%3E" sizes="any">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
 
     <style>
+        /* =========================================================
+           BirCalc — Kapital Bank palette (orange → red)
+        ========================================================= */
         :root {
-            --bir-red: #ff2d55;
-            --bir-orange: #ff4b2b;
-            --bir-gradient: linear-gradient(135deg, #ff4b2b 0%, #ff2d55 100%);
-            --bg-body: #f4f7f9;
-            --bg-card: #ffffff;
-            --text-main: #1a1a1a;
-            --text-muted: #6b7280;
-            --border: #eef1f4;
-            --radius-lg: 18px;
-            --radius-md: 10px;
+            --brand-orange: #FF7A1A;
+            --brand-red: #E30613;
+            --brand-red-dark: #B8050F;
+            --brand-grad: linear-gradient(100deg, #FF7A1A 0%, #F2421B 55%, #E30613 100%);
+            --brand-soft: #FFF4EE;
+            --brand-soft-2: #FFE6DA;
+
+            /* legacy names used in JS / inline markup */
+            --bir-red: var(--brand-red);
+            --bir-orange: var(--brand-orange);
+            --bir-gradient: var(--brand-grad);
+
+            --ink: #16171B;
+            --ink-2: #33363D;
+            --muted: #6B6F78;
+            --muted-2: #9A9EA6;
+            --line: #E6E7EA;
+            --line-2: #F0F1F3;
+            --bg-body: #F5F5F3;
+            --bg-card: #FFFFFF;
+            --bg-sunken: #FAFAF9;
+            --text-main: var(--ink);
+            --text-muted: var(--muted);
+            --border: var(--line);
+            --ok: #1F8A4C;
+            --ok-soft: #EAF6EF;
+            --info: #1F5FBF;
+            --info-soft: #EEF3FB;
+
+            --radius-lg: 12px;
+            --radius-md: 8px;
+            --radius-sm: 6px;
+            --shadow-sm: 0 1px 2px rgba(22, 23, 27, 0.05);
+            --shadow-md: 0 1px 2px rgba(22, 23, 27, 0.04), 0 6px 20px -8px rgba(22, 23, 27, 0.12);
+            --focus: 0 0 0 3px rgba(255, 122, 26, 0.22);
         }
 
-        body { font-family: 'Montserrat', sans-serif; background: var(--bg-body); color: var(--text-main); margin: 0; font-size: 13px; overflow-x: hidden; }
         * { box-sizing: border-box; }
-
-        /* Modern Navbar */
-        .navbar {
-            background: var(--bg-card); padding: 0 16px; height: 65px;
-            display: flex; align-items: center; justify-content: space-between; gap: 10px;
-            flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden;
-            position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        html { -webkit-text-size-adjust: 100%; }
+        body {
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-body); color: var(--ink); margin: 0;
+            font-size: 14px; line-height: 1.45; overflow-x: hidden;
+            -webkit-font-smoothing: antialiased; font-feature-settings: 'cv11', 'ss01';
         }
-        .navbar::-webkit-scrollbar { height: 0; }
-        .navbar { scrollbar-width: none; }
-        .logo { font-weight: 900; font-size: 1.2rem; background: var(--bir-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -1px; flex-shrink: 0; white-space: nowrap; }
+        button, input, select { font-family: inherit; }
+        input[type=number], .kpi-val, .details-table .val, .bulk-table td, .tp-input, .r-val { font-variant-numeric: tabular-nums; }
 
-        /* System Switcher (General/Recruitment) */
-        .system-switch { display: flex; background: #f1f3f5; padding: 4px; border-radius: 12px; gap: 4px; flex-shrink: 0; }
-        .sw-btn {
-            padding: 8px 12px; font-size: 0.7rem; font-weight: 800; border-radius: 10px; white-space: nowrap;
-            cursor: pointer; border: none; background: none; transition: 0.3s; font-family: 'Montserrat'; color: #888;
+        /* Lucide icons */
+        .lucide { width: 16px; height: 16px; stroke-width: 1.75; flex-shrink: 0; vertical-align: -3px; }
+
+        /* =================== Header =================== */
+        .topbar { background: var(--bg-card); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--line); }
+        .topbar::before { content: ''; display: block; height: 3px; background: var(--brand-grad); }
+        .topbar-inner {
+            max-width: 1320px; margin: 0 auto; padding: 12px 24px;
+            display: flex; align-items: center; justify-content: space-between; gap: 16px;
         }
-        .sw-btn.active { background: #333; color: white; }
+        .logo { display: flex; align-items: center; gap: 10px; flex-shrink: 0; text-decoration: none; }
+        .brand-mark { width: 32px; height: 32px; display: block; }
+        .brand-text { display: flex; flex-direction: column; line-height: 1.15; }
+        .brand-name { font-weight: 700; font-size: 1.02rem; color: var(--ink); letter-spacing: -0.01em; }
+        .brand-sub { font-size: 0.72rem; color: var(--muted); font-weight: 500; }
 
-        /* Company Nav */
-        .company-nav { display: flex; background: #f1f3f5; padding: 4px; border-radius: 12px; gap: 4px; flex-shrink: 0; }
-        .comp-btn {
-            padding: 8px 12px; font-size: 0.72rem; font-weight: 700; color: #666; white-space: nowrap;
-            border-radius: 10px; cursor: pointer; transition: 0.2s; border: none; background: none; font-family: 'Montserrat';
+        .topbar-controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+
+        /* Segmented controls */
+        .system-switch, .company-nav {
+            display: inline-flex; background: var(--line-2); padding: 3px; border-radius: 9px; gap: 2px; flex-shrink: 0;
         }
-        .comp-btn.active { background: white; color: var(--bir-red); box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
-        .comp-btn.active.birbank { background: var(--bir-gradient); color: white; }
+        .sw-btn, .comp-btn {
+            padding: 6px 12px; font-size: 0.8rem; font-weight: 500; color: var(--muted);
+            border-radius: 7px; cursor: pointer; border: none; background: none; white-space: nowrap;
+            transition: background .15s, color .15s;
+        }
+        .sw-btn:hover, .comp-btn:hover { color: var(--ink); }
+        .sw-btn.active, .comp-btn.active { background: var(--bg-card); color: var(--ink); font-weight: 600; box-shadow: var(--shadow-sm); }
+        .sw-btn.active { background: var(--ink); color: #fff; }
+        .comp-btn.active.birbank { color: var(--brand-red); }
 
-        /* Nav Tabs (Individual/Bulk/Transfer) */
-        .nav-tabs { display: flex; gap: 6px; background: #f1f3f5; padding: 4px; border-radius: 12px; flex-shrink: 0; }
+        /* Tab strip */
+        .navbar { border-top: 1px solid var(--line-2); }
+        .nav-tabs {
+            max-width: 1320px; margin: 0 auto; padding: 0 24px;
+            display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none;
+        }
+        .nav-tabs::-webkit-scrollbar { height: 0; }
         .tab-btn {
-            padding: 8px 12px; font-size: 0.72rem; font-weight: 800; border-radius: 10px; white-space: nowrap;
-            cursor: pointer; border: none; background: none; transition: 0.3s; font-family: 'Montserrat'; color: #777;
+            position: relative; padding: 12px 12px; font-size: 0.86rem; font-weight: 500; color: var(--muted);
+            background: none; border: none; cursor: pointer; white-space: nowrap; transition: color .15s;
         }
-        .tab-btn.active { background: var(--bir-gradient); color: white; box-shadow: 0 4px 10px rgba(255, 45, 85, 0.2); }
-
-        .container { max-width: 1350px; margin: 15px auto; padding: 0 15px; }
-
-        /* Base Card Styling */
-        .card { 
-            background: var(--bg-card); border-radius: var(--radius-lg); border: 1px solid var(--border); 
-            padding: 18px; margin-bottom: 18px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); 
-            position: relative; overflow: hidden;
-        }
-        .card::before {
-            content: ''; position: absolute; top: -35px; right: -35px; width: 100px; height: 100px;
-            background: linear-gradient(135deg, rgba(255, 75, 43, 0.04) 0%, rgba(255, 45, 85, 0.04) 100%);
-            border-radius: 50%; z-index: 0;
+        .tab-btn:hover { color: var(--ink); }
+        .tab-btn.active { color: var(--ink); font-weight: 600; }
+        .tab-btn.active::after {
+            content: ''; position: absolute; left: 12px; right: 12px; bottom: -1px; height: 2px;
+            background: var(--brand-grad); border-radius: 2px 2px 0 0;
         }
 
-        /* Salary Alert Styling */
+        .container { max-width: 1320px; margin: 24px auto 64px; padding: 0 24px; }
+
+        /* =================== Cards =================== */
+        .card {
+            background: var(--bg-card); border-radius: var(--radius-lg); border: 1px solid var(--line);
+            padding: 20px 22px; margin-bottom: 20px; box-shadow: var(--shadow-sm); position: relative;
+        }
+        .card-title { font-size: 0.78rem; font-weight: 600; color: var(--muted); margin-bottom: 8px; }
+
+        /* Salary alert */
         #salaryAlert {
-            display: none; background: #fff5f5; border: 1px solid #fed7d7;
-            padding: 12px 20px; border-radius: 14px; margin-bottom: 15px;
-            color: #c53030; font-size: 0.8rem; font-weight: 700;
-            align-items: center; justify-content: space-between; gap: 15px;
-            animation: slideIn 0.3s ease; position: relative; z-index: 2;
+            display: none; background: var(--brand-soft); border: 1px solid var(--brand-soft-2);
+            border-left: 3px solid var(--brand-red);
+            padding: 12px 16px; border-radius: var(--radius-md); margin-bottom: 16px;
+            color: var(--brand-red-dark); font-size: 0.86rem; font-weight: 500;
+            align-items: center; justify-content: space-between; gap: 16px;
         }
-        @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-        .alert-btns { display: flex; gap: 8px; }
+        .alert-btns { display: flex; gap: 8px; flex-shrink: 0; }
         .alert-btn {
-            background: var(--bir-red); color: white; border: none; padding: 8px 14px;
-            border-radius: 8px; cursor: pointer; font-weight: 800; font-size: 0.65rem; transition: 0.2s;
+            background: var(--brand-red); color: #fff; border: none; padding: 7px 14px;
+            border-radius: var(--radius-sm); cursor: pointer; font-weight: 600; font-size: 0.78rem; transition: background .15s;
         }
-        .alert-btn.alt { background: #333; }
+        .alert-btn:hover { background: var(--brand-red-dark); }
+        .alert-btn.alt { background: var(--ink); }
+        .alert-btn.alt:hover { background: #000; }
 
-        /* Controls row */
+        /* =================== Forms =================== */
         .controls-row {
-            display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end;
-            border-bottom: 1px solid #f1f3f5; padding-bottom: 18px; margin-bottom: 18px;
-            position: relative; z-index: 1;
+            display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end;
+            border-bottom: 1px solid var(--line-2); padding-bottom: 20px; margin-bottom: 18px;
         }
-        .form-group { display: flex; flex-direction: column; gap: 5px; }
-        .form-group label { font-size: 0.6rem; font-weight: 800; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px; }
-        
-        .w-salary { width: 150px; }
-        .w-mode { width: 175px; }
-        .w-year { width: 90px; }
-        .w-sector { width: 200px; }
-        .w-workplace { width: 150px; }
-        .w-union { width: 90px; }
+        .controls-row.compact { border-bottom: none; padding-bottom: 0; margin-bottom: 16px; }
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .form-group label, .benefit-section > label { font-size: 0.76rem; font-weight: 500; color: var(--muted); }
+
+        .w-salary { width: 170px; }
+        .w-mode { width: 200px; }
+        .w-year { width: 96px; }
+        .w-sector { width: 210px; }
+        .w-workplace { width: 170px; }
+        .w-union { width: 96px; }
 
         select, .salary-input {
-            padding: 9px 12px; border: 1px solid #e2e8f0; border-radius: 8px;
-            font-size: 0.82rem; font-weight: 700; outline: none; transition: 0.2s; background: #fafbfc;
-            font-family: 'Montserrat'; color: #333; width: 100%;
+            height: 40px; padding: 0 12px; border: 1px solid var(--line); border-radius: var(--radius-md);
+            font-size: 0.9rem; font-weight: 500; outline: none; background: var(--bg-card);
+            color: var(--ink); width: 100%; transition: border-color .15s, box-shadow .15s;
         }
-        .salary-input { border: 2px solid var(--bir-red); background: #fffafa; color: var(--bir-red); }
+        select {
+            appearance: none; -webkit-appearance: none; padding-right: 32px; cursor: pointer;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236B6F78' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: right 11px center;
+        }
+        select:hover, .salary-input:hover { border-color: #D3D5DA; }
+        select:focus, .salary-input:focus { border-color: var(--brand-orange); box-shadow: var(--focus); }
+        .salary-input { font-size: 1rem; font-weight: 600; border-color: #D3D5DA; }
 
-        /* Horizontal Benefit Grid */
-        .benefit-section { position: relative; z-index: 1; }
-        .benefit-section > label { font-size: 0.6rem; font-weight: 800; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 8px; }
-        .benefit-grid { 
-            display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; position: relative; z-index: 1; 
-        }
+        /* Benefits */
+        .benefit-section > label { display: block; margin-bottom: 10px; }
+        .benefit-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
         .benefit-item {
-            border: 1px solid #edf2f7; padding: 10px; border-radius: 12px;
-            display: flex; align-items: flex-start; gap: 8px; cursor: pointer; background: #fcfdfe; transition: 0.3s;
-            height: 100%; min-height: 80px;
+            border: 1px solid var(--line); padding: 10px 12px; border-radius: var(--radius-md);
+            display: flex; align-items: flex-start; gap: 9px; cursor: pointer; background: var(--bg-card);
+            transition: border-color .15s, background .15s;
         }
-        .benefit-item.active { border-color: var(--bir-red); background: #fff8f9; box-shadow: 0 4px 10px rgba(255, 45, 85, 0.05); }
-        .benefit-item input { margin-top: 2px; width: 15px; height: 15px; accent-color: var(--bir-red); }
-        .benefit-text { font-size: 0.62rem; font-weight: 600; line-height: 1.3; color: #444; }
-        .benefit-text b { color: var(--bir-red); display: block; font-size: 0.78rem; margin-bottom: 2px; }
+        .benefit-item:hover { border-color: #D3D5DA; }
+        .benefit-item.active { border-color: var(--brand-orange); background: var(--brand-soft); }
+        .benefit-item input { margin: 2px 0 0; width: 15px; height: 15px; accent-color: var(--brand-red); flex-shrink: 0; }
+        .benefit-text { font-size: 0.74rem; font-weight: 400; line-height: 1.35; color: var(--muted); }
+        .benefit-text b { color: var(--ink); display: block; font-size: 0.86rem; font-weight: 600; margin-bottom: 1px; }
+        .benefit-item.active .benefit-text b { color: var(--brand-red); }
 
-        /* Dashboard Results */
-        .result-layout { display: grid; grid-template-columns: 1fr 330px; gap: 20px; }
-        .kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .kpi-card { 
-            padding: 15px 20px; border-radius: 16px; color: white;
-            background: var(--bir-gradient); box-shadow: 0 5px 15px rgba(255, 45, 85, 0.1);
-            position: relative; overflow: hidden;
+        /* =================== Results =================== */
+        .result-layout { display: grid; grid-template-columns: 1fr 380px; gap: 20px; align-items: start; }
+        .kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .kpi-card {
+            padding: 18px 20px; border-radius: var(--radius-lg); color: #fff;
+            background: var(--brand-grad); min-height: 104px;
+            display: flex; flex-direction: column; justify-content: space-between;
         }
-        .kpi-card::before { content: ''; position: absolute; top: -20px; right: -20px; width: 65px; height: 65px; background: rgba(255,255,255,0.15); border-radius: 50%; }
-        .kpi-card.dark { background: #1e293b; }
-        .kpi-card.light { background: white; color: #1a1a1a; border: 1px solid #eef1f4; box-shadow: none; }
-        .kpi-card.light::before { background: rgba(255, 45, 85, 0.04); }
-        
-        .kpi-label { font-size: 0.58rem; font-weight: 800; text-transform: uppercase; opacity: 0.8; margin-bottom: 4px; }
-        .kpi-val { font-size: 1.35rem; font-weight: 800; }
+        .kpi-card.dark { background: var(--ink); }
+        .kpi-card.light { background: var(--bg-card); color: var(--ink); border: 1px solid var(--line); box-shadow: var(--shadow-sm); }
+        .kpi-label { font-size: 0.78rem; font-weight: 500; opacity: 0.85; }
+        .kpi-card.light .kpi-label { color: var(--muted); opacity: 1; }
+        .kpi-val { font-size: 1.9rem; font-weight: 600; letter-spacing: -0.02em; margin-top: 10px; }
+        .kpi-val::after { content: ' ₼'; font-size: 0.55em; font-weight: 500; opacity: 0.6; }
 
-        /* Modern KPI Notice Styling - REDESIGNED & BIGGER */
         .kpi-mini-notice {
-            margin-top: 15px;
-            padding: 12px 14px;
-            background: rgba(255, 45, 85, 0.06);
-            border-radius: 12px;
-            border-left: 4px solid var(--bir-red);
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
-            animation: fadeIn 0.5s ease;
+            margin-top: 12px; padding: 10px 12px; background: var(--brand-soft);
+            border-radius: var(--radius-md); display: flex; align-items: flex-start; gap: 10px;
         }
-        .kpi-mini-notice i {
-            color: var(--bir-red);
-            margin-top: 2px;
-            width: 18px;
-            height: 18px;
-        }
-        .kpi-mini-notice span {
-            font-size: 0.72rem;
-            font-weight: 700;
-            color: #c53030;
-            line-height: 1.5;
-        }
+        .kpi-mini-notice .lucide, .kpi-mini-notice i { color: var(--brand-red); margin-top: 1px; }
+        .kpi-mini-notice span { font-size: 0.78rem; font-weight: 500; color: var(--brand-red-dark); line-height: 1.5; }
 
-        .details-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; position: relative; z-index: 1; }
-        .details-table td { padding: 10px 0; border-bottom: 1px solid #f1f5f9; }
-        .details-table .lbl { color: #64748b; font-weight: 600; }
-        .details-table .val { text-align: right; font-weight: 800; color: #1e293b; }
-        .total-row { border-top: 2px solid #1e293b; margin-top: 8px; }
-        .total-row .val { color: var(--bir-red); font-size: 1.2rem; }
-        .subtotal-row { background: #f8fafc; font-weight: 700; }
-        .subtotal-row td { padding: 8px; }
+        .details-card { margin-bottom: 0; }
+        .details-table { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
+        .details-table td { padding: 9px 0; border-bottom: 1px solid var(--line-2); }
+        .details-table .lbl { color: var(--muted); font-weight: 400; }
+        .details-table .val { text-align: right; font-weight: 600; color: var(--ink); }
+        .total-row td { border-top: 1px solid var(--ink); border-bottom: none; padding-top: 12px; }
+        .total-row .lbl { color: var(--ink); font-weight: 600; }
+        .total-row .val { color: var(--brand-red); font-size: 1.15rem; }
+        .subtotal-row { background: var(--bg-sunken); }
+        .subtotal-row td { padding: 9px 8px; font-weight: 600; }
 
-        /* Bulk Section Styling */
-        .upload-zone {
-            border: 2px dashed #cbd5e1; padding: 50px 20px; border-radius: var(--radius-lg);
-            text-align: center; cursor: pointer; transition: 0.3s; background: #fcfdfe;
-        }
-        .upload-zone:hover { border-color: var(--bir-red); background: #fffafa; }
-        .upload-icon { font-size: 45px; color: #ccc; margin-bottom: 15px; }
-        
-        .bulk-table-wrap { overflow-x: auto; max-height: 400px; margin-top: 20px; border: 1px solid #e2e8f0; border-radius: 12px; }
-        .bulk-table { width: 100%; border-collapse: collapse; font-size: 0.72rem; }
-        .bulk-table th { background: #f8fafc; padding: 12px; text-align: left; position: sticky; top: 0; border-bottom: 2px solid #e2e8f0; font-weight: 800; color: #64748b; }
-        .bulk-table td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; font-weight: 600; }
-
+        /* =================== Buttons =================== */
         .btn-action {
-            width: 100%; padding: 12px; border-radius: 12px; border: none;
-            background: var(--bir-gradient); color: white; font-weight: 800; font-size: 0.85rem;
-            cursor: pointer; transition: 0.3s; font-family: 'Montserrat';
+            width: 100%; height: 40px; padding: 0 16px; border-radius: var(--radius-md); border: none;
+            background: var(--brand-grad); color: #fff; font-weight: 600; font-size: 0.86rem;
+            cursor: pointer; transition: filter .15s; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
         }
+        .btn-action:hover { filter: brightness(0.95); }
+        .btn-secondary, .btn-export {
+            height: 36px; padding: 0 14px; border-radius: var(--radius-md); cursor: pointer;
+            font-weight: 600; font-size: 0.82rem; display: inline-flex; align-items: center; gap: 7px;
+            transition: background .15s, border-color .15s;
+        }
+        .btn-secondary { background: var(--bg-card); color: var(--ink); border: 1px solid var(--line); }
+        .btn-secondary:hover { border-color: #C9CBD1; background: var(--bg-sunken); }
+        .btn-export { background: var(--ok); color: #fff; border: 1px solid var(--ok); }
+        .btn-export:hover { background: #18723E; }
+
+        /* =================== Bulk =================== */
+        .upload-zone {
+            border: 1.5px dashed #D3D5DA; padding: 40px 20px; border-radius: var(--radius-lg);
+            text-align: center; cursor: pointer; transition: border-color .15s, background .15s; background: var(--bg-sunken);
+        }
+        .upload-zone:hover { border-color: var(--brand-orange); background: var(--brand-soft); }
+        .upload-zone .upload-icon, .upload-zone svg.upload-icon {
+            width: 40px; height: 40px; padding: 10px; border-radius: 10px; margin-bottom: 12px;
+            background: var(--bg-card); color: var(--brand-red); border: 1px solid var(--line); box-sizing: border-box;
+        }
+        .upload-zone h3 { margin: 0; font-size: 0.98rem; font-weight: 600; color: var(--ink); }
+        .upload-zone p { margin: 6px 0 0; font-size: 0.8rem; color: var(--muted); line-height: 1.6; }
+        .upload-zone p b { color: var(--ink-2); font-weight: 600; }
+
+        .bulk-results { margin-top: 20px; }
+        .results-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 12px; }
+        .results-count { font-size: 0.86rem; color: var(--muted); }
+        .results-count span { color: var(--ink); font-weight: 700; }
+
+        .bulk-table-wrap { overflow: auto; max-height: 440px; border: 1px solid var(--line); border-radius: var(--radius-md); }
+        .bulk-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+        .bulk-table th {
+            background: var(--bg-sunken); padding: 10px 12px; text-align: left; position: sticky; top: 0;
+            border-bottom: 1px solid var(--line); font-weight: 600; color: var(--muted); white-space: nowrap; font-size: 0.76rem;
+        }
+        .bulk-table td { padding: 9px 12px; border-bottom: 1px solid var(--line-2); color: var(--ink-2); white-space: nowrap; }
+        .bulk-table tbody tr:hover td { background: var(--bg-sunken); }
+        .num-pos { color: var(--ok); font-weight: 600; }
+        .num-info { color: var(--info); font-weight: 600; }
+        .cell-muted { font-size: 0.74rem; color: var(--muted); white-space: normal !important; }
+
+        .bulk-toggle {
+            display: flex; align-items: center; gap: 10px; margin-bottom: 16px;
+            padding: 10px 12px; background: var(--bg-sunken); border-radius: var(--radius-md); border: 1px solid var(--line);
+        }
+        .bulk-toggle input { width: 16px; height: 16px; cursor: pointer; accent-color: var(--brand-red); }
+        .bulk-toggle label { font-weight: 500; font-size: 0.84rem; color: var(--ink-2); cursor: pointer; }
+
+        .section-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+        .section-head-title { display: flex; align-items: center; gap: 8px; font-size: 0.92rem; font-weight: 600; color: var(--ink); }
+        .section-head-title .lucide { color: var(--brand-red); }
 
         .tab-pane { display: none; }
-        .tab-pane.active { display: block; animation: fadeIn 0.4s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .tab-pane.active { display: block; animation: fadeIn .2s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* Toggle Recruitment Bulk */
-        .bulk-toggle {
-            display: flex; align-items: center; gap: 10px; margin-bottom: 15px;
-            padding: 10px; background: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0;
-        }
-        .bulk-toggle input { width: 18px; height: 18px; cursor: pointer; accent-color: var(--bir-red); }
-        .bulk-toggle label { font-weight: 700; font-size: 0.75rem; color: #444; cursor: pointer; }
-
-        /* ============================================================
-           TRANSFER & PROMOTION STYLES
-        ============================================================ */
+        /* =================== Transfer / Mass growth / Texnopar =================== */
         .tp-intro {
-            background: linear-gradient(135deg, #fff8f0 0%, #fff5f8 100%);
-            border: 1px solid #ffd9c0;
-            border-radius: 12px;
-            padding: 12px 16px;
-            margin-bottom: 18px;
-            position: relative; z-index: 1;
+            background: var(--bg-sunken); border: 1px solid var(--line); border-left: 3px solid var(--brand-orange);
+            border-radius: var(--radius-md); padding: 14px 18px; margin-bottom: 20px;
         }
-        .tp-intro-title {
-            font-size: 0.65rem; font-weight: 800; color: var(--bir-orange);
-            text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 7px;
-            display: flex; align-items: center; gap: 6px;
-        }
-        .tp-intro ul { margin: 0; padding-left: 16px; list-style: disc; }
-        .tp-intro ul li { font-size: 0.72rem; font-weight: 600; color: #555; line-height: 1.75; }
-        .tp-intro ul li strong { color: var(--bir-red); }
+        .tp-intro-title { font-size: 0.9rem; font-weight: 600; color: var(--ink); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+        .tp-intro-title .lucide { color: var(--brand-red); }
+        .tp-intro ul { margin: 0; padding-left: 18px; }
+        .tp-intro ul li { font-size: 0.82rem; color: var(--ink-2); line-height: 1.7; }
+        .tp-intro ul li::marker { color: var(--muted-2); }
+        .tp-intro ul li strong { color: var(--ink); font-weight: 600; }
 
-        /* Two-panel layout */
         .tp-panels {
-            display: grid;
-            grid-template-columns: 260px 1fr;
-            gap: 0;
-            border: 1px solid #edf2f7;
-            border-radius: 14px;
-            overflow: hidden;
-            position: relative; z-index: 1;
+            display: grid; grid-template-columns: 300px 1fr;
+            border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden;
         }
-        .tp-panel {
-            padding: 18px 20px;
-        }
-        .tp-panel.left {
-            background: #f8fafc;
-            border-right: 1px solid #edf2f7;
-        }
-        .tp-panel.right {
-            background: #fff;
-        }
+        .tp-panel { padding: 20px 22px; }
+        .tp-panel.left { background: var(--bg-sunken); border-right: 1px solid var(--line); }
+        .tp-panel.right { background: var(--bg-card); }
 
         .tp-section-title {
-            font-size: 0.58rem; font-weight: 800; color: #b0bec5;
-            text-transform: uppercase; letter-spacing: 0.5px;
-            margin-bottom: 14px; padding-bottom: 7px;
-            border-bottom: 1.5px solid #edf2f7;
-            display: flex; align-items: center; gap: 5px;
+            font-size: 0.86rem; font-weight: 600; color: var(--ink);
+            margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
         }
-        .tp-section-title span {
-            background: var(--bir-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-        }
+        .tp-section-title .lucide { color: var(--muted); }
 
-        .tp-field-group { display: flex; flex-direction: column; gap: 9px; }
-
-        /* Two-up fields */
-        .tp-field-row {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
-        }
-
-        .tp-field { display: flex; flex-direction: column; gap: 3px; }
-        .tp-field label {
-            font-size: 0.56rem; font-weight: 800; color: #b0bec5;
-            text-transform: uppercase; letter-spacing: 0.4px; white-space: nowrap;
-        }
+        .tp-field-group { display: flex; flex-direction: column; gap: 12px; }
+        .tp-field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .tp-field { display: flex; flex-direction: column; gap: 6px; }
+        .tp-field label { font-size: 0.76rem; font-weight: 500; color: var(--muted); }
 
         .tp-input {
-            padding: 8px 10px; border: 1.5px solid #e2e8f0; border-radius: 7px;
-            font-size: 0.82rem; font-weight: 700; outline: none; transition: 0.2s; background: #fff;
-            font-family: 'Montserrat'; color: #333;
-            width: 160px;
+            height: 40px; padding: 0 12px; border: 1px solid var(--line); border-radius: var(--radius-md);
+            font-size: 0.92rem; font-weight: 500; outline: none; background: var(--bg-card);
+            color: var(--ink); width: 100%; transition: border-color .15s, box-shadow .15s;
         }
-        .tp-input:focus { border-color: var(--bir-red); background: #fffafa; }
-        .tp-input.manual { border-color: var(--bir-red); background: #fffafa; color: var(--bir-red); }
-        .tp-input.auto { background: #f8fafc; color: #94a3b8; border-style: dashed; cursor: not-allowed; }
-        .tp-input.auto-green { background: #f0fdf4; color: #16a34a; border-color: #86efac; border-style: dashed; cursor: not-allowed; font-weight: 800; }
-        .tp-input.auto-blue  { background: #eff6ff; color: #2563eb; border-color: #93c5fd; border-style: dashed; cursor: not-allowed; font-weight: 800; }
-        /* Left panel inputs slightly narrower */
-        .tp-panel.left .tp-input { width: 140px; background: #fff; }
-
-        /* Radio buttons */
-        .tp-radio-group { display: flex; gap: 7px; margin-bottom: 12px; }
-        .tp-radio-btn {
-            display: flex; align-items: center; gap: 5px; cursor: pointer;
-            padding: 6px 12px; border-radius: 7px; border: 1.5px solid #e2e8f0;
-            transition: 0.2s; background: #f8fafc; flex: 1; justify-content: center;
+        .tp-input:focus { border-color: var(--brand-orange); box-shadow: var(--focus); }
+        .tp-input.manual { border-color: #D3D5DA; font-weight: 600; }
+        .tp-input.auto, .tp-input.auto-green, .tp-input.auto-blue {
+            background: var(--line-2); border-color: transparent; color: var(--ink-2); cursor: default;
         }
-        .tp-radio-btn input { accent-color: var(--bir-red); width: 13px; height: 13px; }
-        .tp-radio-btn span { font-size: 0.68rem; font-weight: 800; color: #666; }
-        .tp-radio-btn.selected { border-color: var(--bir-red); background: #fff8f9; }
-        .tp-radio-btn.selected span { color: var(--bir-red); }
+        .tp-input.auto-green { color: var(--ok); font-weight: 600; }
+        .tp-input.auto-blue { color: var(--info); font-weight: 600; }
+        .tp-input[data-key] { background: var(--brand-soft); box-shadow: inset 0 0 0 1px var(--brand-soft-2); }
+        .tp-panel.left .tp-input.manual { background: var(--bg-card); }
 
-        /* Right panel field rows grid */
-        .tp-right-grid {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 9px;
-        }
+        .tp-radio-group { display: inline-flex; gap: 2px; margin-bottom: 16px; background: var(--line-2); padding: 3px; border-radius: 9px; }
+        .tp-radio-btn { display: flex; align-items: center; gap: 6px; cursor: pointer; padding: 6px 14px; border-radius: 7px; transition: background .15s; }
+        .tp-radio-btn input { position: absolute; opacity: 0; pointer-events: none; }
+        .tp-radio-btn span { font-size: 0.82rem; font-weight: 500; color: var(--muted); }
+        .tp-radio-btn.selected { background: var(--bg-card); box-shadow: var(--shadow-sm); }
+        .tp-radio-btn.selected span { color: var(--ink); font-weight: 600; }
 
-        /* Result bar */
-        .tp-result-bar {
-            display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
-            margin-top: 16px; position: relative; z-index: 1;
-        }
-        .tp-result-item {
-            background: #f8fafc; border: 1px solid #edf2f7; border-radius: 11px;
-            padding: 11px 13px; text-align: center;
-        }
-        .tp-result-item .r-label { font-size: 0.54rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.3px; line-height: 1.4; }
-        .tp-result-item .r-val   { font-size: 1.05rem; font-weight: 800; color: #1e293b; }
-        .tp-result-item.highlight { background: var(--bir-gradient); border-color: transparent; }
-        .tp-result-item.highlight .r-label { color: rgba(255,255,255,0.75); }
-        .tp-result-item.highlight .r-val   { color: white; }
-        .tp-result-item.green { background: #f0fdf4; border-color: #86efac; }
-        .tp-result-item.green .r-val { color: #16a34a; }
+        .tp-right-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 14px; }
 
-        .tp-divider { border: none; border-top: 1px dashed #e2e8f0; margin: 14px 0; }
+        .tp-result-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+        .tp-result-item { background: var(--bg-card); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 14px 16px; }
+        .tp-result-item .r-label { font-size: 0.76rem; font-weight: 500; color: var(--muted); margin-bottom: 6px; display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
+        .tp-result-item .r-val { font-size: 1.3rem; font-weight: 600; color: var(--ink); letter-spacing: -0.01em; }
+        .tp-result-item.highlight { background: var(--brand-grad); border-color: transparent; }
+        .tp-result-item.highlight .r-label { color: rgba(255,255,255,0.85); }
+        .tp-result-item.highlight .r-val { color: #fff; }
+        .tp-result-item.green { border-color: #BFE3CD; background: var(--ok-soft); }
+        .tp-result-item.green .r-val { color: var(--ok); }
 
-        .tp-badge {
-            display: inline-flex; align-items: center; padding: 2px 6px;
-            border-radius: 4px; font-size: 0.55rem; font-weight: 800;
-            margin-left: 5px; vertical-align: middle;
-        }
-        .tp-badge.increase { background: #dcfce7; color: #16a34a; }
-        .tp-badge.decrease { background: #fee2e2; color: #dc2626; }
-        .tp-badge.same     { background: #f1f5f9; color: #64748b; }
+        .tp-divider { border: none; border-top: 1px solid var(--line-2); margin: 20px 0; }
 
-        @media (max-width: 1100px) {
+        .tp-badge { display: inline-flex; align-items: center; padding: 1px 6px; border-radius: 4px; font-size: 0.68rem; font-weight: 600; }
+        .tp-badge.increase { background: #DDF1E5; color: var(--ok); }
+        .tp-badge.decrease { background: #FDE3E1; color: var(--brand-red-dark); }
+        .tp-badge.same { background: var(--line-2); color: var(--muted); }
+        .tp-result-item.highlight .tp-badge { background: rgba(255,255,255,0.22); color: #fff; }
+
+        /* =================== Responsive =================== */
+        @media (max-width: 1180px) {
             .benefit-grid { grid-template-columns: repeat(3, 1fr); }
             .result-layout { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 900px) {
             .tp-panels { grid-template-columns: 1fr; }
-            .tp-panel.left { border-right: none; border-bottom: 1px solid #edf2f7; }
+            .tp-panel.left { border-right: none; border-bottom: 1px solid var(--line); }
             .tp-result-bar { grid-template-columns: repeat(2, 1fr); }
+            .topbar-inner { flex-wrap: wrap; }
+            .topbar-controls { width: 100%; justify-content: flex-start; }
+        }
+        @media (max-width: 640px) {
+            .container, .topbar-inner, .nav-tabs { padding-left: 14px; padding-right: 14px; }
+            .benefit-grid { grid-template-columns: repeat(2, 1fr); }
             .tp-right-grid { grid-template-columns: 1fr; }
+            .kpi-card { padding: 14px 16px; min-height: 88px; }
+            .kpi-val { font-size: 1.35rem; }
+            .brand-sub { display: none; }
+            .controls-row > .form-group { width: calc(50% - 7px); }
         }
 
-        /* Welcome Selection Modal */
+        /* =================== Welcome modal =================== */
         .welcome-overlay {
-            position: fixed; inset: 0; background: rgba(15, 23, 42, 0.55);
-            backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
-            z-index: 1000; display: flex; align-items: center; justify-content: center;
-            padding: 20px; animation: overlayFade 0.3s ease;
+            position: fixed; inset: 0; background: rgba(22, 23, 27, 0.5);
+            z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px;
+            animation: overlayFade .2s ease;
         }
         .welcome-overlay.hidden { display: none; }
         @keyframes overlayFade { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes modalPop { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 
         .welcome-modal {
-            background: var(--bg-card); border-radius: 24px; padding: 40px 35px;
-            max-width: 740px; width: 100%; text-align: center;
-            box-shadow: 0 25px 60px rgba(0,0,0,0.25);
-            animation: modalPop 0.35s ease; position: relative; overflow: hidden;
+            background: var(--bg-card); border-radius: 16px; padding: 32px;
+            max-width: 680px; width: 100%; text-align: left;
+            box-shadow: 0 24px 60px rgba(0,0,0,0.22); animation: modalPop .25s ease;
+            border-top: 3px solid transparent;
+            background-image: linear-gradient(var(--bg-card), var(--bg-card)), var(--brand-grad);
+            background-origin: border-box; background-clip: padding-box, border-box;
         }
-        @keyframes modalPop { from { opacity: 0; transform: translateY(20px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
-        .welcome-modal::before {
-            content: ''; position: absolute; top: -60px; right: -60px; width: 160px; height: 160px;
-            background: linear-gradient(135deg, rgba(255, 75, 43, 0.06) 0%, rgba(255, 45, 85, 0.06) 100%);
-            border-radius: 50%;
-        }
+        .welcome-logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1rem; color: var(--ink); margin-bottom: 22px; }
+        .welcome-title { font-size: 1.35rem; font-weight: 700; color: var(--ink); margin: 0 0 4px; letter-spacing: -0.015em; }
+        .welcome-sub { font-size: 0.9rem; color: var(--muted); margin: 0; }
 
-        .welcome-logo {
-            font-weight: 900; font-size: 1.5rem; letter-spacing: -1px;
-            background: var(--bir-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            margin-bottom: 12px;
-        }
-        .welcome-title { font-size: 1.15rem; font-weight: 800; color: var(--text-main); margin: 0 0 6px; }
-        .welcome-sub { font-size: 0.78rem; font-weight: 600; color: var(--text-muted); margin: 0; }
-
-        .choice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 28px; position: relative; z-index: 1; }
+        .choice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 22px; }
         .choice-card {
-            border: 2px solid var(--border); border-radius: 18px; padding: 28px 22px;
-            cursor: pointer; background: #fcfdfe; transition: 0.25s ease; text-align: center;
+            border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 20px;
+            cursor: pointer; background: var(--bg-card); transition: border-color .15s, background .15s; text-align: left;
         }
-        .choice-card:hover { transform: translateY(-4px); border-color: var(--bir-red); background: #fff8f9; box-shadow: 0 12px 30px rgba(255, 45, 85, 0.12); }
+        .choice-card:hover { border-color: var(--brand-orange); background: var(--brand-soft); }
         .choice-icon {
-            width: 58px; height: 58px; border-radius: 16px; margin: 0 auto 15px;
+            width: 40px; height: 40px; border-radius: 10px; margin-bottom: 14px;
             display: flex; align-items: center; justify-content: center;
-            font-size: 1.35rem; color: white;
         }
-        .choice-card.general .choice-icon { background: #1e293b; box-shadow: 0 8px 18px rgba(30, 41, 59, 0.25); }
-        .choice-card.recruitment .choice-icon { background: var(--bir-gradient); box-shadow: 0 8px 18px rgba(255, 45, 85, 0.25); }
-        .choice-title { font-size: 0.92rem; font-weight: 800; color: var(--text-main); margin-bottom: 8px; }
-        .choice-desc { font-size: 0.7rem; font-weight: 600; line-height: 1.55; color: var(--text-muted); }
+        .choice-icon .lucide { width: 20px; height: 20px; }
+        .choice-card.general .choice-icon { background: var(--ink); color: #fff; }
+        .choice-card.recruitment .choice-icon { background: var(--brand-grad); color: #fff; }
+        .choice-title { font-size: 0.98rem; font-weight: 600; color: var(--ink); margin-bottom: 6px; }
+        .choice-desc { font-size: 0.82rem; line-height: 1.55; color: var(--muted); }
+        @media (max-width: 640px) { .choice-grid { grid-template-columns: 1fr; } .welcome-modal { padding: 24px 20px; } }
 
-        @media (max-width: 640px) {
-            .choice-grid { grid-template-columns: 1fr; }
-            .welcome-modal { padding: 30px 22px; }
-        }
-
-        /* ===== Maya (MyAI) Assistant ===== */
+        /* =================== Maya assistant =================== */
         .maya-fab {
-            position: fixed; bottom: 24px; right: 24px; z-index: 900;
-            display: flex; align-items: center; gap: 10px;
-            /* Fərqli bənövşəyi-indiqo rəng — qırmızı düymələrlə qarışmasın, görünsün */
-            background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%); color: white; border: none; cursor: pointer;
-            padding: 14px 22px; border-radius: 50px;
-            font-family: 'Montserrat'; font-weight: 800; font-size: 0.85rem; letter-spacing: 0.3px;
-            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.45); transition: 0.25s ease;
+            position: fixed; bottom: 22px; right: 22px; z-index: 900;
+            display: flex; align-items: center; gap: 8px;
+            background: var(--ink); color: #fff; border: none; cursor: pointer;
+            height: 44px; padding: 0 18px 0 14px; border-radius: 22px;
+            font-weight: 600; font-size: 0.88rem;
+            box-shadow: 0 8px 24px rgba(22,23,27,0.28); transition: transform .15s, background .15s;
         }
-        .maya-fab:hover { transform: translateY(-3px); box-shadow: 0 14px 36px rgba(99, 102, 241, 0.55); }
-        .maya-fab i { font-size: 1rem; animation: mayaIconWiggle 2.4s ease-in-out infinite; transform-origin: center; }
+        .maya-fab::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--brand-grad); order: 2; margin-left: 2px; }
+        .maya-fab:hover { background: #000; transform: translateY(-1px); }
         .maya-fab.hidden { display: none; }
-        /* Diqqət çəkən pulse halqası */
-        .maya-fab::after {
-            content: ''; position: absolute; inset: 0; border-radius: 50px; z-index: -1;
-            box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.6); animation: mayaRing 2.2s ease-out infinite;
-        }
-        @keyframes mayaRing {
-            0% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.6); }
-            70% { box-shadow: 0 0 0 16px rgba(139, 92, 246, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0); }
-        }
-        @keyframes mayaIconWiggle {
-            0%, 55%, 100% { transform: rotate(0) scale(1); }
-            62% { transform: rotate(-16deg) scale(1.18); }
-            72% { transform: rotate(14deg) scale(1.18); }
-            82% { transform: rotate(-8deg) scale(1.1); }
-            92% { transform: rotate(4deg) scale(1.05); }
-        }
-        @media (prefers-reduced-motion: reduce) {
-            .maya-fab::after, .maya-fab i { animation: none; }
-        }
 
         .maya-panel {
-            position: fixed; bottom: 24px; right: 24px; z-index: 950;
-            width: 400px; max-width: calc(100vw - 30px);
-            height: 580px; max-height: calc(100vh - 48px);
-            background: white; border-radius: 20px; overflow: hidden;
-            box-shadow: 0 25px 70px rgba(0,0,0,0.3);
-            display: none; flex-direction: column;
-            animation: modalPop 0.3s ease;
+            position: fixed; bottom: 22px; right: 22px; z-index: 950;
+            width: 400px; max-width: calc(100vw - 28px); height: 580px; max-height: calc(100vh - 44px);
+            background: var(--bg-card); border-radius: 14px; overflow: hidden; border: 1px solid var(--line);
+            box-shadow: 0 24px 64px rgba(0,0,0,0.22); display: none; flex-direction: column; animation: modalPop .2s ease;
         }
         .maya-panel.open { display: flex; }
-
-        .maya-head { background: #1e293b; padding: 14px 16px; display: flex; align-items: center; gap: 11px; color: white; flex-shrink: 0; }
+        .maya-head { background: var(--bg-card); border-bottom: 1px solid var(--line); padding: 12px 14px; display: flex; align-items: center; gap: 10px; color: var(--ink); flex-shrink: 0; }
         .maya-avatar {
-            width: 40px; height: 40px; border-radius: 13px; background: var(--bir-gradient);
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 900; font-size: 1.05rem; box-shadow: 0 4px 12px rgba(255,45,85,0.35);
+            width: 34px; height: 34px; border-radius: 9px; background: var(--brand-grad); color: #fff;
+            display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.92rem; flex-shrink: 0;
         }
         .maya-head-info { flex: 1; }
-        .maya-name { font-weight: 800; font-size: 0.95rem; }
-        .maya-sub { font-size: 0.6rem; opacity: 0.8; font-weight: 700; display: flex; align-items: center; gap: 5px; margin-top: 2px; }
-        .maya-status-dot { width: 7px; height: 7px; background: #4ade80; border-radius: 50%; box-shadow: 0 0 6px #4ade80; }
-        .maya-head-btn { background: rgba(255,255,255,0.12); border: none; color: white; width: 30px; height: 30px; border-radius: 9px; cursor: pointer; font-size: 0.85rem; transition: 0.2s; }
-        .maya-head-btn:hover { background: rgba(255,255,255,0.25); }
-        .maya-close { background: rgba(255,255,255,0.12); border: none; color: white; width: 30px; height: 30px; border-radius: 9px; cursor: pointer; font-size: 0.85rem; transition: 0.2s; }
-        .maya-close:hover { background: rgba(255,255,255,0.25); }
-        .maya-chip.chip-platform { background: #1e293b; color: white; border-color: #1e293b; }
-        .maya-chip.chip-platform:hover { background: #0f172a; color: white; }
-        .maya-chip.chip-platform i { margin-right: 4px; }
+        .maya-name { font-weight: 600; font-size: 0.92rem; }
+        .maya-sub { font-size: 0.74rem; color: var(--muted); display: flex; align-items: center; gap: 6px; margin-top: 1px; }
+        .maya-status-dot { width: 6px; height: 6px; background: #22A05A; border-radius: 50%; }
+        .maya-head-btn, .maya-close {
+            background: none; border: 1px solid transparent; color: var(--muted); width: 32px; height: 32px; border-radius: 8px;
+            cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: background .15s, color .15s;
+        }
+        .maya-head-btn:hover, .maya-close:hover { background: var(--line-2); color: var(--ink); }
+        .maya-chip.chip-platform { background: var(--ink); color: #fff; border-color: var(--ink); }
+        .maya-chip.chip-platform:hover { background: #000; color: #fff; }
+        .maya-chip .lucide { width: 14px; height: 14px; margin-right: 4px; vertical-align: -2px; }
 
-        .maya-body { flex: 1; overflow-y: auto; padding: 15px; background: #f8fafc; display: flex; flex-direction: column; gap: 10px; }
-        .maya-msg { max-width: 88%; padding: 10px 14px; border-radius: 14px; font-size: 0.76rem; font-weight: 600; line-height: 1.6; overflow-wrap: break-word; }
-        .maya-msg.user { align-self: flex-end; background: var(--bir-gradient); color: white; border-bottom-right-radius: 4px; }
-        .maya-msg.bot { align-self: flex-start; background: white; border: 1px solid #eef1f4; color: #333; border-bottom-left-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
-        .maya-msg.bot b { color: var(--bir-red); }
-        .maya-msg.err { align-self: flex-start; background: #fff5f5; border: 1px solid #fed7d7; color: #c53030; }
+        .maya-body { flex: 1; overflow-y: auto; padding: 14px; background: var(--bg-sunken); display: flex; flex-direction: column; gap: 10px; }
+        .maya-msg { max-width: 88%; padding: 9px 13px; border-radius: 12px; font-size: 0.85rem; line-height: 1.55; overflow-wrap: break-word; }
+        .maya-msg.user { align-self: flex-end; background: var(--ink); color: #fff; border-bottom-right-radius: 4px; }
+        .maya-msg.bot { align-self: flex-start; background: var(--bg-card); border: 1px solid var(--line); color: var(--ink-2); border-bottom-left-radius: 4px; }
+        .maya-msg.bot b { color: var(--ink); font-weight: 600; }
+        .maya-msg.err { align-self: flex-start; background: var(--brand-soft); border: 1px solid var(--brand-soft-2); color: var(--brand-red-dark); }
 
-        .maya-typing { align-self: flex-start; background: white; border: 1px solid #eef1f4; border-radius: 14px; border-bottom-left-radius: 4px; padding: 13px 16px; display: flex; gap: 5px; }
-        .maya-typing span { width: 7px; height: 7px; background: #cbd5e0; border-radius: 50%; animation: mayaBlink 1.2s infinite; }
-        .maya-typing span:nth-child(2) { animation-delay: 0.2s; }
-        .maya-typing span:nth-child(3) { animation-delay: 0.4s; }
-        @keyframes mayaBlink { 0%, 80%, 100% { opacity: 0.3; transform: scale(0.9); } 40% { opacity: 1; transform: scale(1.15); } }
+        .maya-typing { align-self: flex-start; background: var(--bg-card); border: 1px solid var(--line); border-radius: 12px; border-bottom-left-radius: 4px; padding: 12px 14px; display: flex; gap: 4px; }
+        .maya-typing span { width: 6px; height: 6px; background: var(--muted-2); border-radius: 50%; animation: mayaBlink 1.2s infinite; }
+        .maya-typing span:nth-child(2) { animation-delay: .2s; }
+        .maya-typing span:nth-child(3) { animation-delay: .4s; }
+        @keyframes mayaBlink { 0%, 80%, 100% { opacity: .3; } 40% { opacity: 1; } }
 
         .maya-chips { display: flex; flex-wrap: wrap; gap: 6px; }
         .maya-chip {
-            background: white; border: 1px solid #e2e8f0; padding: 7px 12px; border-radius: 20px;
-            font-size: 0.64rem; font-weight: 700; color: #555; cursor: pointer;
-            font-family: 'Montserrat'; transition: 0.2s; text-align: left;
+            background: var(--bg-card); border: 1px solid var(--line); padding: 6px 11px; border-radius: 8px;
+            font-size: 0.78rem; font-weight: 500; color: var(--ink-2); cursor: pointer; transition: border-color .15s, color .15s; text-align: left;
         }
-        .maya-chip:hover { border-color: var(--bir-red); color: var(--bir-red); background: #fff8f9; }
+        .maya-chip:hover { border-color: var(--brand-orange); color: var(--brand-red); }
 
-        .maya-foot { padding: 12px; background: white; border-top: 1px solid #eef1f4; display: flex; gap: 8px; flex-shrink: 0; }
-        .maya-input {
-            flex: 1; padding: 11px 14px; border: 1px solid #e2e8f0; border-radius: 12px; outline: none;
-            font-family: 'Montserrat'; font-size: 0.78rem; font-weight: 600; color: #333; transition: 0.2s;
-        }
-        .maya-input:focus { border-color: var(--bir-red); background: #fffafa; }
-        .maya-send { background: var(--bir-gradient); color: white; border: none; width: 44px; border-radius: 12px; cursor: pointer; font-size: 0.9rem; transition: 0.2s; flex-shrink: 0; }
-        .maya-send:hover { opacity: 0.9; }
-        .maya-send:disabled { opacity: 0.45; cursor: default; }
+        .maya-foot { padding: 10px; background: var(--bg-card); border-top: 1px solid var(--line); display: flex; gap: 8px; flex-shrink: 0; }
+        .maya-input { flex: 1; height: 40px; padding: 0 12px; border: 1px solid var(--line); border-radius: var(--radius-md); outline: none; font-size: 0.86rem; color: var(--ink); transition: border-color .15s, box-shadow .15s; }
+        .maya-input:focus { border-color: var(--brand-orange); box-shadow: var(--focus); }
+        .maya-send { background: var(--brand-grad); color: #fff; border: none; width: 40px; height: 40px; border-radius: var(--radius-md); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .maya-send:hover { filter: brightness(.95); }
+        .maya-send:disabled { opacity: .45; cursor: default; }
 
-        @media print { .maya-fab, .maya-panel, .maya-auth, .btn-ai-explain { display: none !important; } }
         @media (max-width: 640px) { .maya-panel { bottom: 12px; right: 12px; } }
 
-        /* Maya parol qapısı */
-        .maya-auth { position: fixed; inset: 0; background: rgba(15,23,42,0.55); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); z-index: 1100; display: none; align-items: center; justify-content: center; padding: 20px; }
-        .maya-auth.open { display: flex; animation: overlayFade 0.25s ease; }
-        .maya-auth-box { background: white; border-radius: 22px; padding: 32px 28px; width: 360px; max-width: 100%; text-align: center; box-shadow: 0 25px 60px rgba(0,0,0,0.3); animation: modalPop 0.3s ease; }
-        .maya-auth-icon { width: 60px; height: 60px; border-radius: 18px; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; color: white; background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%); box-shadow: 0 8px 20px rgba(99,102,241,0.35); }
-        .maya-auth-title { font-size: 1rem; font-weight: 800; color: #1e293b; margin-bottom: 5px; }
-        .maya-auth-sub { font-size: 0.72rem; font-weight: 600; color: #94a3b8; margin-bottom: 18px; }
-        .maya-auth-input { width: 100%; padding: 12px 14px; border: 1px solid #e2e8f0; border-radius: 12px; outline: none; font-family: 'Montserrat'; font-size: 0.85rem; font-weight: 700; color: #333; text-align: center; letter-spacing: 2px; transition: 0.2s; }
-        .maya-auth-input:focus { border-color: #6366f1; background: #f5f3ff; }
-        .maya-auth-err { display: none; color: #c53030; font-size: 0.68rem; font-weight: 700; margin-top: 10px; }
-        .maya-auth-actions { display: flex; gap: 10px; margin-top: 18px; }
-        .maya-auth-actions button { flex: 1; padding: 11px; border: none; border-radius: 12px; cursor: pointer; font-family: 'Montserrat'; font-weight: 800; font-size: 0.75rem; transition: 0.2s; }
-        .maya-auth-cancel { background: #f1f3f5; color: #64748b; }
-        .maya-auth-cancel:hover { background: #e2e8f0; }
-        .maya-auth-ok { background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%); color: white; }
-        .maya-auth-ok:hover { opacity: 0.92; }
+        .maya-auth { position: fixed; inset: 0; background: rgba(22,23,27,0.5); z-index: 1100; display: none; align-items: center; justify-content: center; padding: 20px; }
+        .maya-auth.open { display: flex; animation: overlayFade .2s ease; }
+        .maya-auth-box { background: var(--bg-card); border-radius: 14px; padding: 28px; width: 360px; max-width: 100%; text-align: left; box-shadow: 0 24px 60px rgba(0,0,0,0.22); animation: modalPop .2s ease; }
+        .maya-auth-icon { width: 40px; height: 40px; border-radius: 10px; margin-bottom: 14px; display: flex; align-items: center; justify-content: center; color: #fff; background: var(--ink); }
+        .maya-auth-title { font-size: 1.02rem; font-weight: 600; color: var(--ink); margin-bottom: 4px; }
+        .maya-auth-sub { font-size: 0.84rem; color: var(--muted); margin-bottom: 16px; }
+        .maya-auth-input { width: 100%; height: 42px; padding: 0 12px; border: 1px solid var(--line); border-radius: var(--radius-md); outline: none; font-size: 0.92rem; color: var(--ink); letter-spacing: 2px; transition: border-color .15s, box-shadow .15s; }
+        .maya-auth-input:focus { border-color: var(--brand-orange); box-shadow: var(--focus); }
+        .maya-auth-err { display: none; color: var(--brand-red-dark); font-size: 0.8rem; margin-top: 8px; }
+        .maya-auth-actions { display: flex; gap: 8px; margin-top: 18px; justify-content: flex-end; }
+        .maya-auth-actions button { height: 38px; padding: 0 16px; border-radius: var(--radius-md); cursor: pointer; font-weight: 600; font-size: 0.84rem; transition: background .15s; }
+        .maya-auth-cancel { background: var(--bg-card); color: var(--ink-2); border: 1px solid var(--line); }
+        .maya-auth-cancel:hover { background: var(--line-2); }
+        .maya-auth-ok { background: var(--brand-red); color: #fff; border: 1px solid var(--brand-red); }
+        .maya-auth-ok:hover { background: var(--brand-red-dark); }
 
-        /* ===== Transfer by Firuza — orijinal dizayn (txt-dəki palitra) ===== */
+        /* =================== Transfer by Firuza (brand-aligned) =================== */
         #firuza {
-            --fz-fg: oklch(23% .045 258);
-            --fz-card: oklch(100% 0 0);
-            --fz-primary: oklch(31% .075 259);
-            --fz-primary-fg: oklch(98.5% .002 247);
-            --fz-secondary: oklch(95.5% .008 247);
-            --fz-muted: oklch(95.8% .006 247);
-            --fz-muted-fg: oklch(53% .03 257);
-            --fz-accent: oklch(63% .093 195);
-            --fz-success: oklch(56% .115 158);
-            --fz-success-soft: oklch(96.5% .03 160);
-            --fz-destructive: oklch(57.7% .245 27.325);
-            --fz-border: oklch(91.2% .011 255);
-            --fz-input: oklch(90% .013 255);
-            --fz-ring: oklch(63% .093 195);
-            --fz-shadow: 0 1px 2px oklch(23% .045 258 / .04), 0 8px 24px -12px oklch(23% .045 258 / .14);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            --fz-fg: var(--ink);
+            --fz-card: var(--bg-card);
+            --fz-primary: var(--ink);
+            --fz-primary-fg: #fff;
+            --fz-secondary: var(--line-2);
+            --fz-muted: var(--line-2);
+            --fz-muted-fg: var(--muted);
+            --fz-accent: var(--brand-red);
+            --fz-success: var(--ok);
+            --fz-success-soft: var(--ok-soft);
+            --fz-destructive: var(--brand-red-dark);
+            --fz-border: var(--line);
+            --fz-input: var(--line);
+            --fz-ring: var(--brand-orange);
+            --fz-shadow: var(--shadow-sm);
             color: var(--fz-fg);
         }
-        .fz-app { display: flex; flex-direction: column; gap: 20px; }
-        .fz-header h2 { margin: 0 0 6px; font-size: 1.35rem; font-weight: 700; letter-spacing: -0.01em; color: var(--fz-fg); }
+        .fz-app { display: flex; flex-direction: column; gap: 18px; }
+        .fz-header h2 { margin: 0 0 4px; font-size: 1.3rem; font-weight: 700; letter-spacing: -0.015em; color: var(--fz-fg); }
         .fz-header p { margin: 0; font-size: 0.9rem; color: var(--fz-muted-fg); line-height: 1.6; }
-        .fz-sub { display: inline-flex; gap: 4px; background: var(--fz-secondary); padding: 4px; border-radius: 10px; }
-        .fz-sub button { padding: 8px 16px; font-size: 0.82rem; font-weight: 600; border-radius: 8px; border: none; background: transparent; cursor: pointer; color: var(--fz-muted-fg); font-family: inherit; transition: 0.2s; white-space: nowrap; }
-        .fz-sub button.active { background: var(--fz-card); color: var(--fz-fg); box-shadow: 0 1px 3px oklch(23% .045 258 / .12); }
-        .fz-section { background: var(--fz-card); border: 1px solid var(--fz-border); border-radius: 16px; padding: 24px; box-shadow: var(--fz-shadow); }
-        .fz-section h3 { margin: 0 0 4px; font-size: 1.05rem; font-weight: 600; color: var(--fz-fg); }
-        .fz-section-sub { margin: 0 0 20px; font-size: 0.85rem; color: var(--fz-muted-fg); }
-        .fz-form { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-        .fz-field label { font-size: 0.85rem; font-weight: 500; color: var(--fz-fg); display: block; margin-bottom: 8px; }
-        .fz-field input { width: 100%; height: 2.75rem; padding: 0 14px; border: 1px solid var(--fz-input); border-radius: 8px; font-family: inherit; font-size: 0.95rem; color: var(--fz-fg); background: var(--fz-card); outline: none; transition: 0.15s; box-shadow: 0 1px 2px oklch(23% .045 258 / .05); }
-        .fz-field input::placeholder { color: var(--fz-muted-fg); opacity: 0.6; }
-        .fz-field input:focus { border-color: var(--fz-ring); box-shadow: 0 0 0 3px oklch(63% .093 195 / .25); }
-        .fz-helper { font-size: 0.78rem; color: var(--fz-muted-fg); margin-top: 8px; line-height: 1.4; }
-        .fz-err { display: none; margin-top: 16px; font-size: 0.85rem; font-weight: 500; padding: 12px 16px; color: var(--fz-destructive); background: oklch(57.7% .245 27.325 / .06); border: 1px solid oklch(57.7% .245 27.325 / .35); border-radius: 12px; }
-        .fz-actions { display: flex; gap: 12px; margin-top: 20px; }
-        .fz-btn { height: 2.5rem; padding: 0 2rem; border: none; border-radius: 8px; font-family: inherit; font-weight: 500; font-size: 0.9rem; cursor: pointer; transition: 0.15s; }
-        .fz-btn.primary { background: var(--fz-primary); color: var(--fz-primary-fg); box-shadow: 0 1px 3px oklch(23% .045 258 / .2); }
-        .fz-btn.primary:hover { background: oklch(31% .075 259 / .9); }
-        .fz-btn.ghost { background: var(--fz-card); color: var(--fz-fg); border: 1px solid var(--fz-input); box-shadow: 0 1px 2px oklch(23% .045 258 / .05); }
-        .fz-btn.ghost:hover { background: var(--fz-accent); color: #fff; border-color: var(--fz-accent); }
-        .fz-results { display: none; margin-top: 20px; }
-        .fz-params { font-size: 0.8rem; font-weight: 500; color: var(--fz-muted-fg); background: var(--fz-secondary); padding: 10px 14px; border-radius: 10px; margin-bottom: 20px; }
-        .fz-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-        .fz-rcard { border: 1px solid var(--fz-border); border-radius: 16px; padding: 24px; background: var(--fz-card); box-shadow: var(--fz-shadow); }
-        .fz-rcard.rec { border-color: oklch(56% .115 158 / .4); }
-        .fz-rtag { float: right; font-size: 0.72rem; font-weight: 500; padding: 4px 12px; border-radius: 9999px; }
+        .fz-sub { display: inline-flex; gap: 2px; background: var(--fz-secondary); padding: 3px; border-radius: 9px; align-self: flex-start; }
+        .fz-sub button { padding: 7px 14px; font-size: 0.84rem; font-weight: 500; border-radius: 7px; border: none; background: transparent; cursor: pointer; color: var(--fz-muted-fg); transition: background .15s; white-space: nowrap; }
+        .fz-sub button.active { background: var(--fz-card); color: var(--fz-fg); font-weight: 600; box-shadow: var(--shadow-sm); }
+        .fz-section { background: var(--fz-card); border: 1px solid var(--fz-border); border-radius: var(--radius-lg); padding: 22px; box-shadow: var(--fz-shadow); }
+        .fz-section h3 { margin: 0 0 4px; font-size: 1rem; font-weight: 600; color: var(--fz-fg); }
+        .fz-section-sub { margin: 0 0 18px; font-size: 0.85rem; color: var(--fz-muted-fg); }
+        .fz-form { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+        .fz-field label { font-size: 0.82rem; font-weight: 500; color: var(--fz-fg); display: block; margin-bottom: 6px; }
+        .fz-field input { width: 100%; height: 40px; padding: 0 12px; border: 1px solid var(--fz-input); border-radius: var(--radius-md); font-size: 0.92rem; color: var(--fz-fg); background: var(--fz-card); outline: none; transition: border-color .15s, box-shadow .15s; font-variant-numeric: tabular-nums; }
+        .fz-field input::placeholder { color: var(--muted-2); }
+        .fz-field input:focus { border-color: var(--fz-ring); box-shadow: var(--focus); }
+        .fz-helper { font-size: 0.78rem; color: var(--fz-muted-fg); margin-top: 6px; line-height: 1.4; }
+        .fz-err { display: none; margin-top: 16px; font-size: 0.85rem; padding: 10px 14px; color: var(--fz-destructive); background: var(--brand-soft); border: 1px solid var(--brand-soft-2); border-radius: var(--radius-md); }
+        .fz-actions { display: flex; gap: 8px; margin-top: 20px; }
+        .fz-btn { height: 40px; padding: 0 20px; border-radius: var(--radius-md); font-weight: 600; font-size: 0.88rem; cursor: pointer; transition: background .15s, border-color .15s; }
+        .fz-btn.primary { background: var(--brand-grad); color: #fff; border: none; }
+        .fz-btn.primary:hover { filter: brightness(.95); }
+        .fz-btn.ghost { background: var(--fz-card); color: var(--fz-fg); border: 1px solid var(--fz-input); }
+        .fz-btn.ghost:hover { background: var(--line-2); }
+        .fz-results { display: none; margin-top: 18px; }
+        .fz-params { font-size: 0.82rem; color: var(--fz-muted-fg); background: var(--fz-secondary); padding: 10px 14px; border-radius: var(--radius-md); margin-bottom: 18px; }
+        .fz-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+        .fz-rcard { border: 1px solid var(--fz-border); border-radius: var(--radius-lg); padding: 22px; background: var(--fz-card); box-shadow: var(--fz-shadow); }
+        .fz-rcard.rec { border-color: #BFE3CD; }
+        .fz-rtag { float: right; font-size: 0.72rem; font-weight: 600; padding: 3px 10px; border-radius: 999px; }
         .fz-rcard.rec .fz-rtag { background: var(--fz-success-soft); color: var(--fz-success); }
         .fz-rcard.max .fz-rtag { background: var(--fz-muted); color: var(--fz-muted-fg); }
         .fz-rtitle { font-size: 1rem; font-weight: 600; color: var(--fz-fg); }
-        .fz-rsub { font-size: 0.82rem; color: var(--fz-muted-fg); margin: 4px 0 20px; line-height: 1.45; }
-        .fz-row { display: flex; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--fz-border); font-size: 0.9rem; }
+        .fz-rsub { font-size: 0.82rem; color: var(--fz-muted-fg); margin: 4px 0 16px; line-height: 1.45; }
+        .fz-row { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line-2); font-size: 0.88rem; }
         .fz-row .k { color: var(--fz-muted-fg); }
         .fz-row .v { color: var(--fz-fg); font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
-        .fz-big { margin-top: 24px; padding: 20px; border-radius: 12px; background: var(--fz-success-soft); }
+        .fz-big { margin-top: 20px; padding: 16px 18px; border-radius: var(--radius-md); background: var(--fz-success-soft); }
         .fz-rcard.max .fz-big { background: var(--fz-secondary); }
-        .fz-big .lbl { font-size: 0.72rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; color: var(--fz-success); }
+        .fz-big .lbl { font-size: 0.78rem; font-weight: 500; color: var(--fz-success); }
         .fz-rcard.max .fz-big .lbl { color: var(--fz-muted-fg); }
-        .fz-big .amt { margin-top: 4px; font-size: 2rem; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--fz-success); }
+        .fz-big .amt { margin-top: 2px; font-size: 1.8rem; font-weight: 600; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; color: var(--fz-success); }
         .fz-rcard.max .fz-big .amt { color: var(--fz-fg); }
-        .fz-note { margin-top: 16px; padding: 14px 18px; border-radius: 12px; background: var(--fz-secondary); border: 1px solid var(--fz-border); font-size: 0.85rem; color: var(--fz-muted-fg); line-height: 1.6; }
+        .fz-note { margin-top: 16px; padding: 12px 16px; border-radius: var(--radius-md); background: var(--bg-sunken); border: 1px solid var(--fz-border); font-size: 0.85rem; color: var(--fz-muted-fg); line-height: 1.6; }
         .fz-note b { color: var(--fz-fg); font-weight: 600; }
-        .fz-details { margin-top: 16px; border: 1px solid var(--fz-border); border-radius: 16px; padding: 0 24px; background: var(--fz-card); box-shadow: var(--fz-shadow); }
-        .fz-details summary { cursor: pointer; font-weight: 600; font-size: 1rem; color: var(--fz-fg); padding: 20px 0; list-style: none; }
+        .fz-details { margin-top: 16px; border: 1px solid var(--fz-border); border-radius: var(--radius-lg); padding: 0 22px; background: var(--fz-card); }
+        .fz-details summary { cursor: pointer; font-weight: 600; font-size: 0.95rem; color: var(--fz-fg); padding: 16px 0; list-style: none; }
         .fz-details summary::-webkit-details-marker { display: none; }
-        .fz-details summary::before { content: '\25B8'; margin-right: 10px; color: var(--fz-muted-fg); display: inline-block; transition: 0.2s; }
+        .fz-details summary::before { content: '\25B8'; margin-right: 10px; color: var(--fz-muted-fg); display: inline-block; transition: transform .15s; }
         .fz-details[open] summary::before { transform: rotate(90deg); }
-        .fz-details[open] summary { padding-bottom: 8px; }
-        .fz-step { border: 1px solid var(--fz-border); border-radius: 12px; padding: 16px 18px; margin-bottom: 16px; font-size: 0.85rem; line-height: 1.65; color: var(--fz-muted-fg); background: oklch(95.5% .008 247 / .6); }
-        .fz-step:last-child { margin-bottom: 24px; }
-        .fz-step .st { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--fz-accent); }
-        .fz-step .st-title { font-weight: 600; color: var(--fz-fg); margin: 4px 0 8px; font-size: 0.92rem; }
+        .fz-step { border: 1px solid var(--fz-border); border-radius: var(--radius-md); padding: 14px 16px; margin-bottom: 12px; font-size: 0.85rem; line-height: 1.65; color: var(--fz-muted-fg); background: var(--bg-sunken); }
+        .fz-step:last-child { margin-bottom: 22px; }
+        .fz-step .st { font-size: 0.74rem; font-weight: 600; color: var(--fz-accent); }
+        .fz-step .st-title { font-weight: 600; color: var(--fz-fg); margin: 2px 0 6px; font-size: 0.92rem; }
         .fz-step b { color: var(--fz-fg); font-weight: 600; }
         .fz-step p { margin: 6px 0; }
         .fz-step ul { margin: 6px 0; padding-left: 18px; }
-        .fz-step .fz-formula { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.78rem; color: var(--fz-fg); background: var(--fz-muted); padding: 8px 10px; border-radius: 8px; margin-top: 8px; word-break: break-word; }
-        @media (max-width: 760px) { .fz-form { grid-template-columns: 1fr; } .fz-grid2 { grid-template-columns: 1fr; } }
+        .fz-step .fz-formula { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.78rem; color: var(--fz-fg); background: var(--line-2); padding: 8px 10px; border-radius: var(--radius-sm); margin-top: 8px; word-break: break-word; }
+        @media (max-width: 760px) { .fz-form, .fz-grid2 { grid-template-columns: 1fr; } }
 
-        /* ===== İzahat card ===== */
-        .izahat-card { position: relative; }
-        .izahat-head { font-size: 0.85rem; font-weight: 800; color: var(--bir-red); display: flex; align-items: center; gap: 8px; margin-bottom: 12px; position: relative; z-index: 1; }
-        .izahat-body { font-size: 0.74rem; font-weight: 600; line-height: 1.75; color: #444; position: relative; z-index: 1; }
-        .izahat-body b { color: #1e293b; }
-        .izahat-body .izahat-sub { display: block; margin-top: 10px; margin-bottom: 3px; font-weight: 800; color: var(--bir-red); }
-        .izahat-body ul { margin: 4px 0 4px 0; padding-left: 20px; }
+        /* =================== İzahat =================== */
+        .izahat-card { margin-top: 20px; }
+        .izahat-head { font-size: 0.95rem; font-weight: 600; color: var(--ink); display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+        .izahat-head .lucide { color: var(--brand-red); }
+        .izahat-body { font-size: 0.85rem; line-height: 1.7; color: var(--ink-2); }
+        .izahat-body b { color: var(--ink); font-weight: 600; }
+        .izahat-body .izahat-sub { display: block; margin-top: 12px; margin-bottom: 2px; font-weight: 600; color: var(--brand-red); }
+        .izahat-body ul { margin: 4px 0; padding-left: 20px; }
         .izahat-body li { margin-bottom: 2px; }
-        .izahat-body hr { border: none; border-top: 1px dashed #e2e8f0; margin: 12px 0; }
-        .izahat-note { margin-top: 15px; padding-top: 12px; border-top: 1px solid #f1f3f5; font-size: 0.66rem; font-weight: 600; color: #94a3b8; line-height: 1.7; position: relative; z-index: 1; }
-        .izahat-note b { color: #64748b; }
+        .izahat-body hr { border: none; border-top: 1px solid var(--line-2); margin: 14px 0; }
+        .izahat-note { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--line-2); font-size: 0.78rem; color: var(--muted); line-height: 1.7; }
+        .izahat-note b { color: var(--ink-2); }
 
-        /* AI explain + Print buttons row (never overlap) */
-        .details-actions { display: flex; gap: 10px; margin-top: 14px; align-items: stretch; }
+        /* Details actions */
+        .details-actions { display: flex; gap: 8px; margin-top: 16px; }
         .details-actions .btn-print {
-            width: auto; flex: 0 0 auto; padding: 11px 18px; font-size: 0.75rem;
-            display: flex; align-items: center; justify-content: center; gap: 7px; margin: 0;
+            width: auto; flex: 0 0 auto; height: 38px; background: var(--bg-card); color: var(--ink);
+            border: 1px solid var(--line); font-size: 0.84rem;
         }
+        .details-actions .btn-print:hover { filter: none; background: var(--line-2); }
         .btn-ai-explain {
-            flex: 1 1 auto; padding: 11px; border: none; cursor: pointer;
-            border-radius: 12px; font-family: 'Montserrat'; font-weight: 800; font-size: 0.75rem; letter-spacing: 0.3px;
-            background: #1e293b; color: white; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;
+            flex: 1 1 auto; height: 38px; border: none; cursor: pointer; border-radius: var(--radius-md);
+            font-weight: 600; font-size: 0.84rem; background: var(--ink); color: #fff;
+            display: flex; align-items: center; justify-content: center; gap: 8px; transition: background .15s;
         }
-        .btn-ai-explain:hover { background: #0f172a; }
+        .btn-ai-explain:hover { background: #000; }
 
         /* Platform explain modal */
-        .plat-overlay { position: fixed; inset: 0; background: rgba(15,23,42,0.55); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 20px; }
-        .plat-overlay.open { display: flex; animation: overlayFade 0.3s ease; }
-        .plat-modal { background: white; border-radius: 22px; max-width: 720px; width: 100%; max-height: 88vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 25px 60px rgba(0,0,0,0.25); animation: modalPop 0.35s ease; }
-        .plat-head { background: #1e293b; color: white; padding: 18px 22px; display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
-        .plat-head .maya-avatar { width: 42px; height: 42px; }
+        .plat-overlay { position: fixed; inset: 0; background: rgba(22,23,27,0.5); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 20px; }
+        .plat-overlay.open { display: flex; animation: overlayFade .2s ease; }
+        .plat-modal { background: var(--bg-card); border-radius: 14px; max-width: 720px; width: 100%; max-height: 88vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 24px 60px rgba(0,0,0,0.22); animation: modalPop .2s ease; }
+        .plat-head { background: var(--bg-card); border-bottom: 1px solid var(--line); color: var(--ink); padding: 14px 18px; display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
         .plat-htitle { flex: 1; }
-        .plat-htitle .t { font-weight: 800; font-size: 1rem; }
-        .plat-htitle .s { font-size: 0.64rem; opacity: 0.8; font-weight: 700; margin-top: 2px; }
-        .plat-body { padding: 24px 26px; overflow-y: auto; font-size: 0.82rem; font-weight: 500; line-height: 1.75; color: #333; }
-        .plat-body h3 { font-size: 0.92rem; color: var(--bir-red); margin: 18px 0 8px; }
+        .plat-htitle .t { font-weight: 600; font-size: 0.98rem; }
+        .plat-htitle .s { font-size: 0.76rem; color: var(--muted); margin-top: 1px; }
+        .plat-body { padding: 22px 24px; overflow-y: auto; font-size: 0.88rem; line-height: 1.7; color: var(--ink-2); }
+        .plat-body h3 { font-size: 0.95rem; font-weight: 600; color: var(--ink); margin: 18px 0 6px; }
         .plat-body h3:first-child { margin-top: 0; }
-        .plat-body b { color: #1e293b; }
+        .plat-body b { color: var(--ink); }
         .plat-body ul { padding-left: 20px; margin: 6px 0; }
-        .plat-body li { margin-bottom: 5px; }
+        .plat-body li { margin-bottom: 4px; }
+
+        /* =================== Print =================== */
+        @media print {
+            .maya-fab, .maya-panel, .maya-auth, .btn-ai-explain, .navbar, .topbar-controls, .details-actions { display: none !important; }
+            .topbar { position: static; border: none; }
+            body { background: #fff; }
+            .card { box-shadow: none; }
+        }
     </style>
 </head>
 <body>
@@ -640,17 +635,17 @@
     <!-- Startup Selection Modal -->
     <div class="welcome-overlay" id="welcomeModal">
         <div class="welcome-modal">
-            <div class="welcome-logo"><i class="fa-solid fa-bolt-lightning"></i> BirCalc</div>
+            <div class="welcome-logo"><svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="bmgW" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF7A1A"/><stop offset="1" stop-color="#E30613"/></linearGradient></defs><rect width="32" height="32" rx="8" fill="url(#bmgW)"/><path d="M11 8h6a4 4 0 0 1 0 8h-6zM11 16h7a4 4 0 0 1 0 8h-7z" fill="none" stroke="#fff" stroke-width="2.6" stroke-linejoin="round"/></svg><span>BirCalc</span></div>
             <h2 class="welcome-title">Xoş gəlmisiniz!</h2>
             <p class="welcome-sub">Davam etmək üçün hesablama məqsədini seçin</p>
             <div class="choice-grid">
                 <div class="choice-card general" onclick="selectStartOption('general')">
-                    <div class="choice-icon"><i class="fa-solid fa-calculator"></i></div>
+                    <div class="choice-icon"><i data-lucide="calculator"></i></div>
                     <div class="choice-title">Ümumi hesablamalar</div>
                     <div class="choice-desc">GROSS ↔ NETT çevrilmələri, toplu hesablamalar, transfer, promotion və kütləvi artımlar üçün standart kalkulyator rejimi.</div>
                 </div>
                 <div class="choice-card recruitment" onclick="selectStartOption('recruitment')">
-                    <div class="choice-icon"><i class="fa-solid fa-user-tie"></i></div>
+                    <div class="choice-icon"><i data-lucide="briefcase-business"></i></div>
                     <div class="choice-title">İşə qəbul məqsədləri üçün</div>
                     <div class="choice-desc">Namizədlərə təklif olunan əmək haqqının hesablanması — Recruitment qaydaları, limitlər və yemək pulu məntiqi avtomatik tətbiq olunur.</div>
                 </div>
@@ -658,33 +653,44 @@
         </div>
     </div>
 
-    <nav class="navbar">
-        <div class="logo"><i class="fa-solid fa-bolt-lightning"></i> BirCalc</div>
-        
-        <!-- System Toggle -->
-        <div class="system-switch">
-            <button class="sw-btn active" id="swGeneral" onclick="setSystem('general', this)">General</button>
-            <button class="sw-btn" id="swRecruitment" onclick="setSystem('recruitment', this)">Recruitment</button>
+    <header class="topbar">
+        <div class="topbar-inner">
+            <div class="logo">
+                <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="bmgN" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF7A1A"/><stop offset="1" stop-color="#E30613"/></linearGradient></defs><rect width="32" height="32" rx="8" fill="url(#bmgN)"/><path d="M11 8h6a4 4 0 0 1 0 8h-6zM11 16h7a4 4 0 0 1 0 8h-7z" fill="none" stroke="#fff" stroke-width="2.6" stroke-linejoin="round"/></svg>
+                <div class="brand-text">
+                    <span class="brand-name">BirCalc</span>
+                    <span class="brand-sub">Əmək haqqı kalkulyatoru</span>
+                </div>
+            </div>
+
+            <div class="topbar-controls">
+                <!-- Company Toggle -->
+                <div class="company-nav" role="group" aria-label="Şirkət">
+                    <button class="comp-btn active birbank" onclick="setCompany('Birbank', this)">Birbank</button>
+                    <button class="comp-btn" onclick="setCompany('Pashapay', this)">Pashapay</button>
+                    <button class="comp-btn" onclick="setCompany('Birmarket', this)">Birmarket</button>
+                </div>
+
+                <!-- System Toggle -->
+                <div class="system-switch" role="group" aria-label="Rejim">
+                    <button class="sw-btn active" id="swGeneral" onclick="setSystem('general', this)">General</button>
+                    <button class="sw-btn" id="swRecruitment" onclick="setSystem('recruitment', this)">Recruitment</button>
+                </div>
+            </div>
         </div>
 
         <!-- Tab Buttons -->
-        <div class="nav-tabs">
-            <button class="tab-btn active" id="tabInd" onclick="switchTab('individual', this)">Fərdi</button>
-            <button class="tab-btn" id="tabBulk" onclick="switchTab('bulk', this)">Toplu</button>
-            <button class="tab-btn" id="tabTP" onclick="switchTab('transfer', this)">Transfer & Promotion</button>
-            <button class="tab-btn" id="tabMG" onclick="switchTab('massgrowth', this)">Kütləvi artımlar</button>
-            <button class="tab-btn" id="tabTX" onclick="switchTab('texnopar', this)">Texnopar</button>
-            <button class="tab-btn" id="tabFZ" onclick="switchTab('firuza', this)">Transfer by Firuza</button>
-        </div>
-
-        <!-- Company Toggle -->
-        <div class="company-nav">
-            <button class="comp-btn active birbank" onclick="setCompany('Birbank', this)">Birbank</button>
-            <button class="comp-btn" onclick="setCompany('Pashapay', this)">Pashapay</button>
-            <button class="comp-btn" onclick="setCompany('Birmarket', this)">Birmarket</button>
-        </div>
-
-    </nav>
+        <nav class="navbar">
+            <div class="nav-tabs">
+                <button class="tab-btn active" id="tabInd" onclick="switchTab('individual', this)">Fərdi</button>
+                <button class="tab-btn" id="tabBulk" onclick="switchTab('bulk', this)">Toplu</button>
+                <button class="tab-btn" id="tabTP" onclick="switchTab('transfer', this)">Transfer &amp; Promotion</button>
+                <button class="tab-btn" id="tabMG" onclick="switchTab('massgrowth', this)">Kütləvi artımlar</button>
+                <button class="tab-btn" id="tabTX" onclick="switchTab('texnopar', this)">Texnopar</button>
+                <button class="tab-btn" id="tabFZ" onclick="switchTab('firuza', this)">Transfer by Firuza</button>
+            </div>
+        </nav>
+    </header>
 
     <!-- Platform explain modal -->
     <div class="plat-overlay" id="platOverlay">
@@ -695,7 +701,7 @@
                     <div class="t">Platforma haqqında</div>
                     <div class="s">Maya (MyAI) izah edir</div>
                 </div>
-                <button class="maya-close" onclick="document.getElementById('platOverlay').classList.remove('open')"><i class="fa-solid fa-xmark"></i></button>
+                <button class="maya-close" onclick="document.getElementById('platOverlay').classList.remove('open')"><i data-lucide="x"></i></button>
             </div>
             <div class="plat-body" id="platBody"></div>
         </div>
@@ -706,8 +712,8 @@
         <div id="salaryAlert">
             <span id="alertText">Məbləğ bu aralıqda ola bilməz.</span>
             <div class="alert-btns">
-                <button class="alert-btn" id="btn1" onclick="applyFix(1)">TƏTBİQ ET</button>
-                <button class="alert-btn alt" id="btn2" onclick="applyFix(2)">TƏTBİQ ET</button>
+                <button class="alert-btn" id="btn1" onclick="applyFix(1)">Tətbiq et</button>
+                <button class="alert-btn alt" id="btn2" onclick="applyFix(2)">Tətbiq et</button>
             </div>
         </div>
         
@@ -818,19 +824,19 @@
                     </div>
                 </div>
 
-                <div class="card" style="margin-bottom:0; padding: 20px;">
-                    <label style="font-size:0.6rem; font-weight:800; color:#aaa; margin-bottom:10px; display:block;">HESABLANMIŞ DETALLAR</label>
+                <div class="card details-card">
+                    <div class="card-title">Hesablanmış detallar</div>
                     <table class="details-table" id="reportTable"></table>
                     <div class="details-actions">
-                        <button class="btn-action btn-print" onclick="window.print()"><i class="fa-solid fa-print"></i> ÇAP ET</button>
-                        <button class="btn-ai-explain" onclick="mayaExplainCalc()"><i class="fa-solid fa-wand-magic-sparkles"></i> AI izah et</button>
+                        <button class="btn-action btn-print" onclick="window.print()"><i data-lucide="printer"></i> Çap et</button>
+                        <button class="btn-ai-explain" onclick="mayaExplainCalc()"><i data-lucide="message-square-text"></i> AI izah et</button>
                     </div>
                 </div>
             </div>
 
             <!-- İzahat (tax rules explanation) -->
-            <div class="card izahat-card" style="margin-top:18px;">
-                <div class="izahat-head"><i class="fa-solid fa-circle-info"></i> İzahat</div>
+            <div class="card izahat-card">
+                <div class="izahat-head"><i data-lucide="info"></i> İzahat</div>
                 <div id="izahatBox" class="izahat-body"></div>
                 <div class="izahat-note">
                     <b>Qeyd:</b> Bu alət təxmini hesablar verir. Dəqiqlik tələb olunan hallarda rəsmi mənbələrə istinad tövsiyyə olunur.<br>
@@ -849,17 +855,17 @@
                 </div>
 
                 <div class="upload-zone" onclick="document.getElementById('fileIn').click()">
-                    <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
-                    <h3 style="margin:0; font-size:1.1rem; font-weight:800;">Faylı bura sürükləyin və ya seçin</h3>
-                    <p style="color:#94a3b8; font-size:0.85rem; margin-top:8px;">Format: Excel (.xlsx) | Sütunlar: "Employee badge" və "Salary"</p>
+                    <i data-lucide="upload" class="upload-icon"></i>
+                    <h3>Faylı bura sürükləyin və ya seçin</h3>
+                    <p>Format: Excel (.xlsx) | Sütunlar: "Employee badge" və "Salary"</p>
                     <input type="file" id="fileIn" accept=".xlsx, .csv" style="display:none" onchange="handleFile(event)">
                 </div>
                 
-                <div id="bulk-results" style="display:none; margin-top:25px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                        <span style="font-weight:800; font-size:0.9rem; color:#64748b;">NƏTİCƏ: <span id="bk-count" style="color:var(--bir-red)">0</span> İŞÇİ HESABLANDI</span>
-                        <button class="btn-action" style="width:auto; padding: 10px 25px; background:#00c853; margin:0;" onclick="exportResults()">
-                            <i class="fa-solid fa-download"></i> EXCEL-Ə ÇIXAR
+                <div id="bulk-results" class="bulk-results" style="display:none;">
+                    <div class="results-head">
+                        <span class="results-count">Nəticə: <span id="bk-count">0</span> işçi hesablandı</span>
+                        <button class="btn-export" onclick="exportResults()">
+                            <i data-lucide="download"></i> Excel-ə çıxar
                         </button>
                     </div>
                     <div class="bulk-table-wrap">
@@ -879,7 +885,7 @@
                 <!-- INTRO -->
                 <div class="tp-intro">
                     <div class="tp-intro-title">
-                        <i class="fa-solid fa-arrow-right-arrow-left"></i>
+                        <i data-lucide="arrow-left-right"></i>
                         Transfer &amp; Promotion — Hesablama Qaydaları
                     </div>
                     <ul>
@@ -895,7 +901,7 @@
                     <!-- LEFT PANEL: CURRENT -->
                     <div class="tp-panel left">
                         <div class="tp-section-title">
-                            <i class="fa-solid fa-circle-info"></i>
+                            <i data-lucide="info"></i>
                             <span>Cari Məlumatlar</span>
                         </div>
                         <div class="tp-field-group">
@@ -921,7 +927,7 @@
                     <!-- RIGHT PANEL: PROPOSED -->
                     <div class="tp-panel right">
                         <div class="tp-section-title">
-                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+                            <i data-lucide="file-pen-line"></i>
                             <span>Yeni Təklif</span>
                         </div>
 
@@ -973,7 +979,7 @@
                             </div>
                             <div class="tp-field">
                                 <label>Gross (Baza Net-dən) ★</label>
-                                <input type="text" id="tp-prop-gross-from-base-net" class="tp-input auto-green" readonly placeholder="0.00" style="border-color:#ff2d55; border-width:2px;">
+                                <input type="text" id="tp-prop-gross-from-base-net" class="tp-input auto-green" readonly placeholder="0.00" data-key="1">
                             </div>
                         </div>
                     </div>
@@ -1011,7 +1017,7 @@
                 <!-- INTRO -->
                 <div class="tp-intro">
                     <div class="tp-intro-title">
-                        <i class="fa-solid fa-chart-line"></i>
+                        <i data-lucide="trending-up"></i>
                         Kütləvi artımlar — Hesablama Qaydaları
                     </div>
                     <ul>
@@ -1025,7 +1031,7 @@
                 </div>
 
                 <!-- Office type selector -->
-                <div class="controls-row" style="border-bottom:none; padding-bottom:0; margin-bottom:14px;">
+                <div class="controls-row compact">
                     <div class="form-group w-workplace">
                         <label>Yerləşmə</label>
                         <select id="mg-office" onchange="mgCalc(); mgBulkRecalc();">
@@ -1041,7 +1047,7 @@
                     <!-- LEFT: CURRENT -->
                     <div class="tp-panel left">
                         <div class="tp-section-title">
-                            <i class="fa-solid fa-circle-info"></i>
+                            <i data-lucide="info"></i>
                             <span>Cari Vəziyyət</span>
                         </div>
                         <div class="tp-field-group">
@@ -1067,7 +1073,7 @@
                     <!-- RIGHT: NEW -->
                     <div class="tp-panel right">
                         <div class="tp-section-title">
-                            <i class="fa-solid fa-arrow-trend-up"></i>
+                            <i data-lucide="trending-up"></i>
                             <span>Artım və Nəticə</span>
                         </div>
 
@@ -1082,11 +1088,11 @@
                             </div>
                             <div class="tp-field">
                                 <label>Yeni Gross ★</label>
-                                <input type="text" id="mg-new-gross" class="tp-input auto-green" readonly placeholder="0.00" style="border-color:#ff2d55; border-width:2px;">
+                                <input type="text" id="mg-new-gross" class="tp-input auto-green" readonly placeholder="0.00" data-key="1">
                             </div>
                             <div class="tp-field">
                                 <label>Yeni Yemək Pulu ★</label>
-                                <input type="text" id="mg-new-meal" class="tp-input auto-blue" readonly placeholder="0.00" style="border-color:#ff2d55; border-width:2px;">
+                                <input type="text" id="mg-new-meal" class="tp-input auto-blue" readonly placeholder="0.00" data-key="1">
                             </div>
                         </div>
                     </div>
@@ -1116,33 +1122,33 @@
 
                 <!-- BULK SECTION -->
                 <hr class="tp-divider">
-                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
-                    <div style="font-size:0.75rem; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">
-                        <i class="fa-solid fa-layer-group" style="color:var(--bir-red); margin-right:6px;"></i>
+                <div class="section-head">
+                    <div class="section-head-title">
+                        <i data-lucide="layers"></i>
                         Toplu Yükləmə
                     </div>
-                    <button class="alert-btn" style="background:#1e293b;" onclick="mgDownloadTemplate()">
-                        <i class="fa-solid fa-file-arrow-down"></i> ŞABLON YÜKLƏ
+                    <button class="btn-secondary" onclick="mgDownloadTemplate()">
+                        <i data-lucide="file-down"></i> Şablon yüklə
                     </button>
                 </div>
 
                 <div class="upload-zone" onclick="document.getElementById('mgFileIn').click()">
-                    <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
-                    <h3 style="margin:0; font-size:1.05rem; font-weight:800;">Excel faylı sürükləyin və ya seçin</h3>
-                    <p style="color:#94a3b8; font-size:0.78rem; margin-top:8px; line-height:1.6;">
+                    <i data-lucide="upload" class="upload-icon"></i>
+                    <h3>Excel faylı sürükləyin və ya seçin</h3>
+                    <p>
                         Tələb olunan sütunlar: <b>Employee Badge</b>, <b>Cari Gross</b>, <b>Cari Yemek Pulu</b>, <b>Net Artim</b><br>
                         Opsional (hər sətir üçün): <b>İl</b>, <b>İş Növü</b> (Əsas/Əlavə), <b>HİK</b> (0, 1, 2 və ya 0.01), <b>İş Yeri</b> (Filial/Baş ofis)
                     </p>
                     <input type="file" id="mgFileIn" accept=".xlsx, .csv" style="display:none" onchange="mgHandleFile(event)">
                 </div>
 
-                <div id="mg-bulk-results" style="display:none; margin-top:20px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                        <span style="font-weight:800; font-size:0.85rem; color:#64748b;">
-                            NƏTİCƏ: <span id="mg-bk-count" style="color:var(--bir-red)">0</span> İŞÇİ HESABLANDI
+                <div id="mg-bulk-results" class="bulk-results" style="display:none;">
+                    <div class="results-head">
+                        <span class="results-count">
+                            Nəticə: <span id="mg-bk-count">0</span> işçi hesablandı
                         </span>
-                        <button class="btn-action" style="width:auto; padding:10px 22px; background:#00c853; margin:0;" onclick="mgExportResults()">
-                            <i class="fa-solid fa-download"></i> EXCEL-Ə ÇIXAR
+                        <button class="btn-export" onclick="mgExportResults()">
+                            <i data-lucide="download"></i> Excel-ə çıxar
                         </button>
                     </div>
                     <div class="bulk-table-wrap">
@@ -1178,7 +1184,7 @@
                 <!-- INTRO -->
                 <div class="tp-intro">
                     <div class="tp-intro-title">
-                        <i class="fa-solid fa-microchip"></i>
+                        <i data-lucide="cpu"></i>
                         Texnopar — Hesablama Qaydaları
                     </div>
                     <ul>
@@ -1190,7 +1196,7 @@
                 </div>
 
                 <!-- Type + Office selector -->
-                <div class="controls-row" style="border-bottom:none; padding-bottom:0; margin-bottom:14px;">
+                <div class="controls-row compact">
                     <div class="form-group w-workplace">
                         <label>Type</label>
                         <select id="tx-type" onchange="txCalc(); txBulkRecalc();">
@@ -1213,7 +1219,7 @@
                     <!-- LEFT: CURRENT -->
                     <div class="tp-panel left">
                         <div class="tp-section-title">
-                            <i class="fa-solid fa-circle-info"></i>
+                            <i data-lucide="info"></i>
                             <span>Cari Vəziyyət</span>
                         </div>
                         <div class="tp-field-group">
@@ -1239,7 +1245,7 @@
                     <!-- RIGHT: NEW -->
                     <div class="tp-panel right">
                         <div class="tp-section-title">
-                            <i class="fa-solid fa-arrow-trend-up"></i>
+                            <i data-lucide="trending-up"></i>
                             <span>Artım və Nəticə</span>
                         </div>
 
@@ -1254,11 +1260,11 @@
                             </div>
                             <div class="tp-field">
                                 <label>Yeni Gross ★</label>
-                                <input type="text" id="tx-new-gross" class="tp-input auto-green" readonly placeholder="0.00" style="border-color:#ff2d55; border-width:2px;">
+                                <input type="text" id="tx-new-gross" class="tp-input auto-green" readonly placeholder="0.00" data-key="1">
                             </div>
                             <div class="tp-field">
                                 <label>Yeni Yemək Pulu ★</label>
-                                <input type="text" id="tx-new-meal" class="tp-input auto-blue" readonly placeholder="0" style="border-color:#ff2d55; border-width:2px;">
+                                <input type="text" id="tx-new-meal" class="tp-input auto-blue" readonly placeholder="0" data-key="1">
                             </div>
                         </div>
                     </div>
@@ -1288,33 +1294,33 @@
 
                 <!-- BULK SECTION -->
                 <hr class="tp-divider">
-                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
-                    <div style="font-size:0.75rem; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">
-                        <i class="fa-solid fa-layer-group" style="color:var(--bir-red); margin-right:6px;"></i>
+                <div class="section-head">
+                    <div class="section-head-title">
+                        <i data-lucide="layers"></i>
                         Toplu Yükləmə
                     </div>
-                    <button class="alert-btn" style="background:#1e293b;" onclick="txDownloadTemplate()">
-                        <i class="fa-solid fa-file-arrow-down"></i> ŞABLON YÜKLƏ
+                    <button class="btn-secondary" onclick="txDownloadTemplate()">
+                        <i data-lucide="file-down"></i> Şablon yüklə
                     </button>
                 </div>
 
                 <div class="upload-zone" onclick="document.getElementById('txFileIn').click()">
-                    <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
-                    <h3 style="margin:0; font-size:1.05rem; font-weight:800;">Excel faylı sürükləyin və ya seçin</h3>
-                    <p style="color:#94a3b8; font-size:0.78rem; margin-top:8px; line-height:1.6;">
+                    <i data-lucide="upload" class="upload-icon"></i>
+                    <h3>Excel faylı sürükləyin və ya seçin</h3>
+                    <p>
                         Tələb olunan: <b>Employee Badge</b>, <b>Cari Gross</b>, <b>Cari Yemek Pulu</b>, <b>Net Artim</b><br>
                         Opsional (hər sətir üçün): <b>Type</b> (Local/Expat), <b>HİK</b>, <b>İş Yeri</b> (Filial/Baş ofis)
                     </p>
                     <input type="file" id="txFileIn" accept=".xlsx, .csv" style="display:none" onchange="txHandleFile(event)">
                 </div>
 
-                <div id="tx-bulk-results" style="display:none; margin-top:20px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                        <span style="font-weight:800; font-size:0.85rem; color:#64748b;">
-                            NƏTİCƏ: <span id="tx-bk-count" style="color:var(--bir-red)">0</span> İŞÇİ HESABLANDI
+                <div id="tx-bulk-results" class="bulk-results" style="display:none;">
+                    <div class="results-head">
+                        <span class="results-count">
+                            Nəticə: <span id="tx-bk-count">0</span> işçi hesablandı
                         </span>
-                        <button class="btn-action" style="width:auto; padding:10px 22px; background:#00c853; margin:0;" onclick="txExportResults()">
-                            <i class="fa-solid fa-download"></i> EXCEL-Ə ÇIXAR
+                        <button class="btn-export" onclick="txExportResults()">
+                            <i data-lucide="download"></i> Excel-ə çıxar
                         </button>
                     </div>
                     <div class="bulk-table-wrap">
@@ -1423,7 +1429,7 @@
 
 <!-- Maya (MyAI) Assistant -->
 <button class="maya-fab" id="mayaFab" onclick="mayaToggle(true)">
-    <i class="fa-solid fa-wand-magic-sparkles"></i> Maya
+    <i data-lucide="message-circle"></i> Maya
 </button>
 <div class="maya-panel" id="mayaPanel">
     <div class="maya-head">
@@ -1432,13 +1438,13 @@
             <div class="maya-name">Maya</div>
             <div class="maya-sub"><span class="maya-status-dot"></span> MyAI Assistant · Onlayn</div>
         </div>
-        <button class="maya-head-btn" onclick="platformExplain()" title="Platformanı izah et"><i class="fa-solid fa-circle-info"></i></button>
-        <button class="maya-close" onclick="mayaToggle(false)"><i class="fa-solid fa-xmark"></i></button>
+        <button class="maya-head-btn" onclick="platformExplain()" title="Platformanı izah et"><i data-lucide="info"></i></button>
+        <button class="maya-close" onclick="mayaToggle(false)"><i data-lucide="x"></i></button>
     </div>
     <div class="maya-body" id="mayaBody">
-        <div class="maya-msg bot">Salam! Mən <b>Maya</b> — BirCalc-ın AI assistentiyəm. 🤖<br>Platformanın <b>bütün hesablama metodları</b> üzrə kömək edirəm: <b>GROSS ↔ NET</b>, <b>SUPERGROSS</b>, <b>İşə qəbul</b> (yemək pulu ilə), <b>Transfer & Promotion</b>, <b>Kütləvi artımlar</b> və <b>Texnopar</b>. Sualınızı sərbəst formada yazın.</div>
+        <div class="maya-msg bot">Salam! Mən <b>Maya</b> — BirCalc-ın AI assistentiyəm.<br>Platformanın <b>bütün hesablama metodları</b> üzrə kömək edirəm: <b>GROSS ↔ NET</b>, <b>SUPERGROSS</b>, <b>İşə qəbul</b> (yemək pulu ilə), <b>Transfer & Promotion</b>, <b>Kütləvi artımlar</b> və <b>Texnopar</b>. Sualınızı sərbəst formada yazın.</div>
         <div class="maya-chips" id="mayaChips">
-            <button class="maya-chip chip-platform" onclick="platformExplain()"><i class="fa-solid fa-circle-info"></i> Platformanı izah et</button>
+            <button class="maya-chip chip-platform" onclick="platformExplain()"><i data-lucide="info"></i> Platformanı izah et</button>
             <button class="maya-chip" onclick="mayaChip(this)">2500 gross nə qədər net edir?</button>
             <button class="maya-chip" onclick="mayaChip(this)">HİK 1%, 2345 net üçün gross və yemək pulu nə qədər olmalıdır?</button>
             <button class="maya-chip" onclick="mayaChip(this)">2000 gross supergross neçə edir?</button>
@@ -1446,14 +1452,14 @@
     </div>
     <div class="maya-foot">
         <input class="maya-input" id="mayaInput" placeholder="Sualınızı yazın..." autocomplete="off" onkeydown="if(event.key==='Enter'){ mayaSend(); }">
-        <button class="maya-send" id="mayaSendBtn" onclick="mayaSend()"><i class="fa-solid fa-paper-plane"></i></button>
+        <button class="maya-send" id="mayaSendBtn" onclick="mayaSend()"><i data-lucide="send"></i></button>
     </div>
 </div>
 
 <!-- Maya parol qapısı -->
 <div class="maya-auth" id="mayaAuth">
     <div class="maya-auth-box">
-        <div class="maya-auth-icon"><i class="fa-solid fa-lock"></i></div>
+        <div class="maya-auth-icon"><i data-lucide="lock"></i></div>
         <div class="maya-auth-title">Maya AI — Girişi qorunur</div>
         <div class="maya-auth-sub">Davam etmək üçün parolu daxil edin</div>
         <input type="password" class="maya-auth-input" id="mayaAuthInput" placeholder="Parol" autocomplete="off"
@@ -2388,10 +2394,10 @@
                 <td>${item.curGross.toFixed(2)}</td>
                 <td>${curMealInt}</td>
                 <td>${item.incNet.toFixed(2)}</td>
-                <td><b style="color:#16a34a;">${r.newGross.toFixed(2)}</b></td>
-                <td><b style="color:#2563eb;">${r.newMeal}</b></td>
+                <td><b class="num-pos">${r.newGross.toFixed(2)}</b></td>
+                <td><b class="num-info">${r.newMeal}</b></td>
                 <td>${grossDelta.toFixed(2)}</td>
-                <td style="font-size:0.68rem; color:#64748b;">${r.status}</td>
+                <td class="cell-muted">${r.status}</td>
             </tr>`;
             mgBulkData.push({
                 'Employee Badge': item.badge,
@@ -2605,10 +2611,10 @@
                 <td>${item.curGross.toFixed(2)}</td>
                 <td>${curMealInt}</td>
                 <td>${item.incNet.toFixed(2)}</td>
-                <td><b style="color:#16a34a;">${r.newGross.toFixed(2)}</b></td>
-                <td><b style="color:#2563eb;">${r.newMeal}</b></td>
+                <td><b class="num-pos">${r.newGross.toFixed(2)}</b></td>
+                <td><b class="num-info">${r.newMeal}</b></td>
                 <td>${grossDelta.toFixed(2)}</td>
-                <td style="font-size:0.68rem; color:#64748b;">${r.status}</td>
+                <td class="cell-muted">${r.status}</td>
             </tr>`;
             txBulkData.push({
                 'Employee Badge': item.badge,
