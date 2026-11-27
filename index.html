@@ -732,7 +732,7 @@
         .cselect-btn > span .ic-arrow, .cselect-txt .ic-arrow { display: inline-block; }
         .cselect-txt { display: inline-flex; align-items: center; }
         .controls-row.compact .form-group { width: 220px; }
-        .tp-divider + .tp-result-bar[style*="none"] + .tp-divider { display: none; }
+        .tp-divider + .tp-empty-hint + .tp-result-bar[style*="none"] + .tp-divider { margin-top: 14px; }
 
         /* =========================================================
            App shell layout (sidebar + main, no page scroll on desktop)
@@ -1109,6 +1109,52 @@
         .bulk-sample td { padding: 6px 10px; border-bottom: 1px solid var(--line-2); color: var(--ink-2); font-variant-numeric: tabular-nums; }
         .bulk-sample tr:last-child td { border-bottom: none; }
         @media (max-width: 860px) { .bulk-help { grid-template-columns: 1fr; } }
+
+        /* =================== Refinements =================== */
+        /* Unified card header */
+        .card-head { display: flex; align-items: center; gap: 8px; font-size: 0.92rem; font-weight: 600; color: var(--ink); margin: 0 0 12px; position: relative; z-index: 1; }
+        .card-head .lucide { width: 16px; height: 16px; color: var(--brand-red); }
+
+        /* KPI tiles: yearly line + meter */
+        .kpi-sub { margin-top: 6px; font-size: 0.74rem; opacity: 0.8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .kpi-sub b { font-weight: 600; font-variant-numeric: tabular-nums; }
+        .kpi-sub b::after { content: ' ₼'; opacity: .7; font-weight: 500; }
+        .kpi-card.light .kpi-sub { color: var(--muted); opacity: 1; }
+        .kpi-card.light .kpi-sub b { color: var(--ink-2); }
+        .kpi-meter { display: none; height: 6px; border-radius: 999px; background: var(--line-2); overflow: hidden; margin-top: 10px; }
+        .kpi-card:has(.pct) .kpi-meter { display: block; }
+        .kpi-meter span { display: block; height: 100%; width: 0; border-radius: inherit; background: var(--brand-grad); transition: width .3s ease; }
+
+        /* Details table: base / deductions / additions */
+        .details-table tr.base .lbl { color: var(--ink); font-weight: 600; }
+        .details-table tr.ded .val { color: var(--ink-2); font-weight: 500; }
+        .details-table tr.add .val { color: var(--ok); }
+        .details-table .val { white-space: nowrap; }
+
+        /* İzahat: context line, calmer headings, formula block */
+        .izahat-body > b:first-child {
+            display: inline-flex; align-items: center; gap: 6px; font-weight: 500; font-size: 0.78rem; color: var(--muted);
+            background: var(--bg-sunken); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 4px 10px; margin-bottom: 4px;
+        }
+        .izahat-body .izahat-sub { font-size: 0.84rem; font-weight: 600; margin-top: 14px; }
+        .izahat-body ul { color: var(--ink-2); }
+        .izahat-body li::marker { color: var(--muted-2); }
+        .izahat-body > hr { margin: 16px 0 10px; }
+        .izahat-body > hr + b {
+            display: block; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.78rem; font-weight: 500;
+            color: var(--ink); background: var(--bg-sunken); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 10px 12px; line-height: 1.6;
+        }
+        .izahat-note { font-size: 0.74rem; }
+
+        /* Empty state instead of zeros */
+        .tp-empty-hint {
+            display: none; align-items: center; gap: 10px; padding: 14px 16px; border: 1px dashed var(--line-strong);
+            border-radius: var(--radius-lg); color: var(--muted); font-size: 0.84rem; background: var(--bg-sunken);
+        }
+        .tp-empty-hint .lucide { color: var(--muted-2); }
+        .tp-empty-hint:has(+ .tp-result-bar[style*="none"]) { display: flex; }
+        .tp-divider + .tp-empty-hint { margin-top: 0; }
+        .tp-input.auto::placeholder, .tp-input.auto-green::placeholder, .tp-input.auto-blue::placeholder { color: var(--muted-2); }
         @media print {
             html, body { height: auto; overflow: visible; }
             .sidebar, .maya-trigger { display: none !important; }
@@ -1313,18 +1359,22 @@
                     <div class="kpi-card">
                         <div class="kpi-label" id="label-nett">NET</div>
                         <div class="kpi-val" id="k-nett">0.00</div>
+                        <div class="kpi-sub"><span>İl üzrə</span> <b id="k-nett-y"></b></div>
                     </div>
                     <div class="kpi-card dark">
                         <div class="kpi-label" id="label-gross">GROSS</div>
                         <div class="kpi-val" id="k-gross">0.00</div>
+                        <div class="kpi-sub"><span>İl üzrə</span> <b id="k-gross-y"></b></div>
                     </div>
                     <div class="kpi-card light dyn-kpi-1">
                         <div class="kpi-label" id="label-k1">Cəmi tutulmalar</div>
                         <div class="kpi-val" id="val-k1">0.00</div>
+                        <div class="kpi-sub"><span>İl üzrə</span> <b id="val-k1-y"></b></div>
                     </div>
                     <div class="kpi-card light dyn-kpi-2">
                         <div class="kpi-label" id="label-k2">Effektiv tutulma</div>
                         <div class="kpi-val" id="val-k2">0.00</div>
+                        <div class="kpi-meter" aria-hidden="true"><span id="k-meter"></span></div>
                     </div>
                 </div>
                 <div id="mealNotice" class="kpi-mini-notice meal-banner" style="display:none;">
@@ -1333,7 +1383,7 @@
                         </div>
             <div class="ind-grid">
             <div class="card details-card">
-                    <div class="card-title">Hesablanmış detallar</div>
+                    <div class="card-head"><i data-lucide="list"></i><span>Hesablanmış detallar</span></div>
                     <table class="details-table" id="reportTable"></table>
                     <div class="comp" id="compBox"></div>
                     <div class="details-actions">
@@ -1342,7 +1392,7 @@
                     </div>
                 </div>
             <div class="card izahat-card">
-                <div class="izahat-head"><i data-lucide="info"></i> İzahat</div>
+                <div class="card-head izahat-head"><i data-lucide="book-open"></i><span>İzahat</span></div>
                 <div class="izahat-scroll">
                 <div id="izahatBox" class="izahat-body"></div>
                 <div class="izahat-note">
@@ -1441,7 +1491,7 @@
                             </div>
                             <div class="tp-field">
                                 <label>Cari net</label>
-                                <input type="text" id="tp-cur-net" class="tp-input auto-green" readonly placeholder="0.00">
+                                <input type="text" id="tp-cur-net" class="tp-input auto-green" readonly placeholder="-">
                             </div>
                             <div class="tp-field">
                                 <label>Yemək pulu</label>
@@ -1449,7 +1499,7 @@
                             </div>
                             <div class="tp-field">
                                 <label>Cari cəmi net</label>
-                                <input type="text" id="tp-cur-total-net" class="tp-input auto-blue" readonly placeholder="0.00">
+                                <input type="text" id="tp-cur-total-net" class="tp-input auto-blue" readonly placeholder="-">
                             </div>
                         </div>
                     </div>
@@ -1481,11 +1531,11 @@
                             </div>
                             <div class="tp-field">
                                 <label>Təklif gross</label>
-                                <input type="text" id="tp-prop-gross-from-net" class="tp-input auto-green" readonly placeholder="0.00">
+                                <input type="text" id="tp-prop-gross-from-net" class="tp-input auto-green" readonly placeholder="-">
                             </div>
                             <div class="tp-field">
                                 <label>Təklif yemək pulu</label>
-                                <input type="text" id="tp-prop-meal-from-net" class="tp-input auto-blue" readonly placeholder="0.00">
+                                <input type="text" id="tp-prop-meal-from-net" class="tp-input auto-blue" readonly placeholder="-">
                             </div>
                         </div>
 
@@ -1497,19 +1547,19 @@
                             </div>
                             <div class="tp-field">
                                 <label>Cəmi net (təklifdən)</label>
-                                <input type="text" id="tp-prop-total-net-from-gross" class="tp-input auto" readonly placeholder="0.00">
+                                <input type="text" id="tp-prop-total-net-from-gross" class="tp-input auto" readonly placeholder="-">
                             </div>
                             <div class="tp-field">
                                 <label>Baza net</label>
-                                <input type="text" id="tp-prop-base-net" class="tp-input auto-green" readonly placeholder="0.00">
+                                <input type="text" id="tp-prop-base-net" class="tp-input auto-green" readonly placeholder="-">
                             </div>
                             <div class="tp-field">
                                 <label>Yemək pulu</label>
-                                <input type="text" id="tp-prop-meal-from-gross" class="tp-input auto-blue" readonly placeholder="0.00">
+                                <input type="text" id="tp-prop-meal-from-gross" class="tp-input auto-blue" readonly placeholder="-">
                             </div>
                             <div class="tp-field">
                                 <label>Yeni gross (baza netdən) ★</label>
-                                <input type="text" id="tp-prop-gross-from-base-net" class="tp-input auto-green" readonly placeholder="0.00" data-key="1">
+                                <input type="text" id="tp-prop-gross-from-base-net" class="tp-input auto-green" readonly placeholder="-" data-key="1">
                             </div>
                         </div>
                     </div>
@@ -1518,6 +1568,7 @@
                 <hr class="tp-divider">
 
                 <!-- RESULT BAR -->
+                <div class="tp-empty-hint"><i data-lucide="calculator"></i><span>Cari gross və yeni təklifi daxil edin - nəticə burada görünəcək.</span></div>
                 <div id="tp-result-bar" class="tp-result-bar" style="display:none;">
                     <div class="tp-result-item">
                         <div class="r-label">Cari gross</div>
@@ -1574,7 +1625,7 @@
                             </div>
                             <div class="tp-field">
                                 <label>Cari net</label>
-                                <input type="text" id="mg-cur-net" class="tp-input auto-green" readonly placeholder="0.00">
+                                <input type="text" id="mg-cur-net" class="tp-input auto-green" readonly placeholder="-">
                             </div>
                             <div class="tp-field">
                                 <label>Cari yemək pulu</label>
@@ -1582,7 +1633,7 @@
                             </div>
                             <div class="tp-field">
                                 <label>Cari cəmi net</label>
-                                <input type="text" id="mg-cur-total" class="tp-input auto-blue" readonly placeholder="0.00">
+                                <input type="text" id="mg-cur-total" class="tp-input auto-blue" readonly placeholder="-">
                             </div>
                         </div>
                     </div>
@@ -1608,15 +1659,15 @@
                             </div>
                             <div class="tp-field">
                                 <label>Yeni cəmi net</label>
-                                <input type="text" id="mg-new-total" class="tp-input auto" readonly placeholder="0.00">
+                                <input type="text" id="mg-new-total" class="tp-input auto" readonly placeholder="-">
                             </div>
                             <div class="tp-field">
                                 <label>Yeni gross ★</label>
-                                <input type="text" id="mg-new-gross" class="tp-input auto-green" readonly placeholder="0.00" data-key="1">
+                                <input type="text" id="mg-new-gross" class="tp-input auto-green" readonly placeholder="-" data-key="1">
                             </div>
                             <div class="tp-field">
                                 <label>Yeni yemək pulu ★</label>
-                                <input type="text" id="mg-new-meal" class="tp-input auto-blue" readonly placeholder="0.00" data-key="1">
+                                <input type="text" id="mg-new-meal" class="tp-input auto-blue" readonly placeholder="-" data-key="1">
                             </div>
                         </div>
                     </div>
@@ -1625,6 +1676,7 @@
                 <hr class="tp-divider">
 
                 <!-- RESULT BAR -->
+                <div class="tp-empty-hint"><i data-lucide="calculator"></i><span>Cari gross və net artımı daxil edin - nəticə burada görünəcək.</span></div>
                 <div id="mg-result-bar" class="tp-result-bar" style="display:none;">
                     <div class="tp-result-item">
                         <div class="r-label">Cari gross</div>
@@ -1734,7 +1786,7 @@
                             </div>
                             <div class="tp-field">
                                 <label>Cari net</label>
-                                <input type="text" id="tx-cur-net" class="tp-input auto-green" readonly placeholder="0.00">
+                                <input type="text" id="tx-cur-net" class="tp-input auto-green" readonly placeholder="-">
                             </div>
                             <div class="tp-field">
                                 <label>Cari yemək pulu</label>
@@ -1742,7 +1794,7 @@
                             </div>
                             <div class="tp-field">
                                 <label>Cari cəmi net</label>
-                                <input type="text" id="tx-cur-total" class="tp-input auto-blue" readonly placeholder="0.00">
+                                <input type="text" id="tx-cur-total" class="tp-input auto-blue" readonly placeholder="-">
                             </div>
                         </div>
                     </div>
@@ -1775,15 +1827,15 @@
                             </div>
                             <div class="tp-field">
                                 <label>Yeni cəmi net</label>
-                                <input type="text" id="tx-new-total" class="tp-input auto" readonly placeholder="0.00">
+                                <input type="text" id="tx-new-total" class="tp-input auto" readonly placeholder="-">
                             </div>
                             <div class="tp-field">
                                 <label>Yeni gross ★</label>
-                                <input type="text" id="tx-new-gross" class="tp-input auto-green" readonly placeholder="0.00" data-key="1">
+                                <input type="text" id="tx-new-gross" class="tp-input auto-green" readonly placeholder="-" data-key="1">
                             </div>
                             <div class="tp-field">
                                 <label>Yeni yemək pulu ★</label>
-                                <input type="text" id="tx-new-meal" class="tp-input auto-blue" readonly placeholder="0" data-key="1">
+                                <input type="text" id="tx-new-meal" class="tp-input auto-blue" readonly placeholder="-" data-key="1">
                             </div>
                         </div>
                     </div>
@@ -1792,6 +1844,7 @@
                 <hr class="tp-divider">
 
                 <!-- RESULT BAR -->
+                <div class="tp-empty-hint"><i data-lucide="calculator"></i><span>Cari gross və net artımı daxil edin - nəticə burada görünəcək.</span></div>
                 <div id="tx-result-bar" class="tp-result-bar" style="display:none;">
                     <div class="tp-result-item">
                         <div class="r-label">Cari gross</div>
@@ -2002,6 +2055,14 @@
     let currentSystem = 'general';
 
     // Vahid rəqəm formatı: 1 753.33 (min ayırıcı - nazik boşluq)
+    function setKpiYear(a, b, c, pct) {
+        document.getElementById('k-nett-y').innerText = fmtN(a * 12);
+        document.getElementById('k-gross-y').innerText = fmtN(b * 12);
+        document.getElementById('val-k1-y').innerText = fmtN(c * 12);
+        const m = document.getElementById('k-meter');
+        if (m) m.style.width = (pct == null ? 0 : Math.min(100, pct)).toFixed(1) + '%';
+    }
+
     // Gross / supergross bölgüsü (üfüqi zolaq + legend)
     function renderComp(title, total, parts) {
         const box = document.getElementById('compBox');
@@ -2243,12 +2304,13 @@
             document.getElementById('val-k2').classList.remove('pct');
             document.getElementById('val-k2').style.color = "var(--ink)";
 
-            let sgHtml = `<tr><td class="lbl">GROSS</td><td class="val">${fmtN(val)}</td></tr>`;
-            sgHtml += `<tr><td class="lbl">DSMF (İşəgötürən)</td><td class="val">${fmtN(emp.dsmf)}</td></tr>`;
-            sgHtml += `<tr><td class="lbl">İşsizlik (İşəgötürən 0.5%)</td><td class="val">${fmtN(emp.unemp)}</td></tr>`;
-            sgHtml += `<tr><td class="lbl">İTS (İşəgötürən)</td><td class="val">${fmtN(emp.med)}</td></tr>`;
+            let sgHtml = `<tr class="base"><td class="lbl">GROSS</td><td class="val">${fmtN(val)}</td></tr>`;
+            sgHtml += `<tr class="add"><td class="lbl">DSMF (İşəgötürən)</td><td class="val">+${fmtN(emp.dsmf)}</td></tr>`;
+            sgHtml += `<tr class="add"><td class="lbl">İşsizlik (İşəgötürən 0.5%)</td><td class="val">+${fmtN(emp.unemp)}</td></tr>`;
+            sgHtml += `<tr class="add"><td class="lbl">İTS (İşəgötürən)</td><td class="val">+${fmtN(emp.med)}</td></tr>`;
             sgHtml += `<tr class="total-row"><td class="lbl">SUPERGROSS</td><td class="val">${fmtN(supergross)}</td></tr>`;
             document.getElementById('reportTable').innerHTML = sgHtml;
+            setKpiYear(supergross, val, emp.total, null);
             renderComp('Supergross bölgüsü', supergross, [
                 ['GROSS', val, 'c-net'], ['DSMF (İşəgötürən)', emp.dsmf, 'c-dsmf'],
                 ['İşsizlik', emp.unemp, 'c-unemp'], ['İTS', emp.med, 'c-med']]);
@@ -2332,20 +2394,21 @@
         }
 
         const table = document.getElementById('reportTable');
-        let html = `<tr><td class="lbl">GROSS ${isRecruitmentN2G?'(Baza)':''}</td><td class="val">${fmtN(finalGross)}</td></tr>`;
-        html += `<tr><td class="lbl">Gəlir vergisi</td><td class="val">${fmtN(res.tax)}</td></tr>`;
-        html += `<tr><td class="lbl">Sosial (DSMF)</td><td class="val">${fmtN(res.dsmf)}</td></tr>`;
-        html += `<tr><td class="lbl">İşsizlik (0.5%)</td><td class="val">${fmtN(res.unemp)}</td></tr>`;
-        html += `<tr><td class="lbl">İTS</td><td class="val">${fmtN(res.med)}</td></tr>`;
-        html += `<tr><td class="lbl">Həmkar ittifaqı</td><td class="val">${fmtN(res.union)}</td></tr>`;
+        let html = `<tr class="base"><td class="lbl">GROSS ${isRecruitmentN2G?'(Baza)':''}</td><td class="val">${fmtN(finalGross)}</td></tr>`;
+        html += `<tr class="ded"><td class="lbl">Gəlir vergisi</td><td class="val">−${fmtN(res.tax)}</td></tr>`;
+        html += `<tr class="ded"><td class="lbl">Sosial (DSMF)</td><td class="val">−${fmtN(res.dsmf)}</td></tr>`;
+        html += `<tr class="ded"><td class="lbl">İşsizlik (0.5%)</td><td class="val">−${fmtN(res.unemp)}</td></tr>`;
+        html += `<tr class="ded"><td class="lbl">İTS</td><td class="val">−${fmtN(res.med)}</td></tr>`;
+        html += `<tr class="ded"><td class="lbl">Həmkar ittifaqı</td><td class="val">−${fmtN(res.union)}</td></tr>`;
         if(isRecruitmentN2G) {
             html += `<tr class="subtotal-row"><td class="lbl">Baza net</td><td class="val">${fmtN(baseNet)}</td></tr>`;
-            html += `<tr><td class="lbl">+ Yemək pulu</td><td class="val">${fmtN(meal)}</td></tr>`;
+            html += `<tr class="add"><td class="lbl">Yemək pulu</td><td class="val">+${fmtN(meal)}</td></tr>`;
             html += `<tr class="total-row"><td class="lbl">NET (cəmi)</td><td class="val">${fmtN(finalNett)}</td></tr>`;
         } else {
             html += `<tr class="total-row"><td class="lbl">NET</td><td class="val">${fmtN(finalNett)}</td></tr>`;
         }
         table.innerHTML = html;
+        setKpiYear(finalNett, finalGross, isRecruitmentN2G ? meal : res.total, isRecruitmentN2G ? null : (finalGross > 0 ? res.total / finalGross * 100 : 0));
         renderComp('Gross bölgüsü', finalGross, [
             [isRecruitmentN2G ? 'Baza net' : 'Net', isRecruitmentN2G ? baseNet : finalNett, 'c-net'],
             ['Gəlir vergisi', res.tax, 'c-tax'], ['Sosial (DSMF)', res.dsmf, 'c-dsmf'],
@@ -2404,7 +2467,7 @@
                 : `<span class="izahat-sub">Gəlir vergisi (güzəştli 5% dərəcə):</span>
                 <ul><li>Vergiyə cəlb olunan ≤ 2500: (Gross − 200) × 5%</li>
                 <li>Vergiyə cəlb olunan > 2500: Gross × 5%</li></ul>`;
-            return `<b>İzahat (Texnopark rezidenti, ${year}):</b>
+            return `<b>Texnopark rezidenti · ${year}</b>
                 ${tpTax}
                 <span class="izahat-sub">DSMF:</span>
                 <ul><li>200 manatadək: Əmək haqqı × 3%</li>
@@ -2420,7 +2483,7 @@
             const tb = getPrivateTaxBands(year);
             const pct = Math.round(tb.low * 100);
             const exempt = (workplace === 'main') ? ' (əsas iş yerində gəlir 2500-dək olduqda 200 AZN vergidən azaddır - VM m.102.1.6)' : '';
-            return `<b>İzahat (Qeyri-dövlət və qeyri-neft sektoru, ${wp}, ${year}):</b>
+            return `<b>Qeyri-dövlət və qeyri-neft sektoru · ${wp} · ${year}</b>
                 <span class="izahat-sub">${year} üçün pilləli gəlir vergisi qaydası (VM m.101)${exempt}:</span>
                 <ul><li>Vergiyə cəlb olunan ≤ 2500: <b>${pct}%</b></li>
                 <li>2500 < Vergiyə cəlb olunan ≤ 8000: <b>${tb.mid} AZN + 10%</b> (2500-dən artıq hissənin 10%-i)</li>
@@ -2436,7 +2499,7 @@
         }
 
         if (sector === 'private') {
-            return `<b>İzahat (Qeyri-dövlət və qeyri-neft sektoru, 2025):</b>
+            return `<b>Qeyri-dövlət və qeyri-neft sektoru · 2025</b>
                 <span class="izahat-sub">Gəlir vergisi:</span>
                 <ul><li>8000 manatadək: 0%</li>
                 <li>8000 manatdan çox: (Vergiyə cəlb olunan − 8000) × 14%</li></ul>
@@ -2458,7 +2521,7 @@
             ? `2500-dək Əmək haqqı × 2%; 2500-dən çox: 50 + (Əmək haqqı − 2500) × 0.5%`
             : `8000-dək Əmək haqqı × 2%; 8000-dən çox: 160 + (Əmək haqqı − 8000) × 0.5%`;
         const exemptS = (workplace === 'main') ? 'Vergiyə cəlb olunan məbləğ = Gross − Güzəşt − 200 (əsas iş yeri)' : 'Vergiyə cəlb olunan məbləğ = Gross − Güzəşt';
-        return `<b>İzahat (Dövlət və neft sektoru, ${wp}, ${year}):</b>
+        return `<b>Dövlət və neft sektoru · ${wp} · ${year}</b>
             <ul><li>${exemptS}</li></ul>
             <span class="izahat-sub">Gəlir vergisi:</span>
             <ul><li>Vergiyə cəlb olunan ≤ 2500: məbləğ × 14%</li>
@@ -4077,6 +4140,9 @@ Status: ${r.status}`;
     // ===== Dil (AZ / EN / RU) =====
     const I18N = {"Əmək haqqı kalkulyatoru": ["Salary calculator", "Калькулятор зарплаты"], "Fərdi": ["Individual", "Индивидуальный"], "Toplu": ["Bulk", "Пакетный"], "Transfer & Promotion": ["Transfer & Promotion", "Перевод и повышение"], "Kütləvi artımlar": ["Mass increases", "Массовые повышения"], "Texnopar": ["Technopark", "Технопарк"], "Transfer by Firuza": ["Transfer by Firuza", "Transfer by Firuza"], "Maya - AI assistent": ["Maya - AI assistant", "Maya - ИИ-ассистент"], "Tema": ["Theme", "Тема"], "Dil": ["Language", "Язык"], "Qaranlıq rejim": ["Dark mode", "Тёмная тема"], "İşıqlı rejim": ["Light mode", "Светлая тема"], "Xoş gəlmisiniz!": ["Welcome!", "Добро пожаловать!"], "Davam etmək üçün hesablama məqsədini seçin": ["Choose what you want to calculate", "Выберите цель расчёта"], "Ümumi hesablamalar": ["General calculations", "Общие расчёты"], "GROSS": ["GROSS", "GROSS"], "NET çevrilmələri, toplu hesablamalar, transfer, promotion və kütləvi artımlar üçün standart kalkulyator rejimi.": ["conversions, bulk calculations, transfers, promotions and mass increases - the standard calculator mode.", "конвертация, пакетные расчёты, переводы, повышения и массовые повышения - стандартный режим калькулятора."], "İşə qəbul məqsədləri üçün": ["For recruitment", "Для найма"], "Namizədlərə təklif olunan əmək haqqının hesablanması - Recruitment qaydaları, limitlər və yemək pulu məntiqi avtomatik tətbiq olunur.": ["Calculating salary offers for candidates - recruitment rules, limits and meal allowance logic are applied automatically.", "Расчёт зарплаты, предлагаемой кандидатам - правила найма, лимиты и логика пособия на питание применяются автоматически."], "Parametrlər": ["Parameters", "Параметры"], "Şirkət": ["Company", "Компания"], "Rejim": ["Mode", "Режим"], "General": ["General", "Общий"], "Recruitment": ["Recruitment", "Найм"], "Məbləğ": ["Amount", "Сумма"], "Hesablama rejimi": ["Calculation", "Расчёт"], "İl": ["Year", "Год"], "Həmkar ittifaqı": ["Trade union", "Профсоюз"], "Sektor": ["Sector", "Сектор"], "İş yeri": ["Workplace", "Место работы"], "Özəl (Qeyri-neft)": ["Private (non-oil)", "Частный (ненефтяной)"], "Dövlət / Neft-Qaz": ["State / Oil & gas", "Госсектор / нефтегаз"], "Texnopark": ["Technopark", "Технопарк"], "Əsas iş yeri": ["Primary job", "Основное место"], "Əlavə iş yeri": ["Secondary job", "Дополнительное место"], "Vergi güzəşti": ["Tax relief", "Налоговая льгота"], "VM m.102": ["Tax Code art. 102", "НК ст. 102"], "Yoxdur": ["None", "Нет"], "Standart qayda": ["Standard rule", "Стандартно"], "Şəhid, AR Qəhrəmanı": ["Martyr, National Hero", "Шехид, Нац. герой"], "I və II qrup əlil": ["Disability group I-II", "Инвалидность I-II гр."], "Veteran, Çernobıl": ["Veteran, Chernobyl", "Ветеран, Чернобыль"], "Məcburi köçkün": ["IDP", "Вынужд. переселенец"], "Himayə (2+ nəfər)": ["Dependants (2+)", "Иждивенцы (2+)"], "Bu bölmədə istifadə olunmur": ["Not used in this section", "Не используется в этом разделе"], "NET": ["NET", "NET"], "NET (cəmi)": ["NET (total)", "NET (итого)"], "GROSS (Baza)": ["GROSS (base)", "GROSS (база)"], "SUPERGROSS": ["SUPERGROSS", "SUPERGROSS"], "Cəmi tutulmalar": ["Total deductions", "Всего удержаний"], "Effektiv tutulma": ["Effective deduction", "Эффективное удержание"], "Yemək pulu": ["Meal allowance", "Пособие на питание"], "Baza net": ["Base net", "Базовый net"], "İşəgötürən ödənişləri": ["Employer contributions", "Взносы работодателя"], "DSMF (İşəgötürən)": ["DSMF (employer)", "ГФСЗ (работодатель)"], "Hesablanmış detallar": ["Breakdown", "Детали расчёта"], "Gəlir vergisi": ["Income tax", "Подоходный налог"], "Sosial (DSMF)": ["Social (DSMF)", "Соц. (ГФСЗ)"], "İşsizlik (0.5%)": ["Unemployment (0.5%)", "Безработица (0.5%)"], "İTS": ["Health insurance", "ОМС"], "İşsizlik (İşəgötürən 0.5%)": ["Unemployment (employer 0.5%)", "Безработица (работодатель 0.5%)"], "İTS (İşəgötürən)": ["Health insurance (employer)", "ОМС (работодатель)"], "+ Yemək pulu": ["+ Meal allowance", "+ Пособие на питание"], "Çap et": ["Print", "Печать"], "AI izah et": ["Explain with AI", "Объяснить (ИИ)"], "İzahat": ["Explanation", "Пояснение"], "Qeyd:": ["Note:", "Примечание:"], "Bu alət təxmini hesablar verir. Dəqiqlik tələb olunan hallarda rəsmi mənbələrə istinad tövsiyyə olunur.": ["This tool gives estimates. Where precision matters, refer to official sources.", "Инструмент даёт приблизительные расчёты. Если нужна точность, обращайтесь к официальным источникам."], "Vergi qanunvericiliyi və limitlər dəyişdikdə nəticələr dəyişə bilər.": ["Results may change when tax law and limits change.", "Результаты могут измениться при изменении законодательства и лимитов."], "Vergi Məcəlləsinə son uyğunlaşma tarixi: 27 noyabr 2026 (2027 qaydaları əlavə edildi)": ["Last aligned with the Tax Code: 27 November 2026 (2027 rules added)", "Последнее обновление по Налоговому кодексу: 27 ноября 2026 (добавлены правила 2027)"], "Təklif edilən əmək haqqının şkalaya uyğunluğu yoxlanılan zaman yemək pulu da (net+yemək pulu birlikdə) nəzərə alınmalıdır.": ["When checking the offer against the salary scale, include the meal allowance (net + meal allowance together).", "При проверке соответствия предложения шкале учитывайте и пособие на питание (net + питание вместе)."], "Məbləğ bu aralıqda ola bilməz.": ["The amount cannot be in this range.", "Сумма не может быть в этом диапазоне."], "Tətbiq et": ["Apply", "Применить"], "DSMF:": ["DSMF:", "ГФСЗ:"], "200 manatadək: Əmək haqqı × 3%": ["Up to 200 AZN: Salary × 3%", "До 200 AZN: Зарплата × 3%"], "200 manatdan çox: 6 + (Əmək haqqı − 200) × 10%": ["Over 200 AZN: 6 + (Salary − 200) × 10%", "Свыше 200 AZN: 6 + (Зарплата − 200) × 10%"], "200 manatadək 3%; 200-dən çox: 6 + (Əmək haqqı − 200) × 10%": ["Up to 200 AZN 3%; over 200: 6 + (Salary − 200) × 10%", "До 200 AZN 3%; свыше 200: 6 + (Зарплата − 200) × 10%"], "İşsizlik sığortası:": ["Unemployment insurance:", "Страхование от безработицы:"], "Əmək haqqı × 0.5%": ["Salary × 0.5%", "Зарплата × 0.5%"], "Əmək haqqı × 3%": ["Salary × 3%", "Зарплата × 3%"], "İcbari tibbi sığorta:": ["Mandatory health insurance:", "Обязательное мед. страхование:"], "2500 manatadək: Əmək haqqı × 2%": ["Up to 2500 AZN: Salary × 2%", "До 2500 AZN: Зарплата × 2%"], "2500 manatdan çox: 50 + (Əmək haqqı − 2500) × 0.5%": ["Over 2500 AZN: 50 + (Salary − 2500) × 0.5%", "Свыше 2500 AZN: 50 + (Зарплата − 2500) × 0.5%"], "2500-dək Əmək haqqı × 2%; 2500-dən çox: 50 + (Əmək haqqı − 2500) × 0.5%": ["Up to 2500: Salary × 2%; over 2500: 50 + (Salary − 2500) × 0.5%", "До 2500: Зарплата × 2%; свыше 2500: 50 + (Зарплата − 2500) × 0.5%"], "8000 manatadək: Əmək haqqı × 2%": ["Up to 8000 AZN: Salary × 2%", "До 8000 AZN: Зарплата × 2%"], "8000 manatdan çox: 160 + (Əmək haqqı − 8000) × 0.5%": ["Over 8000 AZN: 160 + (Salary − 8000) × 0.5%", "Свыше 8000 AZN: 160 + (Зарплата − 8000) × 0.5%"], "8000-dək Əmək haqqı × 2%; 8000-dən çox: 160 + (Əmək haqqı − 8000) × 0.5%": ["Up to 8000: Salary × 2%; over 8000: 160 + (Salary − 8000) × 0.5%", "До 8000: Зарплата × 2%; свыше 8000: 160 + (Зарплата − 8000) × 0.5%"], "8000 manatadək: 0%": ["Up to 8000 AZN: 0%", "До 8000 AZN: 0%"], "8000 manatdan çox: (Vergiyə cəlb olunan − 8000) × 14%": ["Over 8000 AZN: (Taxable − 8000) × 14%", "Свыше 8000 AZN: (Облагаемая − 8000) × 14%"], "Vergiyə cəlb olunan ≤ 2500:": ["Taxable ≤ 2500:", "Облагаемая ≤ 2500:"], "2500 < Vergiyə cəlb olunan ≤ 8000:": ["2500 < Taxable ≤ 8000:", "2500 < Облагаемая ≤ 8000:"], "Vergiyə cəlb olunan > 8000:": ["Taxable > 8000:", "Облагаемая > 8000:"], "(2500-dən artıq hissənin 10%-i)": ["(10% of the part above 2500)", "(10% от части свыше 2500)"], "(8000-dən artıq hissənin 14%-i)": ["(14% of the part above 8000)", "(14% от части свыше 8000)"], "Vergiyə cəlb olunan > 2500: 350 + (məbləğ − 2500) × 25%": ["Taxable > 2500: 350 + (amount − 2500) × 25%", "Облагаемая > 2500: 350 + (сумма − 2500) × 25%"], "Vergiyə cəlb olunan > 2500: Gross × 5%": ["Taxable > 2500: Gross × 5%", "Облагаемая > 2500: Gross × 5%"], "Vergiyə cəlb olunan ≤ 2500: (Gross − 200) × 5%": ["Taxable ≤ 2500: (Gross − 200) × 5%", "Облагаемая ≤ 2500: (Gross − 200) × 5%"], "Vergiyə cəlb olunan ≤ 2500: məbləğ × 14%": ["Taxable ≤ 2500: amount × 14%", "Облагаемая ≤ 2500: сумма × 14%"], "Vergiyə cəlb olunan məbləğ = Gross − Güzəşt": ["Taxable amount = Gross − Relief", "Облагаемая сумма = Gross − Льгота"], "Vergiyə cəlb olunan məbləğ = Gross − Güzəşt − 200 (əsas iş yeri)": ["Taxable amount = Gross − Relief − 200 (primary job)", "Облагаемая сумма = Gross − Льгота − 200 (основное место)"], "Yekun Net = Gross − (Vergi + DSMF + İşsizlik + Tibbi sığorta + Həmkar haqqı)": ["Final Net = Gross − (Tax + DSMF + Unemployment + Health insurance + Union fee)", "Итоговый Net = Gross − (Налог + ГФСЗ + Безработица + ОМС + Профвзнос)"], "Gəlir vergisi:": ["Income tax:", "Подоходный налог:"], "Gəlir vergisi (güzəştli 5% dərəcə):": ["Income tax (reduced 5% rate):", "Подоходный налог (льготная ставка 5%):"], "Gəlir vergisi (VM m.101.7 - 2027-ci ildən 20 il):": ["Income tax (Tax Code art. 101.7 - 20 years from 2027):", "Подоходный налог (НК ст. 101.7 - 20 лет с 2027):"], "Texnopark güzəşti:": ["Technopark relief:", "Льгота Технопарка:"], "Texnopark rezidentində muzdlu işdən aylıq gəlir:": ["Monthly employment income at a Technopark resident:", "Ежемесячный доход по найму у резидента Технопарка:"], "İri sahibkarlıq subyektləri üçün ixrac payı şərtləri tətbiq olunur.": ["Export-share conditions apply to large businesses.", "Для крупных предприятий действуют условия по доле экспорта."], "İşəgötürən DSMF ödəmir (0%).": ["The employer pays no DSMF (0%).", "Работодатель не платит ГФСЗ (0%)."], "İşəgötürənin işçiyə görə çəkdiyi cəmi xərc.": ["Total cost of the employee to the employer.", "Общие расходы работодателя на сотрудника."], "İşəgötürən ödənişləri:": ["Employer contributions:", "Взносы работодателя:"], "DSMF (işəgötürən payı): Gross × 22%": ["DSMF (employer share): Gross × 22%", "ГФСЗ (доля работодателя): Gross × 22%"], "DSMF (işəgötürən payı): 200-dək 22%; 200-dən çox: 44 + (Gross − 200) × 15%": ["DSMF (employer share): up to 200 22%; over 200: 44 + (Gross − 200) × 15%", "ГФСЗ (доля работодателя): до 200 22%; свыше 200: 44 + (Gross − 200) × 15%"], "DSMF (işəgötürən payı): 200-dək 22%; 200–8000: 44 + (Gross − 200) × 15%; 8000-dən çox: 1214 + (Gross − 8000) × 11%": ["DSMF (employer share): up to 200 22%; 200–8000: 44 + (Gross − 200) × 15%; over 8000: 1214 + (Gross − 8000) × 11%", "ГФСЗ (доля работодателя): до 200 22%; 200–8000: 44 + (Gross − 200) × 15%; свыше 8000: 1214 + (Gross − 8000) × 11%"], "İşsizlik sığortası (işəgötürən): Gross × 0.5%": ["Unemployment insurance (employer): Gross × 0.5%", "Страхование от безработицы (работодатель): Gross × 0.5%"], "İşsizlik sığortası: Gross × 0.5%": ["Unemployment insurance: Gross × 0.5%", "Страхование от безработицы: Gross × 0.5%"], "İcbari tibbi sığorta: 2500-dək Gross × 2%; 2500-dən çox: 50 + (Gross − 2500) × 0.5%": ["Mandatory health insurance: up to 2500 Gross × 2%; over 2500: 50 + (Gross − 2500) × 0.5%", "ОМС: до 2500 Gross × 2%; свыше 2500: 50 + (Gross − 2500) × 0.5%"], "İcbari tibbi sığorta: 8000-dək Gross × 2%; 8000-dən çox: 160 + (Gross − 8000) × 0.5%": ["Mandatory health insurance: up to 8000 Gross × 2%; over 8000: 160 + (Gross − 8000) × 0.5%", "ОМС: до 8000 Gross × 2%; свыше 8000: 160 + (Gross − 8000) × 0.5%"], "Supergross = Gross + DSMF + İşsizlik + İTS": ["Supergross = Gross + DSMF + Unemployment + Health insurance", "Supergross = Gross + ГФСЗ + Безработица + ОМС"], "Supergross = Gross + İşsizlik + İTS": ["Supergross = Gross + Unemployment + Health insurance", "Supergross = Gross + Безработица + ОМС"], "Supergross (Texnopark rezidenti):": ["Supergross (Technopark resident):", "Supergross (резидент Технопарка):"], "Nəticə:": ["Result:", "Итог:"], "Recruitment rejimi (yemək pulu məntiqini tətbiq et)": ["Recruitment mode (apply meal allowance logic)", "Режим найма (применить логику пособия на питание)"], "Excel faylını seçin və ya bura atın": ["Choose an Excel file or drop it here", "Выберите Excel-файл или перетащите сюда"], "Fayl seç": ["Choose file", "Выбрать файл"], "Format: Excel (.xlsx) | Sütunlar: \"Employee badge\" və \"Salary\"": ["Format: Excel (.xlsx) | Columns: \"Employee badge\" and \"Salary\"", "Формат: Excel (.xlsx) | Столбцы: \"Employee badge\" и \"Salary\""], "işçi hesablandı": ["employees calculated", "сотрудников рассчитано"], "Excel-ə çıxar": ["Export to Excel", "Экспорт в Excel"], "Badge": ["Badge", "Табельный №"], "Gross (Baza)": ["Gross (base)", "Gross (база)"], "Yemək": ["Meal", "Питание"], "Net (cəmi)": ["Net (total)", "Net (итого)"], "Vergi": ["Tax", "Налог"], "DSMF": ["DSMF", "ГФСЗ"], "Gross": ["Gross", "Gross"], "Net": ["Net", "Net"], "Toplu yükləmə": ["Bulk upload", "Пакетная загрузка"], "Şablon yüklə": ["Download template", "Скачать шаблон"], "Tələb olunan sütunlar:": ["Required columns:", "Обязательные столбцы:"], "Tələb olunan:": ["Required:", "Обязательные:"], "Opsional (hər sətir üçün):": ["Optional (per row):", "Необязательные (для каждой строки):"], "(Əsas/Əlavə),": ["(Primary/Secondary),", "(Основное/Дополнительное),"], "(0, 1, 2 və ya 0.01),": ["(0, 1, 2 or 0.01),", "(0, 1, 2 или 0.01),"], "(Filial/Baş ofis)": ["(Branch/Head office)", "(Филиал/Головной офис)"], "(Local/Expat),": ["(Local/Expat),", "(Local/Expat),"], "İş növü": ["Job type", "Тип работы"], "HİK": ["Union %", "Профсоюз %"], "Cari gross": ["Current gross", "Текущий gross"], "Cari yemək": ["Current meal", "Текущее питание"], "Net artım": ["Net increase", "Прирост net"], "Yeni gross": ["New gross", "Новый gross"], "Yeni yemək": ["New meal", "Новое питание"], "Gross Δ": ["Gross Δ", "Gross Δ"], "Status": ["Status", "Статус"], "Növ": ["Type", "Тип"], "Cari gross daxil edilməyib": ["Current gross not entered", "Текущий gross не введён"], "Artım yoxdur": ["No increase", "Нет прироста"], "Gross dəyişmir": ["Gross unchanged", "Gross не меняется"], "Yemək 100-ə çatdırıldı": ["Meal raised to 100", "Питание доведено до 100"], "Transfer & Promotion - hesablama qaydaları": ["Transfer & Promotion - calculation rules", "Перевод и повышение - правила расчёта"], "Rotasiyalar zamanı cəm net": ["During rotations, if the total net", "При ротации, если общий net"], "dəyişmirsə": ["does not change", "не меняется"], "- əmək haqqı eyni saxlanılmaqla rotasiya icra edilsin.": ["- carry out the rotation with the same salary.", "- ротация проводится с сохранением зарплаты."], "Maaş": ["If the salary", "Если зарплата"], "artırsa": ["increases", "растёт"], "- yeni gross cari grossdan az olmamalıdır.": ["- the new gross must not be lower than the current gross.", "- новый gross не должен быть ниже текущего."], "azalırsa": ["decreases", "снижается"], "- yemək pulu sabit saxlanılmaqla yeni gross təyin edilsin.": ["- set the new gross keeping the meal allowance fixed.", "- новый gross устанавливается при неизменном пособии на питание."], "Cari məlumatlar": ["Current", "Текущие данные"], "Cari net": ["Current net", "Текущий net"], "Cari cəmi net": ["Current total net", "Текущий общий net"], "Yeni təklif": ["New offer", "Новое предложение"], "Net daxil et": ["Enter net", "Ввести net"], "Gross daxil et": ["Enter gross", "Ввести gross"], "Təklif net": ["Offered net", "Предлагаемый net"], "Təklif gross": ["Offered gross", "Предлагаемый gross"], "Təklif yemək pulu": ["Offered meal allowance", "Предлагаемое питание"], "Cəmi net (təklifdən)": ["Total net (from offer)", "Общий net (из предложения)"], "Yeni gross (baza netdən) ★": ["New gross (from base net) ★", "Новый gross (из базового net) ★"], "Yeni gross (müqavilə)": ["New gross (contract)", "Новый gross (договор)"], "Yeni cəmi net": ["New total net", "Новый общий net"], "= Dəyişiklik yoxdur": ["= No change", "= Без изменений"], "Kütləvi artımlar - hesablama qaydaları": ["Mass increases - calculation rules", "Массовые повышения - правила расчёта"], "Texnopar - hesablama qaydaları": ["Technopark - calculation rules", "Технопарк - правила расчёта"], "Yuxarıdakı tənzimləmələr (İl, Sektor, İş Yeri, Həmkar, Güzəşt) fərdi hesablama üçün istifadə olunur.": ["The parameters on the left (Year, Sector, Workplace, Union, Relief) are used for the single calculation.", "Параметры слева (Год, Сектор, Место работы, Профсоюз, Льгота) используются для индивидуального расчёта."], "Bulk yükləmədə hər sətir üçün": ["In bulk upload, if the", "При пакетной загрузке, если для каждой строки указаны столбцы"], "İl, İş Növü, HİK və İş Yeri": ["Year, Job type, Union % and Workplace", "Год, Тип работы, Профсоюз % и Место работы"], "sütunları göstərilərsə, hesablama o sətirin öz tənzimləməsinə uyğun aparılır (göstərilməyənlər üçün yuxarıdakı tənzimləmə istifadə edilir).": ["columns are given for a row, that row uses its own settings (missing ones fall back to the parameters on the left).", ", строка рассчитывается по своим настройкам (для отсутствующих используются параметры слева)."], "Əgər": ["If", "Если"], "cari yemək pulu + artım net": ["current meal allowance + net increase", "текущее питание + прирост net"], "≤ 100 AZN olarsa, gross dəyişmir - bütün artım yemək puluna gedir.": ["≤ 100 AZN, gross does not change - the whole increase goes to the meal allowance.", "≤ 100 AZN, gross не меняется - весь прирост идёт в питание."], "Əgər 100-ü keçirsə, yemək pulu 100-ə çatdırılır, qalan hissə gross-a əlavə olunur.": ["If it exceeds 100, the meal allowance is raised to 100 and the rest is added to gross.", "Если больше 100, питание доводится до 100, остаток добавляется к gross."], "Lakin yeni gross − cari gross fərqi": ["However, the new gross − current gross difference must be at least:", "Однако разница новый gross − текущий gross должна быть не меньше:"], "Filial": ["Branch", "Филиал"], "üçün 20 AZN-dən,": ["- 20 AZN,", "- 20 AZN,"], "Baş ofis": ["Head office", "Головной офис"], "üçün 50 AZN-dən az ola bilməz.": ["- 50 AZN.", "- 50 AZN."], "Əgər meal = 100 ilə bu minimum fərq təmin olunmursa, yemək pulu kifayət qədər azaldılır ki, gross artım minimum şərti ödəsin.": ["If meal = 100 does not meet this minimum, the meal allowance is reduced just enough for the gross increase to reach the minimum.", "Если при питании = 100 минимум не достигается, питание уменьшается настолько, чтобы прирост gross отвечал минимуму."], "Cari vəziyyət": ["Current", "Текущее состояние"], "Cari yemək pulu": ["Current meal allowance", "Текущее питание"], "Artım və nəticə": ["Increase and result", "Прирост и результат"], "Yeni gross ★": ["New gross ★", "Новый gross ★"], "Yeni yemək pulu ★": ["New meal allowance ★", "Новое питание ★"], "Yeni yemək pulu": ["New meal allowance", "Новое питание"], "Yerləşmə": ["Location", "Расположение"], "Filial (min 20 AZN)": ["Branch (min 20 AZN)", "Филиал (мин. 20 AZN)"], "Baş ofis (min 50 AZN)": ["Head office (min 50 AZN)", "Головной офис (мин. 50 AZN)"], "Yemək pulu + gross artım məntiqi": ["The meal allowance + gross increase logic is", "Логика питание + прирост gross"], "ilə eynidir (yemək 100-ə qədər, sonra gross-a; Filial 20 AZN / Baş ofis 50 AZN min fərq).": ["the same as Mass increases (meal up to 100, then gross; min. difference Branch 20 AZN / Head office 50 AZN).", "такая же, как в «Массовых повышениях» (питание до 100, затем gross; мин. разница Филиал 20 AZN / Головной офис 50 AZN)."], ": Gəlir vergisi": [": income tax", ": подоходный налог"], "2027-dən": ["from 2027", "с 2027"], ": 0% (VM m.101.7). İl yuxarıdakı filtrdən götürülür. DSMF, İşsizlik, İTS, HİK adi qaydada.": [": 0% (Tax Code art. 101.7). The year comes from the parameters on the left. DSMF, unemployment, health insurance and union as usual.", ": 0% (НК ст. 101.7). Год берётся из параметров слева. ГФСЗ, безработица, ОМС и профсоюз - как обычно."], ": gross ≤ 2500 → (gross − 200) × 5%; gross > 2500 → gross × 5%.": [": gross ≤ 2500 → (gross − 200) × 5%; gross > 2500 → gross × 5%.", ": gross ≤ 2500 → (gross − 200) × 5%; gross > 2500 → gross × 5%."], ": Gəlir vergisi Local ilə eynidir.": [": income tax is the same as Local.", ": подоходный налог как у Local."], "DSMF = 0%": ["DSMF = 0%", "ГФСЗ = 0%"], "(məbləğdən asılı olmadan). Qalan tutulmalar adi qaydada.": ["(regardless of amount). Other deductions as usual.", "(независимо от суммы). Остальные удержания - как обычно."], "Bulk-da hər sətir öz": ["In bulk, each row is calculated by its own", "В пакетном режиме каждая строка считается по своим значениям"], "(Filial/Baş ofis) dəyərlərinə görə hesablanır.": ["(Branch/Head office) values.", "(Филиал/Головной офис)."], "Type": ["Type", "Тип"], "Local": ["Local", "Local"], "Expat": ["Expat", "Expat"], "Əməkdaşların rotasiyası zamanı əmək haqqının müəyyən edilməsinə dəstək aləti.": ["A tool to help set salaries when employees rotate.", "Инструмент для определения зарплаты при ротации сотрудников."], "Aylıq/Rüblük": ["Monthly/Quarterly", "Ежемес./Ежекв."], "İllik": ["Annual", "Годовой"], "Əməkdaşın əmək haqqı məlumatları": ["Employee salary details", "Данные о зарплате сотрудника"], "Bütün məbləğlər AZN ilə daxil edilməlidir.": ["All amounts in AZN.", "Все суммы указываются в AZN."], "Gross əmək haqqı": ["Gross salary", "Gross зарплата"], "Əməkdaşın mövcud aylıq gross əmək haqqısı": ["The employee's current monthly gross salary", "Текущая ежемесячная gross-зарплата сотрудника"], "Əməkdaşın mövcud gross əmək haqqısı": ["The employee's current gross salary", "Текущая gross-зарплата сотрудника"], "Ortalama bonus məbləği": ["Average bonus", "Средний бонус"], "Orta aylıq/rüblük bonus göstəricisinə əsasən hesablanan orta bonus məbləği": ["Average bonus based on the average monthly/quarterly bonus rate", "Средний бонус по среднему ежемесячному/ежеквартальному показателю"], "Əməkdaşın mövcud yemək pulu məbləği": ["The employee's current meal allowance", "Текущее пособие на питание сотрудника"], "Əməkdaşın mövcud yemək pulu": ["The employee's current meal allowance", "Текущее пособие на питание сотрудника"], "Keçid vəzifə üçün təqribi aylıq gross orta bonus": ["Estimated average monthly gross bonus for the new position", "Ориентировочный средний ежемесячный gross-бонус новой должности"], "Keçid ediləcək vəzifə üçün təqribi aylıq gross orta bonus məbləği": ["Estimated average monthly gross bonus for the position being moved to", "Ориентировочный средний ежемесячный gross-бонус для новой должности"], "Hesabla": ["Calculate", "Рассчитать"], "Sıfırla": ["Reset", "Сбросить"], "Zəhmət olmasa bütün sahələri düzgün (mənfi olmayan) rəqəmlə doldurun.": ["Please fill in all fields with valid (non-negative) numbers.", "Заполните все поля корректными (неотрицательными) числами."], "Hesablama mümkün olmadı. Daxil edilən dəyərləri yoxlayın.": ["Calculation failed. Check the values entered.", "Расчёт не удался. Проверьте введённые значения."], "Təklif": ["Offer", "Предложение"], "Maksimum": ["Maximum", "Максимум"], "Təklif olunan əmək haqqı": ["Offered salary", "Предлагаемая зарплата"], "Rotasiya zamanı təklif edilə biləcək əmək haqqı": ["Salary that can be offered at rotation", "Зарплата, которую можно предложить при ротации"], "Mümkün olan maksimum əmək haqqı": ["Maximum possible salary", "Максимально возможная зарплата"], "Hesablama əsasında mümkün olan maksimum əmək haqqı": ["Maximum salary possible from the calculation", "Максимальная зарплата по расчёту"], "Net əmək haqqı": ["Net salary", "Net зарплата"], "Təklif olunan Gross əmək haqqı": ["Offered gross salary", "Предлагаемая gross-зарплата"], "Maksimum Gross əmək haqqı": ["Maximum gross salary", "Максимальная gross-зарплата"], "Təklif olunan və maksimum Gross arasındakı fərq:": ["Difference between offered and maximum gross:", "Разница между предлагаемым и максимальным gross:"], ". Təklif olunan əmək haqqının hesablanmasında 10/12 əmsalı tətbiq edilir; maksimum əmək haqqıda tətbiq edilmir.": [". The 10/12 factor applies to the offered salary, not to the maximum.", ". Коэффициент 10/12 применяется к предлагаемой зарплате, но не к максимальной."], "Hesablama detalları": ["Calculation details", "Детали расчёта"], "Addım 1": ["Step 1", "Шаг 1"], "Addım 2": ["Step 2", "Шаг 2"], "Addım 3": ["Step 3", "Шаг 3"], "Addım 4": ["Step 4", "Шаг 4"], "Net baza (maksimum)": ["Net base (maximum)", "Net-база (максимум)"], "Təklif olunan net (10/12 əmsalı)": ["Offered net (10/12 factor)", "Предлагаемый net (коэфф. 10/12)"], "Gross əmək haqqının hesablanması": ["Calculating gross salary", "Расчёт gross-зарплаты"], "Yeni strukturda yemək pulu 100 AZN sabitdir; ona görə hər net məbləğdən 100 çıxılır və seçilmiş parametrlərə uyğun net→gross tərs hesablanır.": ["In the new structure the meal allowance is fixed at 100 AZN, so 100 is subtracted from each net amount and net→gross is back-calculated with the selected parameters.", "В новой структуре питание фиксировано - 100 AZN, поэтому из каждой net-суммы вычитается 100 и net→gross пересчитывается по выбранным параметрам."], "Yeni strukturda yemək pulu 100 AZN sabitdir; net əsasdan 100 çıxılır və seçilmiş parametrlərə uyğun net→gross tərs hesablanır.": ["In the new structure the meal allowance is fixed at 100 AZN; 100 is subtracted from the base net and net→gross is back-calculated with the selected parameters.", "В новой структуре питание фиксировано - 100 AZN; из базового net вычитается 100 и net→gross пересчитывается по выбранным параметрам."], "Aylıq/Rüblük bonus alan struktura uyğun hesablanmış əmək haqqı": ["Salary calculated for a monthly/quarterly bonus structure", "Зарплата для структуры с ежемесячным/ежеквартальным бонусом"], "Net bonus məbləği": ["Net bonus", "Net-бонус"], "Net total məbləğ": ["Net total", "Net итого"], "Net əsas əmək haqqı": ["Net base salary", "Базовая net-зарплата"], "Yeni struktur": ["New structure", "Новая структура"], "Yeni əmək haqqı strukturu": ["New salary structure", "Новая структура зарплаты"], "Təqribi aylıq gross orta bonus": ["Estimated average monthly gross bonus", "Ориентировочный средний ежемесячный gross-бонус"], "Maya (MyAI) izah edir": ["Maya (MyAI) explains", "Объясняет Maya (MyAI)"], "Platforma haqqında": ["About the platform", "О платформе"], "MyAI Assistant · Onlayn": ["MyAI Assistant · Online", "MyAI Assistant · Онлайн"], "Platformanı izah et": ["Explain the platform", "Рассказать о платформе"], "2500 gross nə qədər net edir?": ["How much net is 2500 gross?", "Сколько net из 2500 gross?"], "HİK 1%, 2345 net üçün gross və yemək pulu nə qədər olmalıdır?": ["Union 1%, what gross and meal allowance for 2345 net?", "Профсоюз 1%: какой gross и питание для 2345 net?"], "2000 gross supergross neçə edir?": ["What is the supergross for 2000 gross?", "Какой supergross при 2000 gross?"], "Sualınızı yazın...": ["Type your question...", "Напишите вопрос..."], "Salam! Mən": ["Hi! I'm", "Здравствуйте! Я"], "- BirCalc-ın AI assistentiyəm.": ["- BirCalc's AI assistant.", "- ИИ-ассистент BirCalc."], "Platformanın": ["I help with", "Помогаю со"], "bütün hesablama metodları": ["all calculation methods", "всеми методами расчёта"], "üzrə kömək edirəm:": ["of the platform:", "платформы:"], "İşə qəbul": ["Recruitment", "Найм"], "(yemək pulu ilə),": ["(with meal allowance),", "(с питанием),"], "və": ["and", "и"], ". Sualınızı sərbəst formada yazın.": [". Ask your question in your own words.", ". Задавайте вопрос в свободной форме."], "Maya AI - Girişi qorunur": ["Maya AI - access protected", "Maya AI - доступ защищён"], "Davam etmək üçün parolu daxil edin": ["Enter the password to continue", "Введите пароль, чтобы продолжить"], "Parol": ["Password", "Пароль"], "Parol yanlışdır. Yenidən cəhd edin.": ["Wrong password. Try again.", "Неверный пароль. Попробуйте ещё раз."], "İmtina": ["Cancel", "Отмена"], "Daxil ol": ["Sign in", "Войти"], "BirCalc nədir?": ["What is BirCalc?", "Что такое BirCalc?"], "BirCalc - Azərbaycan üzrə": ["BirCalc is a", "BirCalc - платформа для"], "əmək haqqı hesablama": ["salary calculation", "расчёта зарплаты"], "platformasıdır. 2025, 2026 və 2027 vergi qaydaları ilə GROSS, NET və SUPERGROSS arasında çevrilmələr aparır.": ["platform for Azerbaijan. It converts between GROSS, NET and SUPERGROSS under the 2025, 2026 and 2027 tax rules.", "в Азербайджане. Конвертирует GROSS, NET и SUPERGROSS по налоговым правилам 2025, 2026 и 2027 годов."], "Nələr etmək olar?": ["What can you do?", "Что можно сделать?"], "Fərdi hesablama:": ["Individual calculation:", "Индивидуальный расчёт:"], "GROSS→NET, NET→GROSS və GROSS→SUPERGROSS. Sektor (özəl, dövlət/neft-qaz, Texnopark), iş yeri, həmkar ittifaqı və VM m.102 güzəştləri nəzərə alınır.": ["GROSS→NET, NET→GROSS and GROSS→SUPERGROSS. Sector (private, state/oil & gas, Technopark), workplace, trade union and Tax Code art. 102 reliefs are taken into account.", "GROSS→NET, NET→GROSS и GROSS→SUPERGROSS. Учитываются сектор (частный, госсектор/нефтегаз, Технопарк), место работы, профсоюз и льготы НК ст. 102."], "Toplu (Excel):": ["Bulk (Excel):", "Пакетный (Excel):"], "Fayl yükləyərək yüzlərlə işçini birdəfəyə hesablamaq və nəticəni Excel-ə çıxarmaq.": ["Upload a file to calculate hundreds of employees at once and export the result to Excel.", "Загрузите файл, чтобы рассчитать сотни сотрудников сразу и выгрузить результат в Excel."], "Transfer & Promotion:": ["Transfer & Promotion:", "Перевод и повышение:"], "Rotasiya və vəzifə artımlarında yeni gross/yemək pulunun təyini.": ["Setting the new gross/meal allowance for rotations and promotions.", "Определение нового gross/питания при ротации и повышении."], "Kütləvi artımlar:": ["Mass increases:", "Массовые повышения:"], "Net artımlara görə yeni grossların hesablanması.": ["Calculating new gross amounts from net increases.", "Расчёт новых gross по приросту net."], "Texnopar:": ["Technopark:", "Технопарк:"], "Texnopark rezidentləri üçün güzəştli hesablama.": ["Reduced-rate calculation for Technopark residents.", "Льготный расчёт для резидентов Технопарка."], "İşə qəbul rejimi (Recruitment):": ["Recruitment mode:", "Режим найма:"], "Namizədlərə təklif üçün şkala uyğunluğu və yemək pulu məntiqi.": ["Salary-scale check and meal allowance logic for candidate offers.", "Проверка по шкале и логика питания для предложений кандидатам."], "Maya (MyAI) AI Assistenti": ["Maya (MyAI) AI assistant", "ИИ-ассистент Maya (MyAI)"], "Sərbəst dildə sual verə bilərsiniz - məsələn \"2500 gross nə qədər net edir?\". Maya lazım olduqda dəqiqləşdirici sual verir və nəticəni detalları ilə göstərir.": ["Ask in plain language - for example \"How much net is 2500 gross?\". Maya asks follow-up questions when needed and shows the result in detail.", "Спрашивайте своими словами - например «Сколько net из 2500 gross?». Maya уточнит детали при необходимости и покажет подробный результат."], "Şirkət profilləri": ["Company profiles", "Профили компаний"], "Birbank, Pashapay və Birmarket üçün fərqli baza dəyərləri dəstəklənir.": ["Different base values for Birbank, Pashapay and Birmarket.", "Разные базовые значения для Birbank, Pashapay и Birmarket."], "Göstər": ["Show", "Показать"], "Gizlət": ["Hide", "Скрыть"], "İş Növü": ["Job type", "Тип работы"], "İş Yeri": ["Workplace", "Место работы"]};
     Object.assign(I18N, {
+        "İl üzrə": ["Per year", "За год"],
+        "Cari gross və yeni təklifi daxil edin - nəticə burada görünəcək.": ["Enter the current gross and the new offer - the result will appear here.", "Введите текущий gross и новое предложение - результат появится здесь."],
+        "Cari gross və net artımı daxil edin - nəticə burada görünəcək.": ["Enter the current gross and the net increase - the result will appear here.", "Введите текущий gross и прирост net - результат появится здесь."],
         "Gross bölgüsü": ["Where the gross goes", "Структура gross"],
         "Supergross bölgüsü": ["Supergross breakdown", "Структура supergross"],
         "İşsizlik": ["Unemployment", "Безработица"],
@@ -4088,6 +4154,7 @@ Status: ${r.status}`;
         "Hesablama rejimi, il, sektor və digər parametrlər soldakı paneldən götürülür.": ["Calculation mode, year, sector and other parameters come from the panel on the left.", "Режим расчёта, год, сектор и другие параметры берутся из панели слева."]
     });
     const I18N_RX = [
+        [/^((?:Qeyri-dövlət|Dövlət|Texnopark).* · \d{4})$/, "{1}", "{1}"],
         [/^İzahat \((.+?), (\d{4})\):$/, "Explanation ({1}, {2}):", "Пояснение ({1}, {2}):"],
         [/^(\d{4}) üçün pilləli gəlir vergisi qaydası \(VM m\.101\) \(əsas iş yerində gəlir 2500-dək olduqda 200 AZN vergidən azaddır - VM m\.102\.1\.6\):$/, "{1} progressive income tax (Tax Code art. 101) (at the primary job, 200 AZN is tax-free when income is up to 2500 - art. 102.1.6):", "Прогрессивный подоходный налог {1} (НК ст. 101) (на основном месте при доходе до 2500 AZN 200 AZN освобождены - ст. 102.1.6):"],
         [/^(\d{4}) üçün pilləli gəlir vergisi qaydası \(VM m\.101\):$/, "{1} progressive income tax (Tax Code art. 101):", "Прогрессивный подоходный налог {1} (НК ст. 101):"],
