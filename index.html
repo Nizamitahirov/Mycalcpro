@@ -7,6 +7,15 @@
     <title>BirCalc - Əmək haqqı kalkulyatoru</title>
     
     <meta name="theme-color" content="#E30613">
+    <script>
+        (function () {
+            var t = null, l = null;
+            try { t = localStorage.getItem('bircalc.theme'); l = localStorage.getItem('bircalc.lang'); } catch (e) {}
+            if (t !== 'light' && t !== 'dark') t = (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', t);
+            if (l === 'en' || l === 'ru') document.documentElement.setAttribute('lang', l);
+        })();
+    </script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23FF7A1A'/%3E%3Cstop offset='1' stop-color='%23E30613'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='7' fill='url(%23g)'/%3E%3Crect x='8' y='8' width='6.5' height='6.5' rx='1' fill='%23fff' fill-opacity='.45'/%3E%3Crect x='17.5' y='8' width='6.5' height='6.5' rx='1' fill='%23fff' fill-opacity='.45'/%3E%3Crect x='8' y='17.5' width='6.5' height='6.5' rx='1' fill='%23fff' fill-opacity='.45'/%3E%3Crect x='17.5' y='17.5' width='6.5' height='6.5' rx='1' fill='%23fff'/%3E%3C/svg%3E" sizes="any">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -56,6 +65,14 @@
             --shadow-sm: 0 1px 2px rgba(22, 23, 27, 0.05);
             --shadow-md: 0 1px 2px rgba(22, 23, 27, 0.04), 0 6px 20px -8px rgba(22, 23, 27, 0.12);
             --focus: 0 0 0 3px rgba(255, 122, 26, 0.22);
+            --line-strong: #D3D5DA;
+            --line-hover: #C9CBD1;
+            --ok-line: #BFE3CD;
+            --ok-badge: #DDF1E5;
+            --bad-badge: #FDE3E1;
+            --solid: #16171B;
+            --solid-hover: #000;
+            --solid-fg: #fff;
         }
 
         * { box-sizing: border-box; }
@@ -98,7 +115,7 @@
         }
         .sw-btn:hover, .comp-btn:hover { color: var(--ink); }
         .sw-btn.active, .comp-btn.active { background: var(--bg-card); color: var(--ink); font-weight: 600; box-shadow: var(--shadow-sm); }
-        .sw-btn.active { background: var(--ink); color: #fff; }
+        .sw-btn.active { background: var(--solid); color: var(--solid-fg); }
         .comp-btn.active.birbank { color: var(--brand-red); }
 
         /* Tab strip */
@@ -141,8 +158,8 @@
             border-radius: var(--radius-sm); cursor: pointer; font-weight: 600; font-size: 0.78rem; transition: background .15s;
         }
         .alert-btn:hover { background: var(--brand-red-dark); }
-        .alert-btn.alt { background: var(--ink); }
-        .alert-btn.alt:hover { background: #000; }
+        .alert-btn.alt { background: var(--solid); }
+        .alert-btn.alt:hover { background: var(--solid-hover); }
 
         /* =================== Forms =================== */
         .controls-row {
@@ -170,9 +187,9 @@
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236B6F78' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
             background-repeat: no-repeat; background-position: right 11px center;
         }
-        select:hover, .salary-input:hover { border-color: #D3D5DA; }
+        select:hover, .salary-input:hover { border-color: var(--line-strong); }
         select:focus, .salary-input:focus { border-color: var(--brand-orange); box-shadow: var(--focus); }
-        .salary-input { font-size: 1rem; font-weight: 600; border-color: #D3D5DA; }
+        .salary-input { font-size: 1rem; font-weight: 600; border-color: var(--line-strong); }
 
         /* Benefits */
         .benefit-section > label { display: block; margin-bottom: 10px; }
@@ -182,7 +199,7 @@
             display: flex; align-items: flex-start; gap: 9px; cursor: pointer; background: var(--bg-card);
             transition: border-color .15s, background .15s;
         }
-        .benefit-item:hover { border-color: #D3D5DA; }
+        .benefit-item:hover { border-color: var(--line-strong); }
         .benefit-item.active { border-color: var(--brand-orange); background: var(--brand-soft); }
         .benefit-item input { margin: 2px 0 0; width: 15px; height: 15px; accent-color: var(--brand-red); flex-shrink: 0; }
         .benefit-text { font-size: 0.74rem; font-weight: 400; line-height: 1.35; color: var(--muted); }
@@ -197,7 +214,7 @@
             background: var(--brand-grad); min-height: 104px;
             display: flex; flex-direction: column; justify-content: flex-start;
         }
-        .kpi-card.dark { background: var(--ink); }
+        .kpi-card.dark { background: var(--solid); }
         .kpi-card.light { background: var(--bg-card); color: var(--ink); border: 1px solid var(--line); box-shadow: var(--shadow-sm); }
         .kpi-label { font-size: 0.78rem; font-weight: 500; opacity: 0.85; }
         .kpi-card.light .kpi-label { color: var(--muted); opacity: 1; }
@@ -235,13 +252,13 @@
             transition: background .15s, border-color .15s;
         }
         .btn-secondary { background: var(--bg-card); color: var(--ink); border: 1px solid var(--line); }
-        .btn-secondary:hover { border-color: #C9CBD1; background: var(--bg-sunken); }
+        .btn-secondary:hover { border-color: var(--line-hover); background: var(--bg-sunken); }
         .btn-export { background: var(--ok); color: #fff; border: 1px solid var(--ok); }
         .btn-export:hover { background: #18723E; }
 
         /* =================== Bulk =================== */
         .upload-zone {
-            border: 1.5px dashed #D3D5DA; padding: 40px 20px; border-radius: var(--radius-lg);
+            border: 1.5px dashed var(--line-strong); padding: 40px 20px; border-radius: var(--radius-lg);
             text-align: center; cursor: pointer; transition: border-color .15s, background .15s; background: var(--bg-sunken);
         }
         .upload-zone:hover { border-color: var(--brand-orange); background: var(--brand-soft); }
@@ -322,7 +339,7 @@
             color: var(--ink); width: 100%; transition: border-color .15s, box-shadow .15s;
         }
         .tp-input:focus { border-color: var(--brand-orange); box-shadow: var(--focus); }
-        .tp-input.manual { border-color: #D3D5DA; font-weight: 600; }
+        .tp-input.manual { border-color: var(--line-strong); font-weight: 600; }
         .tp-input.auto, .tp-input.auto-green, .tp-input.auto-blue {
             background: var(--line-2); border-color: transparent; color: var(--ink-2); cursor: default;
         }
@@ -347,14 +364,14 @@
         .tp-result-item.highlight { background: var(--brand-grad); border-color: transparent; }
         .tp-result-item.highlight .r-label { color: rgba(255,255,255,0.85); }
         .tp-result-item.highlight .r-val { color: #fff; }
-        .tp-result-item.green { border-color: #BFE3CD; background: var(--ok-soft); }
+        .tp-result-item.green { border-color: var(--ok-line); background: var(--ok-soft); }
         .tp-result-item.green .r-val { color: var(--ok); }
 
         .tp-divider { border: none; border-top: 1px solid var(--line-2); margin: 20px 0; }
 
         .tp-badge { display: inline-flex; align-items: center; padding: 1px 6px; border-radius: var(--radius-sm); font-size: 0.68rem; font-weight: 600; }
-        .tp-badge.increase { background: #DDF1E5; color: var(--ok); }
-        .tp-badge.decrease { background: #FDE3E1; color: var(--brand-red-dark); }
+        .tp-badge.increase { background: var(--ok-badge); color: var(--ok); }
+        .tp-badge.decrease { background: var(--bad-badge); color: var(--brand-red-dark); }
         .tp-badge.same { background: var(--line-2); color: var(--muted); }
         .tp-result-item.highlight .tp-badge { background: rgba(255,255,255,0.22); color: #fff; }
 
@@ -420,7 +437,7 @@
             display: flex; align-items: center; justify-content: center;
         }
         .choice-icon .lucide { width: 20px; height: 20px; }
-        .choice-card.general .choice-icon { background: var(--ink); color: #fff; }
+        .choice-card.general .choice-icon { background: var(--solid); color: #fff; }
         .choice-card.recruitment .choice-icon { background: var(--brand-grad); color: #fff; }
         .choice-title { font-size: 0.98rem; font-weight: 600; color: var(--ink); margin-bottom: 6px; }
         .choice-desc { font-size: 0.82rem; line-height: 1.55; color: var(--muted); }
@@ -430,13 +447,13 @@
         .maya-fab {
             position: fixed; bottom: 22px; right: 22px; z-index: 900;
             display: flex; align-items: center; gap: 8px;
-            background: var(--ink); color: #fff; border: none; cursor: pointer;
+            background: var(--solid); color: #fff; border: none; cursor: pointer;
             height: 44px; padding: 0 18px 0 16px; border-radius: var(--radius-lg);
             font-weight: 600; font-size: 0.88rem;
             box-shadow: 0 8px 24px rgba(22,23,27,0.28); transition: transform .15s, background .15s;
         }
         .maya-fab::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--brand-grad); order: 2; margin-left: 2px; }
-        .maya-fab:hover { background: #000; transform: translateY(-1px); }
+        .maya-fab:hover { background: var(--solid-hover); transform: translateY(-1px); }
         .maya-fab.hidden { display: none; }
 
         .maya-panel {
@@ -460,13 +477,13 @@
             cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: background .15s, color .15s;
         }
         .maya-head-btn:hover, .maya-close:hover { background: var(--line-2); color: var(--ink); }
-        .maya-chip.chip-platform { background: var(--ink); color: #fff; border-color: var(--ink); }
-        .maya-chip.chip-platform:hover { background: #000; color: #fff; }
+        .maya-chip.chip-platform { background: var(--solid); color: #fff; border-color: var(--solid); }
+        .maya-chip.chip-platform:hover { background: var(--solid-hover); color: #fff; }
         .maya-chip .lucide { width: 14px; height: 14px; margin-right: 4px; vertical-align: -2px; }
 
         .maya-body { flex: 1; overflow-y: auto; padding: 14px; background: var(--bg-sunken); display: flex; flex-direction: column; gap: 10px; }
         .maya-msg { max-width: 88%; padding: 9px 13px; border-radius: var(--radius-lg); font-size: 0.85rem; line-height: 1.55; overflow-wrap: break-word; }
-        .maya-msg.user { align-self: flex-end; background: var(--ink); color: #fff; border-bottom-right-radius: 2px; }
+        .maya-msg.user { align-self: flex-end; background: var(--solid); color: #fff; border-bottom-right-radius: 2px; }
         .maya-msg.bot { align-self: flex-start; background: var(--bg-card); border: 1px solid var(--line); color: var(--ink-2); border-bottom-left-radius: 2px; }
         .maya-msg.bot b { color: var(--ink); font-weight: 600; }
         .maya-msg.err { align-self: flex-start; background: var(--brand-soft); border: 1px solid var(--brand-soft-2); color: var(--brand-red-dark); }
@@ -496,7 +513,7 @@
         .maya-auth { position: fixed; inset: 0; background: rgba(22,23,27,0.5); z-index: 1100; display: none; align-items: center; justify-content: center; padding: 20px; }
         .maya-auth.open { display: flex; animation: overlayFade .2s ease; }
         .maya-auth-box { background: var(--bg-card); border-radius: var(--radius-xl); padding: 28px; width: 360px; max-width: 100%; text-align: left; box-shadow: 0 24px 60px rgba(0,0,0,0.22); animation: modalPop .2s ease; }
-        .maya-auth-icon { width: 40px; height: 40px; border-radius: var(--radius-lg); margin-bottom: 14px; display: flex; align-items: center; justify-content: center; color: #fff; background: var(--ink); }
+        .maya-auth-icon { width: 40px; height: 40px; border-radius: var(--radius-lg); margin-bottom: 14px; display: flex; align-items: center; justify-content: center; color: #fff; background: var(--solid); }
         .maya-auth-title { font-size: 1.02rem; font-weight: 600; color: var(--ink); margin-bottom: 4px; }
         .maya-auth-sub { font-size: 0.84rem; color: var(--muted); margin-bottom: 16px; }
         .maya-auth-input { width: 100%; height: 42px; padding: 0 12px; border: 1px solid var(--line); border-radius: var(--radius-md); outline: none; font-size: 0.92rem; color: var(--ink); letter-spacing: 2px; transition: border-color .15s, box-shadow .15s; }
@@ -554,7 +571,7 @@
         .fz-params { font-size: 0.82rem; color: var(--fz-muted-fg); background: var(--fz-secondary); padding: 10px 14px; border-radius: var(--radius-md); margin-bottom: 18px; }
         .fz-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
         .fz-rcard { border: 1px solid var(--fz-border); border-radius: var(--radius-lg); padding: 22px; background: var(--fz-card); box-shadow: var(--fz-shadow); }
-        .fz-rcard.rec { border-color: #BFE3CD; }
+        .fz-rcard.rec { border-color: var(--ok-line); }
         .fz-rtag { float: right; font-size: 0.72rem; font-weight: 600; padding: 2px 8px; border-radius: var(--radius-sm); }
         .fz-rcard.rec .fz-rtag { background: var(--fz-success-soft); color: var(--fz-success); }
         .fz-rcard.max .fz-rtag { background: var(--fz-muted); color: var(--fz-muted-fg); }
@@ -608,10 +625,10 @@
         .details-actions .btn-print:hover { filter: none; background: var(--line-2); }
         .btn-ai-explain {
             flex: 1 1 auto; height: 38px; border: none; cursor: pointer; border-radius: var(--radius-md);
-            font-weight: 600; font-size: 0.84rem; background: var(--ink); color: #fff;
+            font-weight: 600; font-size: 0.84rem; background: var(--solid); color: #fff;
             display: flex; align-items: center; justify-content: center; gap: 8px; transition: background .15s;
         }
-        .btn-ai-explain:hover { background: #000; }
+        .btn-ai-explain:hover { background: var(--solid-hover); }
 
         /* Platform explain modal */
         .plat-overlay { position: fixed; inset: 0; background: rgba(22,23,27,0.5); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 20px; }
@@ -651,7 +668,7 @@
             background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236B6F78' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") center / contain no-repeat;
             transition: transform .15s;
         }
-        .cselect-btn:hover { border-color: #D3D5DA; }
+        .cselect-btn:hover { border-color: var(--line-strong); }
         .cselect.open .cselect-btn, .cselect-btn:focus-visible { border-color: var(--brand-orange); box-shadow: var(--focus); outline: none; }
         .cselect.open .cselect-btn::after { transform: rotate(180deg); }
         .cselect-list {
@@ -685,7 +702,7 @@
 
         input[type=radio], input[type=checkbox] {
             -webkit-appearance: none; appearance: none; margin: 0; flex-shrink: 0; cursor: pointer;
-            width: 16px; height: 16px; border: 1.5px solid #C3C6CC; background: var(--bg-card);
+            width: 16px; height: 16px; border: 1.5px solid var(--line-hover); background: var(--bg-card);
             display: inline-grid; place-content: center; transition: border-color .15s, background .15s;
         }
         input[type=radio] { border-radius: 50%; }
@@ -700,10 +717,10 @@
         input[type=radio]:hover, input[type=checkbox]:hover { border-color: var(--brand-orange); }
         .benefit-item input { margin-top: 2px; }
 
-        * { scrollbar-width: thin; scrollbar-color: #D3D5DA transparent; }
+        * { scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; }
         ::-webkit-scrollbar { width: 10px; height: 10px; }
-        ::-webkit-scrollbar-thumb { background: #D3D5DA; border-radius: 6px; border: 3px solid transparent; background-clip: content-box; }
-        ::-webkit-scrollbar-thumb:hover { background-color: #B9BCC3; }
+        ::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 6px; border: 3px solid transparent; background-clip: content-box; }
+        ::-webkit-scrollbar-thumb:hover { background-color: var(--line-hover); }
         ::-webkit-scrollbar-track { background: transparent; }
 
         /* Inline arrow icons inside labels */
@@ -733,7 +750,7 @@
             background: var(--bg-card); color: var(--ink); border: 1px solid var(--line); border-radius: var(--radius-md);
             font-weight: 600; font-size: 0.84rem; cursor: pointer; transition: border-color .15s, background .15s;
         }
-        .maya-trigger:hover { border-color: #C9CBD1; background: var(--bg-sunken); }
+        .maya-trigger:hover { border-color: var(--line-hover); background: var(--bg-sunken); }
         .maya-trigger .lucide { color: var(--muted); }
         .maya-trigger-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--brand-grad); }
         .maya-fab { display: none !important; }
@@ -973,6 +990,90 @@
             .sidebar .benefit-item { padding: 3px 10px; }
             .sidebar .sw-btn, .sidebar .comp-btn { padding-top: 4px; padding-bottom: 4px; }
         }
+
+        /* =================== Dark theme =================== */
+        [data-theme="dark"] {
+            color-scheme: dark;
+            --ink: #ECEDEF;
+            --ink-2: #C6C8CE;
+            --muted: #9A9EA7;
+            --muted-2: #6C707A;
+            --line: #2B2D33;
+            --line-2: #222429;
+            --line-strong: #3A3D44;
+            --line-hover: #4A4D55;
+            --bg-body: #0E0F11;
+            --bg-card: #16171A;
+            --bg-sunken: #1B1C20;
+            --brand-red: #FF4D3D;
+            --brand-red-dark: #FF8173;
+            --brand-soft: rgba(255, 106, 40, 0.10);
+            --brand-soft-2: rgba(255, 106, 40, 0.30);
+            --ok: #43C27B;
+            --ok-soft: rgba(67, 194, 123, 0.10);
+            --ok-line: rgba(67, 194, 123, 0.35);
+            --ok-badge: rgba(67, 194, 123, 0.16);
+            --bad-badge: rgba(255, 77, 61, 0.16);
+            --info: #7AA7F5;
+            --info-soft: rgba(122, 167, 245, 0.10);
+            --solid: #2A2C32;
+            --solid-hover: #34363D;
+            --solid-fg: #fff;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+            --shadow-md: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px -8px rgba(0, 0, 0, 0.6);
+            --focus: 0 0 0 3px rgba(255, 122, 26, 0.32);
+        }
+        [data-theme="dark"] .cselect-list { box-shadow: 0 12px 32px -8px rgba(0,0,0,.7), 0 2px 6px rgba(0,0,0,.4); }
+        [data-theme="dark"] .welcome-overlay, [data-theme="dark"] .plat-overlay, [data-theme="dark"] .maya-auth { background: rgba(0, 0, 0, 0.6); }
+        [data-theme="dark"] .tp-result-item.highlight .tp-badge { background: rgba(255,255,255,0.22); color: #fff; }
+        [data-theme="dark"] .brand-mark rect:first-child { filter: none; }
+        html { transition: background-color .2s; }
+
+        /* =================== Header tools: language + theme =================== */
+        .header-tools { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+        .lang-switch { display: inline-flex; background: var(--line-2); padding: 2px; border-radius: 8px; gap: 2px; }
+        .lang-switch button {
+            border: none; background: none; padding: 5px 8px; border-radius: var(--radius-md); cursor: pointer;
+            font-size: 0.74rem; font-weight: 600; color: var(--muted); letter-spacing: 0.02em; transition: color .15s, background .15s;
+        }
+        .lang-switch button:hover { color: var(--ink); }
+        .lang-switch button.active { background: var(--bg-card); color: var(--ink); box-shadow: var(--shadow-sm); }
+        .theme-toggle {
+            width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
+            border: 1px solid var(--line); background: var(--bg-card); color: var(--muted); border-radius: var(--radius-md);
+            transition: color .15s, border-color .15s;
+        }
+        .theme-toggle:hover { color: var(--ink); border-color: var(--line-hover); }
+        .theme-toggle .ic-sun { display: none; }
+        [data-theme="dark"] .theme-toggle .ic-moon { display: none; }
+        [data-theme="dark"] .theme-toggle .ic-sun { display: inline-block; }
+        .welcome-modal { position: relative; }
+        .welcome-top { position: absolute; top: 26px; right: 28px; }
+
+        /* Language-specific CSS text */
+        html[lang="en"] .tp-intro-hint::before { content: 'Show'; }
+        html[lang="en"] details[open] .tp-intro-hint::before { content: 'Hide'; }
+        html[lang="ru"] .tp-intro-hint::before { content: 'Показать'; }
+        html[lang="ru"] details[open] .tp-intro-hint::before { content: 'Скрыть'; }
+
+        @media (max-width: 640px) {
+            .maya-trigger > span:last-child { display: none; }
+            .maya-trigger { padding: 0 10px; }
+            .lang-switch button { padding: 5px 6px; }
+            .welcome-top { top: 18px; right: 18px; }
+        }
+        /* Header on narrower laptops: keep all tabs visible (long RU labels) */
+        @media (min-width: 1025px) and (max-width: 1500px) {
+            html[lang="ru"] .brand-sub { display: none; }
+            html[lang="ru"] .topbar .tab-btn { padding: 0 9px; }
+        }
+        @media (min-width: 1025px) and (max-width: 1380px) {
+            .topbar-inner { gap: 18px; }
+            .topbar .tab-btn { padding: 0 9px; font-size: 0.84rem; }
+            .brand-sub { display: none; }
+            .maya-trigger > span:last-child { display: none; }
+            .maya-trigger { padding: 0 10px; }
+        }
         @media print {
             html, body { height: auto; overflow: visible; }
             .sidebar, .maya-trigger { display: none !important; }
@@ -986,6 +1087,11 @@
     <!-- Startup Selection Modal -->
     <div class="welcome-overlay" id="welcomeModal">
         <div class="welcome-modal">
+            <div class="welcome-top"><div class="lang-switch welcome-lang" role="group" aria-label="Dil">
+                    <button type="button" data-lang="az" onclick="setLang('az')">AZ</button>
+                    <button type="button" data-lang="en" onclick="setLang('en')">EN</button>
+                    <button type="button" data-lang="ru" onclick="setLang('ru')">RU</button>
+                </div></div>
             <div class="welcome-logo"><svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="bmgW" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF7A1A"/><stop offset="1" stop-color="#E30613"/></linearGradient></defs><rect width="32" height="32" rx="7" fill="url(#bmgW)"/><rect x="8" y="8" width="6.5" height="6.5" rx="1" fill="#fff" fill-opacity=".45"/><rect x="17.5" y="8" width="6.5" height="6.5" rx="1" fill="#fff" fill-opacity=".45"/><rect x="8" y="17.5" width="6.5" height="6.5" rx="1" fill="#fff" fill-opacity=".45"/><rect x="17.5" y="17.5" width="6.5" height="6.5" rx="1" fill="#fff"/></svg><span>BirCalc</span></div>
             <h2 class="welcome-title">Xoş gəlmisiniz!</h2>
             <p class="welcome-sub">Davam etmək üçün hesablama məqsədini seçin</p>
@@ -1023,6 +1129,16 @@
                 <button class="tab-btn" id="tabFZ" onclick="switchTab('firuza', this)">Transfer by Firuza</button>
             </div>
             </nav>
+            <div class="header-tools">
+                <div class="lang-switch" role="group" aria-label="Dil">
+                    <button type="button" data-lang="az" onclick="setLang('az')">AZ</button>
+                    <button type="button" data-lang="en" onclick="setLang('en')">EN</button>
+                    <button type="button" data-lang="ru" onclick="setLang('ru')">RU</button>
+                </div>
+                <button type="button" class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Qaranlıq rejim" aria-label="Qaranlıq rejim">
+                    <i data-lucide="moon" class="ic-moon"></i><i data-lucide="sun" class="ic-sun"></i>
+                </button>
+            </div>
             <button class="maya-trigger" onclick="mayaToggle(true)" title="Maya - AI assistent">
                 <span class="maya-trigger-dot"></span><i data-lucide="message-circle"></i><span>Maya</span>
             </button>
@@ -2337,7 +2453,7 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     messages: [
-                        { role: 'system', content: 'Sən Maya-san, BirCalc əmək haqqı kalkulyatorunun AI assistenti. Yalnız Azərbaycan dilində cavab ver.' },
+                        { role: 'system', content: mayaSystemFor(LANG, 'Sən Maya-san, BirCalc əmək haqqı kalkulyatorunun AI assistenti. Yalnız Azərbaycan dilində cavab ver.') },
                         { role: 'user', content: `BirCalc platformasını istifadəçiyə ətraflı izah et. Bu bölmələri əhatə et və hər başlığı <h3> teqi ilə ver: 1) BirCalc nədir və nəyə yarayır; 2) Hansı hesablamaları aparır (GROSS→NET, NET→GROSS, GROSS→SUPERGROSS); 3) Tablar - Fərdi, Toplu (Excel), Transfer & Promotion, Kütləvi artımlar, Texnopar; 4) Sektorlar (özəl/qeyri-neft, dövlət/neft-qaz, Texnopark), həmkar ittifaqı, VM m.102 vergi güzəştləri; 5) İşə qəbul (Recruitment) rejimi; 6) Maya AI assistenti nə edir; 7) Birbank/Pashapay/Birmarket profilləri. Aydın, səmimi dildə, <b> və <ul><li> istifadə et. Markdown deyil, HTML teqləri ilə yaz.` }
                     ]
                 })
@@ -3409,7 +3525,7 @@ Status: ${r.status}`;
             }
             return m;
         });
-        return [{ role: 'system', content: MAYA_SYSTEM }, ...h];
+        return [{ role: 'system', content: mayaSystemFor(LANG) }, ...h];
     }
     let mayaPendingExplain = null;
     const MAYA_PASSWORD = '2026';
@@ -3482,7 +3598,7 @@ Status: ${r.status}`;
     function mayaAddBubble(cls, html) {
         const body = document.getElementById('mayaBody');
         const div = document.createElement('div');
-        div.className = 'maya-msg ' + cls;
+        div.className = 'maya-msg ' + cls + (cls === 'bot' ? ' ai' : '');
         div.innerHTML = html;
         body.appendChild(div);
         body.scrollTop = body.scrollHeight;
@@ -3564,10 +3680,17 @@ Status: ${r.status}`;
             if (/rate limit|too many|\b429\b|tokens per minute|TPM|requests per/i.test(emsg)) {
                 const m = emsg.match(/try again in ([\d.]+)\s*s/i);
                 const wait = m ? Math.ceil(parseFloat(m[1])) : null;
-                out = '⏳ AI xidmətinin dəqiqəlik sorğu limitinə çatıldı. ' +
-                    (wait ? ('Zəhmət olmasa <b>' + wait + ' saniyə</b> gözləyib yenidən yazın.') : 'Bir az sonra yenidən cəhd edin.');
+                out = {
+                    az: '⏳ AI xidmətinin dəqiqəlik sorğu limitinə çatıldı. ' + (wait ? ('Zəhmət olmasa <b>' + wait + ' saniyə</b> gözləyib yenidən yazın.') : 'Bir az sonra yenidən cəhd edin.'),
+                    en: '⏳ The AI service hit its per-minute request limit. ' + (wait ? ('Please wait <b>' + wait + ' seconds</b> and try again.') : 'Please try again shortly.'),
+                    ru: '⏳ Достигнут поминутный лимит запросов к ИИ. ' + (wait ? ('Подождите <b>' + wait + ' сек.</b> и повторите.') : 'Повторите чуть позже.')
+                }[LANG];
             } else {
-                out = 'Bağışlayın, xəta baş verdi: ' + mayaEscape(emsg) + '<br>Zəhmət olmasa yenidən cəhd edin. Problem davam edərsə, Vercel-də <b>GROQ_API_KEY</b> təyin olunduğunu yoxlayın.';
+                out = {
+                    az: 'Bağışlayın, xəta baş verdi: ' + mayaEscape(emsg) + '<br>Zəhmət olmasa yenidən cəhd edin. Problem davam edərsə, Vercel-də <b>GROQ_API_KEY</b> təyin olunduğunu yoxlayın.',
+                    en: 'Sorry, something went wrong: ' + mayaEscape(emsg) + '<br>Please try again. If it keeps happening, check that <b>GROQ_API_KEY</b> is set on Vercel.',
+                    ru: 'Извините, произошла ошибка: ' + mayaEscape(emsg) + '<br>Попробуйте ещё раз. Если ошибка повторяется, проверьте, что на Vercel задан <b>GROQ_API_KEY</b>.'
+                }[LANG];
             }
             mayaAddBubble('err', out);
             mayaBusy = false;
@@ -3829,7 +3952,7 @@ Status: ${r.status}`;
             // keep the button in sync when JS sets .value / .selectedIndex or options change
             Object.defineProperty(sel, 'value', { configurable: true, get() { return desc.get.call(this); }, set(v) { desc.set.call(this, v); render(); } });
             Object.defineProperty(sel, 'selectedIndex', { configurable: true, get() { return idxDesc.get.call(this); }, set(v) { idxDesc.set.call(this, v); render(); } });
-            new MutationObserver(() => { render(); fit(); }).observe(sel, { childList: true, subtree: true, attributes: true });
+            new MutationObserver(() => { render(); fit(); }).observe(sel, { childList: true, subtree: true, attributes: true, characterData: true });
             // never truncate: widen the field to fit its longest option
             function fit() {
                 const m = document.createElement('span');
@@ -3851,6 +3974,128 @@ Status: ${r.status}`;
         window.addEventListener('resize', closeAll);
         document.querySelectorAll('select').forEach(enhance);
     })();
+
+    // ===== Tema (işıqlı / qaranlıq) =====
+    function applyThemeUI() {
+        const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+        const b = document.getElementById('themeToggle');
+        const t = dark ? 'İşıqlı rejim' : 'Qaranlıq rejim';
+        b.setAttribute('title', t); b.setAttribute('aria-label', t);
+        const m = document.querySelector('meta[name="theme-color"]'); if (m) m.setAttribute('content', dark ? '#17181B' : '#E30613');
+    }
+    function toggleTheme() {
+        const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        try { localStorage.setItem('bircalc.theme', next); } catch (e) {}
+        applyThemeUI();
+    }
+
+    // ===== Dil (AZ / EN / RU) =====
+    const I18N = {"Əmək haqqı kalkulyatoru": ["Salary calculator", "Калькулятор зарплаты"], "Fərdi": ["Individual", "Индивидуальный"], "Toplu": ["Bulk", "Пакетный"], "Transfer & Promotion": ["Transfer & Promotion", "Перевод и повышение"], "Kütləvi artımlar": ["Mass increases", "Массовые повышения"], "Texnopar": ["Technopark", "Технопарк"], "Transfer by Firuza": ["Transfer by Firuza", "Transfer by Firuza"], "Maya - AI assistent": ["Maya - AI assistant", "Maya - ИИ-ассистент"], "Tema": ["Theme", "Тема"], "Dil": ["Language", "Язык"], "Qaranlıq rejim": ["Dark mode", "Тёмная тема"], "İşıqlı rejim": ["Light mode", "Светлая тема"], "Xoş gəlmisiniz!": ["Welcome!", "Добро пожаловать!"], "Davam etmək üçün hesablama məqsədini seçin": ["Choose what you want to calculate", "Выберите цель расчёта"], "Ümumi hesablamalar": ["General calculations", "Общие расчёты"], "GROSS": ["GROSS", "GROSS"], "NET çevrilmələri, toplu hesablamalar, transfer, promotion və kütləvi artımlar üçün standart kalkulyator rejimi.": ["conversions, bulk calculations, transfers, promotions and mass increases - the standard calculator mode.", "конвертация, пакетные расчёты, переводы, повышения и массовые повышения - стандартный режим калькулятора."], "İşə qəbul məqsədləri üçün": ["For recruitment", "Для найма"], "Namizədlərə təklif olunan əmək haqqının hesablanması - Recruitment qaydaları, limitlər və yemək pulu məntiqi avtomatik tətbiq olunur.": ["Calculating salary offers for candidates - recruitment rules, limits and meal allowance logic are applied automatically.", "Расчёт зарплаты, предлагаемой кандидатам - правила найма, лимиты и логика пособия на питание применяются автоматически."], "Parametrlər": ["Parameters", "Параметры"], "Şirkət": ["Company", "Компания"], "Rejim": ["Mode", "Режим"], "General": ["General", "Общий"], "Recruitment": ["Recruitment", "Найм"], "Məbləğ": ["Amount", "Сумма"], "Hesablama rejimi": ["Calculation", "Расчёт"], "İl": ["Year", "Год"], "Həmkar ittifaqı": ["Trade union", "Профсоюз"], "Sektor": ["Sector", "Сектор"], "İş yeri": ["Workplace", "Место работы"], "Özəl (Qeyri-neft)": ["Private (non-oil)", "Частный (ненефтяной)"], "Dövlət / Neft-Qaz": ["State / Oil & gas", "Госсектор / нефтегаз"], "Texnopark": ["Technopark", "Технопарк"], "Əsas iş yeri": ["Primary job", "Основное место"], "Əlavə iş yeri": ["Secondary job", "Дополнительное место"], "Vergi güzəşti": ["Tax relief", "Налоговая льгота"], "VM m.102": ["Tax Code art. 102", "НК ст. 102"], "Yoxdur": ["None", "Нет"], "Standart qayda": ["Standard rule", "Стандартно"], "Şəhid, AR Qəhrəmanı": ["Martyr, National Hero", "Шехид, Нац. герой"], "I və II qrup əlil": ["Disability group I-II", "Инвалидность I-II гр."], "Veteran, Çernobıl": ["Veteran, Chernobyl", "Ветеран, Чернобыль"], "Məcburi köçkün": ["IDP", "Вынужд. переселенец"], "Himayə (2+ nəfər)": ["Dependants (2+)", "Иждивенцы (2+)"], "Bu bölmədə istifadə olunmur": ["Not used in this section", "Не используется в этом разделе"], "NET": ["NET", "NET"], "NET (cəmi)": ["NET (total)", "NET (итого)"], "GROSS (Baza)": ["GROSS (base)", "GROSS (база)"], "SUPERGROSS": ["SUPERGROSS", "SUPERGROSS"], "Cəmi tutulmalar": ["Total deductions", "Всего удержаний"], "Effektiv tutulma": ["Effective deduction", "Эффективное удержание"], "Yemək pulu": ["Meal allowance", "Пособие на питание"], "Baza net": ["Base net", "Базовый net"], "İşəgötürən ödənişləri": ["Employer contributions", "Взносы работодателя"], "DSMF (İşəgötürən)": ["DSMF (employer)", "ГФСЗ (работодатель)"], "Hesablanmış detallar": ["Breakdown", "Детали расчёта"], "Gəlir vergisi": ["Income tax", "Подоходный налог"], "Sosial (DSMF)": ["Social (DSMF)", "Соц. (ГФСЗ)"], "İşsizlik (0.5%)": ["Unemployment (0.5%)", "Безработица (0.5%)"], "İTS": ["Health insurance", "ОМС"], "İşsizlik (İşəgötürən 0.5%)": ["Unemployment (employer 0.5%)", "Безработица (работодатель 0.5%)"], "İTS (İşəgötürən)": ["Health insurance (employer)", "ОМС (работодатель)"], "+ Yemək pulu": ["+ Meal allowance", "+ Пособие на питание"], "Çap et": ["Print", "Печать"], "AI izah et": ["Explain with AI", "Объяснить (ИИ)"], "İzahat": ["Explanation", "Пояснение"], "Qeyd:": ["Note:", "Примечание:"], "Bu alət təxmini hesablar verir. Dəqiqlik tələb olunan hallarda rəsmi mənbələrə istinad tövsiyyə olunur.": ["This tool gives estimates. Where precision matters, refer to official sources.", "Инструмент даёт приблизительные расчёты. Если нужна точность, обращайтесь к официальным источникам."], "Vergi qanunvericiliyi və limitlər dəyişdikdə nəticələr dəyişə bilər.": ["Results may change when tax law and limits change.", "Результаты могут измениться при изменении законодательства и лимитов."], "Vergi Məcəlləsinə son uyğunlaşma tarixi: 27 noyabr 2026 (2027 qaydaları əlavə edildi)": ["Last aligned with the Tax Code: 27 November 2026 (2027 rules added)", "Последнее обновление по Налоговому кодексу: 27 ноября 2026 (добавлены правила 2027)"], "Təklif edilən əmək haqqının şkalaya uyğunluğu yoxlanılan zaman yemək pulu da (net+yemək pulu birlikdə) nəzərə alınmalıdır.": ["When checking the offer against the salary scale, include the meal allowance (net + meal allowance together).", "При проверке соответствия предложения шкале учитывайте и пособие на питание (net + питание вместе)."], "Məbləğ bu aralıqda ola bilməz.": ["The amount cannot be in this range.", "Сумма не может быть в этом диапазоне."], "Tətbiq et": ["Apply", "Применить"], "DSMF:": ["DSMF:", "ГФСЗ:"], "200 manatadək: Əmək haqqı × 3%": ["Up to 200 AZN: Salary × 3%", "До 200 AZN: Зарплата × 3%"], "200 manatdan çox: 6 + (Əmək haqqı − 200) × 10%": ["Over 200 AZN: 6 + (Salary − 200) × 10%", "Свыше 200 AZN: 6 + (Зарплата − 200) × 10%"], "200 manatadək 3%; 200-dən çox: 6 + (Əmək haqqı − 200) × 10%": ["Up to 200 AZN 3%; over 200: 6 + (Salary − 200) × 10%", "До 200 AZN 3%; свыше 200: 6 + (Зарплата − 200) × 10%"], "İşsizlik sığortası:": ["Unemployment insurance:", "Страхование от безработицы:"], "Əmək haqqı × 0.5%": ["Salary × 0.5%", "Зарплата × 0.5%"], "Əmək haqqı × 3%": ["Salary × 3%", "Зарплата × 3%"], "İcbari tibbi sığorta:": ["Mandatory health insurance:", "Обязательное мед. страхование:"], "2500 manatadək: Əmək haqqı × 2%": ["Up to 2500 AZN: Salary × 2%", "До 2500 AZN: Зарплата × 2%"], "2500 manatdan çox: 50 + (Əmək haqqı − 2500) × 0.5%": ["Over 2500 AZN: 50 + (Salary − 2500) × 0.5%", "Свыше 2500 AZN: 50 + (Зарплата − 2500) × 0.5%"], "2500-dək Əmək haqqı × 2%; 2500-dən çox: 50 + (Əmək haqqı − 2500) × 0.5%": ["Up to 2500: Salary × 2%; over 2500: 50 + (Salary − 2500) × 0.5%", "До 2500: Зарплата × 2%; свыше 2500: 50 + (Зарплата − 2500) × 0.5%"], "8000 manatadək: Əmək haqqı × 2%": ["Up to 8000 AZN: Salary × 2%", "До 8000 AZN: Зарплата × 2%"], "8000 manatdan çox: 160 + (Əmək haqqı − 8000) × 0.5%": ["Over 8000 AZN: 160 + (Salary − 8000) × 0.5%", "Свыше 8000 AZN: 160 + (Зарплата − 8000) × 0.5%"], "8000-dək Əmək haqqı × 2%; 8000-dən çox: 160 + (Əmək haqqı − 8000) × 0.5%": ["Up to 8000: Salary × 2%; over 8000: 160 + (Salary − 8000) × 0.5%", "До 8000: Зарплата × 2%; свыше 8000: 160 + (Зарплата − 8000) × 0.5%"], "8000 manatadək: 0%": ["Up to 8000 AZN: 0%", "До 8000 AZN: 0%"], "8000 manatdan çox: (Vergiyə cəlb olunan − 8000) × 14%": ["Over 8000 AZN: (Taxable − 8000) × 14%", "Свыше 8000 AZN: (Облагаемая − 8000) × 14%"], "Vergiyə cəlb olunan ≤ 2500:": ["Taxable ≤ 2500:", "Облагаемая ≤ 2500:"], "2500 < Vergiyə cəlb olunan ≤ 8000:": ["2500 < Taxable ≤ 8000:", "2500 < Облагаемая ≤ 8000:"], "Vergiyə cəlb olunan > 8000:": ["Taxable > 8000:", "Облагаемая > 8000:"], "(2500-dən artıq hissənin 10%-i)": ["(10% of the part above 2500)", "(10% от части свыше 2500)"], "(8000-dən artıq hissənin 14%-i)": ["(14% of the part above 8000)", "(14% от части свыше 8000)"], "Vergiyə cəlb olunan > 2500: 350 + (məbləğ − 2500) × 25%": ["Taxable > 2500: 350 + (amount − 2500) × 25%", "Облагаемая > 2500: 350 + (сумма − 2500) × 25%"], "Vergiyə cəlb olunan > 2500: Gross × 5%": ["Taxable > 2500: Gross × 5%", "Облагаемая > 2500: Gross × 5%"], "Vergiyə cəlb olunan ≤ 2500: (Gross − 200) × 5%": ["Taxable ≤ 2500: (Gross − 200) × 5%", "Облагаемая ≤ 2500: (Gross − 200) × 5%"], "Vergiyə cəlb olunan ≤ 2500: məbləğ × 14%": ["Taxable ≤ 2500: amount × 14%", "Облагаемая ≤ 2500: сумма × 14%"], "Vergiyə cəlb olunan məbləğ = Gross − Güzəşt": ["Taxable amount = Gross − Relief", "Облагаемая сумма = Gross − Льгота"], "Vergiyə cəlb olunan məbləğ = Gross − Güzəşt − 200 (əsas iş yeri)": ["Taxable amount = Gross − Relief − 200 (primary job)", "Облагаемая сумма = Gross − Льгота − 200 (основное место)"], "Yekun Net = Gross − (Vergi + DSMF + İşsizlik + Tibbi sığorta + Həmkar haqqı)": ["Final Net = Gross − (Tax + DSMF + Unemployment + Health insurance + Union fee)", "Итоговый Net = Gross − (Налог + ГФСЗ + Безработица + ОМС + Профвзнос)"], "Gəlir vergisi:": ["Income tax:", "Подоходный налог:"], "Gəlir vergisi (güzəştli 5% dərəcə):": ["Income tax (reduced 5% rate):", "Подоходный налог (льготная ставка 5%):"], "Gəlir vergisi (VM m.101.7 - 2027-ci ildən 20 il):": ["Income tax (Tax Code art. 101.7 - 20 years from 2027):", "Подоходный налог (НК ст. 101.7 - 20 лет с 2027):"], "Texnopark güzəşti:": ["Technopark relief:", "Льгота Технопарка:"], "Texnopark rezidentində muzdlu işdən aylıq gəlir:": ["Monthly employment income at a Technopark resident:", "Ежемесячный доход по найму у резидента Технопарка:"], "İri sahibkarlıq subyektləri üçün ixrac payı şərtləri tətbiq olunur.": ["Export-share conditions apply to large businesses.", "Для крупных предприятий действуют условия по доле экспорта."], "İşəgötürən DSMF ödəmir (0%).": ["The employer pays no DSMF (0%).", "Работодатель не платит ГФСЗ (0%)."], "İşəgötürənin işçiyə görə çəkdiyi cəmi xərc.": ["Total cost of the employee to the employer.", "Общие расходы работодателя на сотрудника."], "İşəgötürən ödənişləri:": ["Employer contributions:", "Взносы работодателя:"], "DSMF (işəgötürən payı): Gross × 22%": ["DSMF (employer share): Gross × 22%", "ГФСЗ (доля работодателя): Gross × 22%"], "DSMF (işəgötürən payı): 200-dək 22%; 200-dən çox: 44 + (Gross − 200) × 15%": ["DSMF (employer share): up to 200 22%; over 200: 44 + (Gross − 200) × 15%", "ГФСЗ (доля работодателя): до 200 22%; свыше 200: 44 + (Gross − 200) × 15%"], "DSMF (işəgötürən payı): 200-dək 22%; 200–8000: 44 + (Gross − 200) × 15%; 8000-dən çox: 1214 + (Gross − 8000) × 11%": ["DSMF (employer share): up to 200 22%; 200–8000: 44 + (Gross − 200) × 15%; over 8000: 1214 + (Gross − 8000) × 11%", "ГФСЗ (доля работодателя): до 200 22%; 200–8000: 44 + (Gross − 200) × 15%; свыше 8000: 1214 + (Gross − 8000) × 11%"], "İşsizlik sığortası (işəgötürən): Gross × 0.5%": ["Unemployment insurance (employer): Gross × 0.5%", "Страхование от безработицы (работодатель): Gross × 0.5%"], "İşsizlik sığortası: Gross × 0.5%": ["Unemployment insurance: Gross × 0.5%", "Страхование от безработицы: Gross × 0.5%"], "İcbari tibbi sığorta: 2500-dək Gross × 2%; 2500-dən çox: 50 + (Gross − 2500) × 0.5%": ["Mandatory health insurance: up to 2500 Gross × 2%; over 2500: 50 + (Gross − 2500) × 0.5%", "ОМС: до 2500 Gross × 2%; свыше 2500: 50 + (Gross − 2500) × 0.5%"], "İcbari tibbi sığorta: 8000-dək Gross × 2%; 8000-dən çox: 160 + (Gross − 8000) × 0.5%": ["Mandatory health insurance: up to 8000 Gross × 2%; over 8000: 160 + (Gross − 8000) × 0.5%", "ОМС: до 8000 Gross × 2%; свыше 8000: 160 + (Gross − 8000) × 0.5%"], "Supergross = Gross + DSMF + İşsizlik + İTS": ["Supergross = Gross + DSMF + Unemployment + Health insurance", "Supergross = Gross + ГФСЗ + Безработица + ОМС"], "Supergross = Gross + İşsizlik + İTS": ["Supergross = Gross + Unemployment + Health insurance", "Supergross = Gross + Безработица + ОМС"], "Supergross (Texnopark rezidenti):": ["Supergross (Technopark resident):", "Supergross (резидент Технопарка):"], "Nəticə:": ["Result:", "Итог:"], "Recruitment rejimi (yemək pulu məntiqini tətbiq et)": ["Recruitment mode (apply meal allowance logic)", "Режим найма (применить логику пособия на питание)"], "Excel faylını seçin və ya bura atın": ["Choose an Excel file or drop it here", "Выберите Excel-файл или перетащите сюда"], "Fayl seç": ["Choose file", "Выбрать файл"], "Format: Excel (.xlsx) | Sütunlar: \"Employee badge\" və \"Salary\"": ["Format: Excel (.xlsx) | Columns: \"Employee badge\" and \"Salary\"", "Формат: Excel (.xlsx) | Столбцы: \"Employee badge\" и \"Salary\""], "işçi hesablandı": ["employees calculated", "сотрудников рассчитано"], "Excel-ə çıxar": ["Export to Excel", "Экспорт в Excel"], "Badge": ["Badge", "Табельный №"], "Gross (Baza)": ["Gross (base)", "Gross (база)"], "Yemək": ["Meal", "Питание"], "Net (cəmi)": ["Net (total)", "Net (итого)"], "Vergi": ["Tax", "Налог"], "DSMF": ["DSMF", "ГФСЗ"], "Gross": ["Gross", "Gross"], "Net": ["Net", "Net"], "Toplu yükləmə": ["Bulk upload", "Пакетная загрузка"], "Şablon yüklə": ["Download template", "Скачать шаблон"], "Tələb olunan sütunlar:": ["Required columns:", "Обязательные столбцы:"], "Tələb olunan:": ["Required:", "Обязательные:"], "Opsional (hər sətir üçün):": ["Optional (per row):", "Необязательные (для каждой строки):"], "(Əsas/Əlavə),": ["(Primary/Secondary),", "(Основное/Дополнительное),"], "(0, 1, 2 və ya 0.01),": ["(0, 1, 2 or 0.01),", "(0, 1, 2 или 0.01),"], "(Filial/Baş ofis)": ["(Branch/Head office)", "(Филиал/Головной офис)"], "(Local/Expat),": ["(Local/Expat),", "(Local/Expat),"], "İş növü": ["Job type", "Тип работы"], "HİK": ["Union %", "Профсоюз %"], "Cari gross": ["Current gross", "Текущий gross"], "Cari yemək": ["Current meal", "Текущее питание"], "Net artım": ["Net increase", "Прирост net"], "Yeni gross": ["New gross", "Новый gross"], "Yeni yemək": ["New meal", "Новое питание"], "Gross Δ": ["Gross Δ", "Gross Δ"], "Status": ["Status", "Статус"], "Növ": ["Type", "Тип"], "Cari gross daxil edilməyib": ["Current gross not entered", "Текущий gross не введён"], "Artım yoxdur": ["No increase", "Нет прироста"], "Gross dəyişmir": ["Gross unchanged", "Gross не меняется"], "Yemək 100-ə çatdırıldı": ["Meal raised to 100", "Питание доведено до 100"], "Transfer & Promotion - hesablama qaydaları": ["Transfer & Promotion - calculation rules", "Перевод и повышение - правила расчёта"], "Rotasiyalar zamanı cəm net": ["During rotations, if the total net", "При ротации, если общий net"], "dəyişmirsə": ["does not change", "не меняется"], "- əmək haqqı eyni saxlanılmaqla rotasiya icra edilsin.": ["- carry out the rotation with the same salary.", "- ротация проводится с сохранением зарплаты."], "Maaş": ["If the salary", "Если зарплата"], "artırsa": ["increases", "растёт"], "- yeni gross cari grossdan az olmamalıdır.": ["- the new gross must not be lower than the current gross.", "- новый gross не должен быть ниже текущего."], "azalırsa": ["decreases", "снижается"], "- yemək pulu sabit saxlanılmaqla yeni gross təyin edilsin.": ["- set the new gross keeping the meal allowance fixed.", "- новый gross устанавливается при неизменном пособии на питание."], "Cari məlumatlar": ["Current", "Текущие данные"], "Cari net": ["Current net", "Текущий net"], "Cari cəmi net": ["Current total net", "Текущий общий net"], "Yeni təklif": ["New offer", "Новое предложение"], "Net daxil et": ["Enter net", "Ввести net"], "Gross daxil et": ["Enter gross", "Ввести gross"], "Təklif net": ["Offered net", "Предлагаемый net"], "Təklif gross": ["Offered gross", "Предлагаемый gross"], "Təklif yemək pulu": ["Offered meal allowance", "Предлагаемое питание"], "Cəmi net (təklifdən)": ["Total net (from offer)", "Общий net (из предложения)"], "Yeni gross (baza netdən) ★": ["New gross (from base net) ★", "Новый gross (из базового net) ★"], "Yeni gross (müqavilə)": ["New gross (contract)", "Новый gross (договор)"], "Yeni cəmi net": ["New total net", "Новый общий net"], "= Dəyişiklik yoxdur": ["= No change", "= Без изменений"], "Kütləvi artımlar - hesablama qaydaları": ["Mass increases - calculation rules", "Массовые повышения - правила расчёта"], "Texnopar - hesablama qaydaları": ["Technopark - calculation rules", "Технопарк - правила расчёта"], "Yuxarıdakı tənzimləmələr (İl, Sektor, İş Yeri, Həmkar, Güzəşt) fərdi hesablama üçün istifadə olunur.": ["The parameters on the left (Year, Sector, Workplace, Union, Relief) are used for the single calculation.", "Параметры слева (Год, Сектор, Место работы, Профсоюз, Льгота) используются для индивидуального расчёта."], "Bulk yükləmədə hər sətir üçün": ["In bulk upload, if the", "При пакетной загрузке, если для каждой строки указаны столбцы"], "İl, İş Növü, HİK və İş Yeri": ["Year, Job type, Union % and Workplace", "Год, Тип работы, Профсоюз % и Место работы"], "sütunları göstərilərsə, hesablama o sətirin öz tənzimləməsinə uyğun aparılır (göstərilməyənlər üçün yuxarıdakı tənzimləmə istifadə edilir).": ["columns are given for a row, that row uses its own settings (missing ones fall back to the parameters on the left).", ", строка рассчитывается по своим настройкам (для отсутствующих используются параметры слева)."], "Əgər": ["If", "Если"], "cari yemək pulu + artım net": ["current meal allowance + net increase", "текущее питание + прирост net"], "≤ 100 AZN olarsa, gross dəyişmir - bütün artım yemək puluna gedir.": ["≤ 100 AZN, gross does not change - the whole increase goes to the meal allowance.", "≤ 100 AZN, gross не меняется - весь прирост идёт в питание."], "Əgər 100-ü keçirsə, yemək pulu 100-ə çatdırılır, qalan hissə gross-a əlavə olunur.": ["If it exceeds 100, the meal allowance is raised to 100 and the rest is added to gross.", "Если больше 100, питание доводится до 100, остаток добавляется к gross."], "Lakin yeni gross − cari gross fərqi": ["However, the new gross − current gross difference must be at least:", "Однако разница новый gross − текущий gross должна быть не меньше:"], "Filial": ["Branch", "Филиал"], "üçün 20 AZN-dən,": ["- 20 AZN,", "- 20 AZN,"], "Baş ofis": ["Head office", "Головной офис"], "üçün 50 AZN-dən az ola bilməz.": ["- 50 AZN.", "- 50 AZN."], "Əgər meal = 100 ilə bu minimum fərq təmin olunmursa, yemək pulu kifayət qədər azaldılır ki, gross artım minimum şərti ödəsin.": ["If meal = 100 does not meet this minimum, the meal allowance is reduced just enough for the gross increase to reach the minimum.", "Если при питании = 100 минимум не достигается, питание уменьшается настолько, чтобы прирост gross отвечал минимуму."], "Cari vəziyyət": ["Current", "Текущее состояние"], "Cari yemək pulu": ["Current meal allowance", "Текущее питание"], "Artım və nəticə": ["Increase and result", "Прирост и результат"], "Yeni gross ★": ["New gross ★", "Новый gross ★"], "Yeni yemək pulu ★": ["New meal allowance ★", "Новое питание ★"], "Yeni yemək pulu": ["New meal allowance", "Новое питание"], "Yerləşmə": ["Location", "Расположение"], "Filial (min 20 AZN)": ["Branch (min 20 AZN)", "Филиал (мин. 20 AZN)"], "Baş ofis (min 50 AZN)": ["Head office (min 50 AZN)", "Головной офис (мин. 50 AZN)"], "Yemək pulu + gross artım məntiqi": ["The meal allowance + gross increase logic is", "Логика питание + прирост gross"], "ilə eynidir (yemək 100-ə qədər, sonra gross-a; Filial 20 AZN / Baş ofis 50 AZN min fərq).": ["the same as Mass increases (meal up to 100, then gross; min. difference Branch 20 AZN / Head office 50 AZN).", "такая же, как в «Массовых повышениях» (питание до 100, затем gross; мин. разница Филиал 20 AZN / Головной офис 50 AZN)."], ": Gəlir vergisi": [": income tax", ": подоходный налог"], "2027-dən": ["from 2027", "с 2027"], ": 0% (VM m.101.7). İl yuxarıdakı filtrdən götürülür. DSMF, İşsizlik, İTS, HİK adi qaydada.": [": 0% (Tax Code art. 101.7). The year comes from the parameters on the left. DSMF, unemployment, health insurance and union as usual.", ": 0% (НК ст. 101.7). Год берётся из параметров слева. ГФСЗ, безработица, ОМС и профсоюз - как обычно."], ": gross ≤ 2500 → (gross − 200) × 5%; gross > 2500 → gross × 5%.": [": gross ≤ 2500 → (gross − 200) × 5%; gross > 2500 → gross × 5%.", ": gross ≤ 2500 → (gross − 200) × 5%; gross > 2500 → gross × 5%."], ": Gəlir vergisi Local ilə eynidir.": [": income tax is the same as Local.", ": подоходный налог как у Local."], "DSMF = 0%": ["DSMF = 0%", "ГФСЗ = 0%"], "(məbləğdən asılı olmadan). Qalan tutulmalar adi qaydada.": ["(regardless of amount). Other deductions as usual.", "(независимо от суммы). Остальные удержания - как обычно."], "Bulk-da hər sətir öz": ["In bulk, each row is calculated by its own", "В пакетном режиме каждая строка считается по своим значениям"], "(Filial/Baş ofis) dəyərlərinə görə hesablanır.": ["(Branch/Head office) values.", "(Филиал/Головной офис)."], "Type": ["Type", "Тип"], "Local": ["Local", "Local"], "Expat": ["Expat", "Expat"], "Əməkdaşların rotasiyası zamanı əmək haqqının müəyyən edilməsinə dəstək aləti.": ["A tool to help set salaries when employees rotate.", "Инструмент для определения зарплаты при ротации сотрудников."], "Aylıq/Rüblük": ["Monthly/Quarterly", "Ежемес./Ежекв."], "İllik": ["Annual", "Годовой"], "Əməkdaşın əmək haqqı məlumatları": ["Employee salary details", "Данные о зарплате сотрудника"], "Bütün məbləğlər AZN ilə daxil edilməlidir.": ["All amounts in AZN.", "Все суммы указываются в AZN."], "Gross əmək haqqı": ["Gross salary", "Gross зарплата"], "Əməkdaşın mövcud aylıq gross əmək haqqısı": ["The employee's current monthly gross salary", "Текущая ежемесячная gross-зарплата сотрудника"], "Əməkdaşın mövcud gross əmək haqqısı": ["The employee's current gross salary", "Текущая gross-зарплата сотрудника"], "Ortalama bonus məbləği": ["Average bonus", "Средний бонус"], "Orta aylıq/rüblük bonus göstəricisinə əsasən hesablanan orta bonus məbləği": ["Average bonus based on the average monthly/quarterly bonus rate", "Средний бонус по среднему ежемесячному/ежеквартальному показателю"], "Əməkdaşın mövcud yemək pulu məbləği": ["The employee's current meal allowance", "Текущее пособие на питание сотрудника"], "Əməkdaşın mövcud yemək pulu": ["The employee's current meal allowance", "Текущее пособие на питание сотрудника"], "Keçid vəzifə üçün təqribi aylıq gross orta bonus": ["Estimated average monthly gross bonus for the new position", "Ориентировочный средний ежемесячный gross-бонус новой должности"], "Keçid ediləcək vəzifə üçün təqribi aylıq gross orta bonus məbləği": ["Estimated average monthly gross bonus for the position being moved to", "Ориентировочный средний ежемесячный gross-бонус для новой должности"], "Hesabla": ["Calculate", "Рассчитать"], "Sıfırla": ["Reset", "Сбросить"], "Zəhmət olmasa bütün sahələri düzgün (mənfi olmayan) rəqəmlə doldurun.": ["Please fill in all fields with valid (non-negative) numbers.", "Заполните все поля корректными (неотрицательными) числами."], "Hesablama mümkün olmadı. Daxil edilən dəyərləri yoxlayın.": ["Calculation failed. Check the values entered.", "Расчёт не удался. Проверьте введённые значения."], "Təklif": ["Offer", "Предложение"], "Maksimum": ["Maximum", "Максимум"], "Təklif olunan əmək haqqı": ["Offered salary", "Предлагаемая зарплата"], "Rotasiya zamanı təklif edilə biləcək əmək haqqı": ["Salary that can be offered at rotation", "Зарплата, которую можно предложить при ротации"], "Mümkün olan maksimum əmək haqqı": ["Maximum possible salary", "Максимально возможная зарплата"], "Hesablama əsasında mümkün olan maksimum əmək haqqı": ["Maximum salary possible from the calculation", "Максимальная зарплата по расчёту"], "Net əmək haqqı": ["Net salary", "Net зарплата"], "Təklif olunan Gross əmək haqqı": ["Offered gross salary", "Предлагаемая gross-зарплата"], "Maksimum Gross əmək haqqı": ["Maximum gross salary", "Максимальная gross-зарплата"], "Təklif olunan və maksimum Gross arasındakı fərq:": ["Difference between offered and maximum gross:", "Разница между предлагаемым и максимальным gross:"], ". Təklif olunan əmək haqqının hesablanmasında 10/12 əmsalı tətbiq edilir; maksimum əmək haqqıda tətbiq edilmir.": [". The 10/12 factor applies to the offered salary, not to the maximum.", ". Коэффициент 10/12 применяется к предлагаемой зарплате, но не к максимальной."], "Hesablama detalları": ["Calculation details", "Детали расчёта"], "Addım 1": ["Step 1", "Шаг 1"], "Addım 2": ["Step 2", "Шаг 2"], "Addım 3": ["Step 3", "Шаг 3"], "Addım 4": ["Step 4", "Шаг 4"], "Net baza (maksimum)": ["Net base (maximum)", "Net-база (максимум)"], "Təklif olunan net (10/12 əmsalı)": ["Offered net (10/12 factor)", "Предлагаемый net (коэфф. 10/12)"], "Gross əmək haqqının hesablanması": ["Calculating gross salary", "Расчёт gross-зарплаты"], "Yeni strukturda yemək pulu 100 AZN sabitdir; ona görə hər net məbləğdən 100 çıxılır və seçilmiş parametrlərə uyğun net→gross tərs hesablanır.": ["In the new structure the meal allowance is fixed at 100 AZN, so 100 is subtracted from each net amount and net→gross is back-calculated with the selected parameters.", "В новой структуре питание фиксировано - 100 AZN, поэтому из каждой net-суммы вычитается 100 и net→gross пересчитывается по выбранным параметрам."], "Yeni strukturda yemək pulu 100 AZN sabitdir; net əsasdan 100 çıxılır və seçilmiş parametrlərə uyğun net→gross tərs hesablanır.": ["In the new structure the meal allowance is fixed at 100 AZN; 100 is subtracted from the base net and net→gross is back-calculated with the selected parameters.", "В новой структуре питание фиксировано - 100 AZN; из базового net вычитается 100 и net→gross пересчитывается по выбранным параметрам."], "Aylıq/Rüblük bonus alan struktura uyğun hesablanmış əmək haqqı": ["Salary calculated for a monthly/quarterly bonus structure", "Зарплата для структуры с ежемесячным/ежеквартальным бонусом"], "Net bonus məbləği": ["Net bonus", "Net-бонус"], "Net total məbləğ": ["Net total", "Net итого"], "Net əsas əmək haqqı": ["Net base salary", "Базовая net-зарплата"], "Yeni struktur": ["New structure", "Новая структура"], "Yeni əmək haqqı strukturu": ["New salary structure", "Новая структура зарплаты"], "Təqribi aylıq gross orta bonus": ["Estimated average monthly gross bonus", "Ориентировочный средний ежемесячный gross-бонус"], "Maya (MyAI) izah edir": ["Maya (MyAI) explains", "Объясняет Maya (MyAI)"], "Platforma haqqında": ["About the platform", "О платформе"], "MyAI Assistant · Onlayn": ["MyAI Assistant · Online", "MyAI Assistant · Онлайн"], "Platformanı izah et": ["Explain the platform", "Рассказать о платформе"], "2500 gross nə qədər net edir?": ["How much net is 2500 gross?", "Сколько net из 2500 gross?"], "HİK 1%, 2345 net üçün gross və yemək pulu nə qədər olmalıdır?": ["Union 1%, what gross and meal allowance for 2345 net?", "Профсоюз 1%: какой gross и питание для 2345 net?"], "2000 gross supergross neçə edir?": ["What is the supergross for 2000 gross?", "Какой supergross при 2000 gross?"], "Sualınızı yazın...": ["Type your question...", "Напишите вопрос..."], "Salam! Mən": ["Hi! I'm", "Здравствуйте! Я"], "- BirCalc-ın AI assistentiyəm.": ["- BirCalc's AI assistant.", "- ИИ-ассистент BirCalc."], "Platformanın": ["I help with", "Помогаю со"], "bütün hesablama metodları": ["all calculation methods", "всеми методами расчёта"], "üzrə kömək edirəm:": ["of the platform:", "платформы:"], "İşə qəbul": ["Recruitment", "Найм"], "(yemək pulu ilə),": ["(with meal allowance),", "(с питанием),"], "və": ["and", "и"], ". Sualınızı sərbəst formada yazın.": [". Ask your question in your own words.", ". Задавайте вопрос в свободной форме."], "Maya AI - Girişi qorunur": ["Maya AI - access protected", "Maya AI - доступ защищён"], "Davam etmək üçün parolu daxil edin": ["Enter the password to continue", "Введите пароль, чтобы продолжить"], "Parol": ["Password", "Пароль"], "Parol yanlışdır. Yenidən cəhd edin.": ["Wrong password. Try again.", "Неверный пароль. Попробуйте ещё раз."], "İmtina": ["Cancel", "Отмена"], "Daxil ol": ["Sign in", "Войти"], "BirCalc nədir?": ["What is BirCalc?", "Что такое BirCalc?"], "BirCalc - Azərbaycan üzrə": ["BirCalc is a", "BirCalc - платформа для"], "əmək haqqı hesablama": ["salary calculation", "расчёта зарплаты"], "platformasıdır. 2025, 2026 və 2027 vergi qaydaları ilə GROSS, NET və SUPERGROSS arasında çevrilmələr aparır.": ["platform for Azerbaijan. It converts between GROSS, NET and SUPERGROSS under the 2025, 2026 and 2027 tax rules.", "в Азербайджане. Конвертирует GROSS, NET и SUPERGROSS по налоговым правилам 2025, 2026 и 2027 годов."], "Nələr etmək olar?": ["What can you do?", "Что можно сделать?"], "Fərdi hesablama:": ["Individual calculation:", "Индивидуальный расчёт:"], "GROSS→NET, NET→GROSS və GROSS→SUPERGROSS. Sektor (özəl, dövlət/neft-qaz, Texnopark), iş yeri, həmkar ittifaqı və VM m.102 güzəştləri nəzərə alınır.": ["GROSS→NET, NET→GROSS and GROSS→SUPERGROSS. Sector (private, state/oil & gas, Technopark), workplace, trade union and Tax Code art. 102 reliefs are taken into account.", "GROSS→NET, NET→GROSS и GROSS→SUPERGROSS. Учитываются сектор (частный, госсектор/нефтегаз, Технопарк), место работы, профсоюз и льготы НК ст. 102."], "Toplu (Excel):": ["Bulk (Excel):", "Пакетный (Excel):"], "Fayl yükləyərək yüzlərlə işçini birdəfəyə hesablamaq və nəticəni Excel-ə çıxarmaq.": ["Upload a file to calculate hundreds of employees at once and export the result to Excel.", "Загрузите файл, чтобы рассчитать сотни сотрудников сразу и выгрузить результат в Excel."], "Transfer & Promotion:": ["Transfer & Promotion:", "Перевод и повышение:"], "Rotasiya və vəzifə artımlarında yeni gross/yemək pulunun təyini.": ["Setting the new gross/meal allowance for rotations and promotions.", "Определение нового gross/питания при ротации и повышении."], "Kütləvi artımlar:": ["Mass increases:", "Массовые повышения:"], "Net artımlara görə yeni grossların hesablanması.": ["Calculating new gross amounts from net increases.", "Расчёт новых gross по приросту net."], "Texnopar:": ["Technopark:", "Технопарк:"], "Texnopark rezidentləri üçün güzəştli hesablama.": ["Reduced-rate calculation for Technopark residents.", "Льготный расчёт для резидентов Технопарка."], "İşə qəbul rejimi (Recruitment):": ["Recruitment mode:", "Режим найма:"], "Namizədlərə təklif üçün şkala uyğunluğu və yemək pulu məntiqi.": ["Salary-scale check and meal allowance logic for candidate offers.", "Проверка по шкале и логика питания для предложений кандидатам."], "Maya (MyAI) AI Assistenti": ["Maya (MyAI) AI assistant", "ИИ-ассистент Maya (MyAI)"], "Sərbəst dildə sual verə bilərsiniz - məsələn \"2500 gross nə qədər net edir?\". Maya lazım olduqda dəqiqləşdirici sual verir və nəticəni detalları ilə göstərir.": ["Ask in plain language - for example \"How much net is 2500 gross?\". Maya asks follow-up questions when needed and shows the result in detail.", "Спрашивайте своими словами - например «Сколько net из 2500 gross?». Maya уточнит детали при необходимости и покажет подробный результат."], "Şirkət profilləri": ["Company profiles", "Профили компаний"], "Birbank, Pashapay və Birmarket üçün fərqli baza dəyərləri dəstəklənir.": ["Different base values for Birbank, Pashapay and Birmarket.", "Разные базовые значения для Birbank, Pashapay и Birmarket."], "Göstər": ["Show", "Показать"], "Gizlət": ["Hide", "Скрыть"], "İş Növü": ["Job type", "Тип работы"], "İş Yeri": ["Workplace", "Место работы"]};
+    const I18N_RX = [
+        [/^İzahat \((.+?), (\d{4})\):$/, "Explanation ({1}, {2}):", "Пояснение ({1}, {2}):"],
+        [/^(\d{4}) üçün pilləli gəlir vergisi qaydası \(VM m\.101\) \(əsas iş yerində gəlir 2500-dək olduqda 200 AZN vergidən azaddır - VM m\.102\.1\.6\):$/, "{1} progressive income tax (Tax Code art. 101) (at the primary job, 200 AZN is tax-free when income is up to 2500 - art. 102.1.6):", "Прогрессивный подоходный налог {1} (НК ст. 101) (на основном месте при доходе до 2500 AZN 200 AZN освобождены - ст. 102.1.6):"],
+        [/^(\d{4}) üçün pilləli gəlir vergisi qaydası \(VM m\.101\):$/, "{1} progressive income tax (Tax Code art. 101):", "Прогрессивный подоходный налог {1} (НК ст. 101):"],
+        [/^Supergross \((\d{4})\):$/, "Supergross ({1}):", "Supergross ({1}):"],
+        [/^(\d+) AZN \+ (\d+)%$/, "{1} AZN + {2}%", "{1} AZN + {2}%"],
+        [/^Məbləğ (\d+)-(\d+) aralığında ola bilməz\.$/, "The amount cannot be between {1} and {2}.", "Сумма не может быть от {1} до {2}."],
+        [/^(\d+) tətbiq et$/, "Apply {1}", "Применить {1}"],
+        [/^Gross minimumu \((\d+) AZN\) tətbiq edildi$/, "Gross minimum ({1} AZN) applied", "Применён минимум gross ({1} AZN)"],
+        [/^Parametrlər: (.+)$/, "Parameters: {1}", "Параметры: {1}"],
+        [/^Gross \((.+?)\) və orta bonus \((.+?)\) cəmindən seçilmiş parametrlərə \((.+?)\) uyğun tutulmalar çıxılır, yemək pulu \((.+?)\) əlavə edilir\.$/, "Deductions for the selected parameters ({3}) are taken from gross ({1}) plus average bonus ({2}), and the meal allowance ({4}) is added.", "Из суммы gross ({1}) и среднего бонуса ({2}) вычитаются удержания по выбранным параметрам ({3}), добавляется питание ({4})."],
+        [/^Mövcud Gross \((.+?)\) üzərindən seçilmiş parametrlərə \((.+?)\) uyğun tutulmalar çıxılır, Yemək pulu \((.+?)\) əlavə edilir və net məbləğə 12\/10 əmsalı tətbiq olunur\.$/, "Deductions for the selected parameters ({2}) are taken from the current gross ({1}), the meal allowance ({3}) is added and the 12/10 factor is applied to the net.", "Из текущего gross ({1}) вычитаются удержания по выбранным параметрам ({2}), добавляется питание ({3}) и к net применяется коэффициент 12/10."],
+        [/^Keçid vəzifə üçün təqribi aylıq gross orta bonus \((.+?)\) eyni tutulmalar çıxılmaqla net məbləğə çevrilir \(12\/10 əmsalı tətbiq edilmir\)\.$/, "The estimated average monthly gross bonus for the new position ({1}) is converted to net with the same deductions (no 12/10 factor).", "Ориентировочный средний gross-бонус новой должности ({1}) переводится в net с теми же удержаниями (без коэффициента 12/10)."],
+        [/^Hesablanmış Gross əmək haqqı = (.+)$/, "Calculated gross salary = {1}", "Рассчитанная gross-зарплата = {1}"],
+        [/^Maksimum Gross = (.+)$/, "Maximum gross = {1}", "Максимальный gross = {1}"],
+        [/^Təklif Gross = (.+)$/, "Offered gross = {1}", "Предлагаемый gross = {1}"],
+        [/^Maksimum net = (.+)$/, "Maximum net = {1}", "Максимальный net = {1}"],
+        [/^Net bonus məbləği = (.+)$/, "Net bonus = {1}", "Net-бонус = {1}"],
+        [/^Net total məbləğ = (.+)$/, "Net total = {1}", "Net итого = {1}"],
+        [/^Net əsas əmək haqqı = (.+)$/, "Net base salary = {1}", "Базовая net-зарплата = {1}"],
+        [/^Net əsas = Net total − Net bonus = (.+)$/, "Net base = Net total − Net bonus = {1}", "Net база = Net итого − Net-бонус = {1}"],
+        [/^Təklif olunan net = Maksimum net × 10\/12 = (.+)$/, "Offered net = Maximum net × 10/12 = {1}", "Предлагаемый net = Максимальный net × 10/12 = {1}"]
+    ];
+    const I18N_PART = {"Qeyri-dövlət və qeyri-neft sektoru": ["Non-state, non-oil sector", "Негосударственный ненефтяной сектор"], "Dövlət və neft sektoru": ["State and oil sector", "Госсектор и нефтяной сектор"], "Texnopark rezidenti": ["Technopark resident", "Резидент Технопарка"], "əsas iş yeri": ["primary job", "основное место"], "əlavə iş yeri": ["secondary job", "дополнительное место"], "Özəl (Qeyri-neft)": ["Private (non-oil)", "Частный (ненефтяной)"], "Dövlət / Neft-Qaz": ["State / Oil & gas", "Госсектор / нефтегаз"], "Texnopark": ["Technopark", "Технопарк"], "Əsas iş yeri": ["Primary job", "Основное место"], "Əlavə iş yeri": ["Secondary job", "Дополнительное место"], "Həmkar": ["Union", "Профсоюз"], "Güzəşt": ["Relief", "Льгота"]};
+    const I18N_PART_KEYS = Object.keys(I18N_PART).sort((a, b) => b.length - a.length);
+    let LANG = 'az';
+    const I18N_SRC = new WeakMap(), I18N_LAST = new WeakMap();
+
+    function mayaSystemFor(lang, base) {
+        const b = base || MAYA_SYSTEM;
+        if (lang === 'en') return b.replace('Yalnız Azərbaycan dilində cavab ver.', '') + '\nIMPORTANT: Always reply in English, whatever language the tools return.';
+        if (lang === 'ru') return b.replace('Yalnız Azərbaycan dilində cavab ver.', '') + '\nВАЖНО: всегда отвечай только на русском языке, на каком бы языке ни были данные инструментов.';
+        return b;
+    }
+    function i18nPart(s, idx) {
+        let out = s;
+        for (const k of I18N_PART_KEYS) out = out.split(k).join(I18N_PART[k][idx]);
+        return out;
+    }
+    function i18nLookup(src) {
+        const t = src.trim().replace(/\s+/g, ' ');
+        if (!t) return null;
+        const idx = LANG === 'en' ? 0 : 1;
+        if (I18N[t]) return I18N[t][idx];
+        for (const [re, en, ru] of I18N_RX) {
+            const m = t.match(re);
+            if (m) return (idx ? ru : en).replace(/\{(\d)\}/g, (_, i) => i18nPart(m[+i], idx));
+        }
+        return null;
+    }
+    function i18nSkip(n) {
+        const p = n.parentElement;
+        return !p || !!p.closest('script, style, .maya-msg.user, .maya-msg.ai, [data-no-i18n]');
+    }
+    function i18nText(n) {
+        if (i18nSkip(n)) return;
+        const cur = n.nodeValue;
+        let src = I18N_SRC.get(n);
+        if (src === undefined || (cur !== I18N_LAST.get(n) && cur !== src)) { src = cur; I18N_SRC.set(n, src); }
+        let out = src;
+        if (LANG !== 'az') {
+            const t = i18nLookup(src);
+            if (t != null) out = src.match(/^\s*/)[0] + t + src.match(/\s*$/)[0];
+        }
+        I18N_LAST.set(n, out);
+        if (cur !== out) n.nodeValue = out;
+    }
+    const I18N_ATTRS = ['placeholder', 'title', 'aria-label'];
+    function i18nAttr(el, a) {
+        if (!el.hasAttribute(a)) return;
+        el.__i18n = el.__i18n || {};
+        const st = el.__i18n[a] || (el.__i18n[a] = {});
+        const cur = el.getAttribute(a);
+        if (st.src === undefined || (cur !== st.last && cur !== st.src)) st.src = cur;
+        let out = st.src;
+        if (LANG !== 'az' && out) { const t = i18nLookup(out); if (t != null) out = t; }
+        st.last = out;
+        if (cur !== out) el.setAttribute(a, out);
+    }
+    function i18nTree(root) {
+        if (root.nodeType === 3) { i18nText(root); return; }
+        if (root.nodeType !== 1) return;
+        const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+        let n; while ((n = w.nextNode())) i18nText(n);
+        const els = [root, ...root.querySelectorAll('[placeholder],[title],[aria-label]')];
+        els.forEach(el => I18N_ATTRS.forEach(a => i18nAttr(el, a)));
+    }
+    const I18N_TITLE = document.title;
+    function setLang(lang) {
+        if (!['az', 'en', 'ru'].includes(lang)) lang = 'az';
+        LANG = lang;
+        try { localStorage.setItem('bircalc.lang', lang); } catch (e) {}
+        document.documentElement.setAttribute('lang', lang);
+        document.querySelectorAll('[data-lang]').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
+        i18nTree(document.body);
+        document.title = lang === 'az' ? I18N_TITLE : ('BirCalc - ' + (lang === 'en' ? 'Salary calculator' : 'Калькулятор зарплаты'));
+    }
+    new MutationObserver(muts => {
+        for (const m of muts) {
+            if (m.type === 'characterData') i18nText(m.target);
+            else if (m.type === 'attributes') i18nAttr(m.target, m.attributeName);
+            else m.addedNodes.forEach(i18nTree);
+        }
+    }).observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: I18N_ATTRS });
 
     // ===== Hansı parametr hansı bölmədə istifadə olunur =====
     const PARAM_USE = {
@@ -3930,6 +4175,12 @@ Status: ${r.status}`;
         let saved = null;
         try { saved = localStorage.getItem('bircalc.system'); } catch (e) {}
         if (saved === 'general' || saved === 'recruitment') selectStartOption(saved);
+    })();
+    applyThemeUI();
+    (function restoreLang() {
+        let l = 'az';
+        try { l = localStorage.getItem('bircalc.lang') || 'az'; } catch (e) {}
+        setLang(l);
     })();
 </script>
 </body>
