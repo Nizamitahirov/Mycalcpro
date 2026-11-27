@@ -8,7 +8,7 @@
     
     <meta name="theme-color" content="#E30613">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23FF7A1A'/%3E%3Cstop offset='1' stop-color='%23E30613'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='6' fill='url(%23g)'/%3E%3Crect x='8' y='8' width='6.5' height='6.5' rx='1' fill='%23fff' fill-opacity='.45'/%3E%3Crect x='17.5' y='8' width='6.5' height='6.5' rx='1' fill='%23fff' fill-opacity='.45'/%3E%3Crect x='8' y='17.5' width='6.5' height='6.5' rx='1' fill='%23fff' fill-opacity='.45'/%3E%3Crect x='17.5' y='17.5' width='6.5' height='6.5' rx='1' fill='%23fff'/%3E%3C/svg%3E" sizes="any">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23FF7A1A'/%3E%3Cstop offset='1' stop-color='%23E30613'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='7' fill='url(%23g)'/%3E%3Crect x='8' y='8' width='6.5' height='6.5' rx='1' fill='%23fff' fill-opacity='.45'/%3E%3Crect x='17.5' y='8' width='6.5' height='6.5' rx='1' fill='%23fff' fill-opacity='.45'/%3E%3Crect x='8' y='17.5' width='6.5' height='6.5' rx='1' fill='%23fff' fill-opacity='.45'/%3E%3Crect x='17.5' y='17.5' width='6.5' height='6.5' rx='1' fill='%23fff'/%3E%3C/svg%3E" sizes="any">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -49,10 +49,10 @@
             --info: #1F5FBF;
             --info-soft: #EEF3FB;
 
-            --radius-lg: 6px;
-            --radius-md: 4px;
-            --radius-sm: 3px;
-            --radius-xl: 8px;
+            --radius-lg: 10px;
+            --radius-md: 6px;
+            --radius-sm: 4px;
+            --radius-xl: 14px;
             --shadow-sm: 0 1px 2px rgba(22, 23, 27, 0.05);
             --shadow-md: 0 1px 2px rgba(22, 23, 27, 0.04), 0 6px 20px -8px rgba(22, 23, 27, 0.12);
             --focus: 0 0 0 3px rgba(255, 122, 26, 0.22);
@@ -89,7 +89,7 @@
 
         /* Segmented controls */
         .system-switch, .company-nav {
-            display: inline-flex; background: var(--line-2); padding: 2px; border-radius: var(--radius-lg); gap: 2px; flex-shrink: 0;
+            display: inline-flex; background: var(--line-2); padding: 2px; border-radius: 8px; gap: 2px; flex-shrink: 0;
         }
         .sw-btn, .comp-btn {
             padding: 6px 12px; font-size: 0.8rem; font-weight: 500; color: var(--muted);
@@ -195,7 +195,7 @@
         .kpi-card {
             padding: 18px 20px; border-radius: var(--radius-lg); color: #fff;
             background: var(--brand-grad); min-height: 104px;
-            display: flex; flex-direction: column; justify-content: space-between;
+            display: flex; flex-direction: column; justify-content: flex-start;
         }
         .kpi-card.dark { background: var(--ink); }
         .kpi-card.light { background: var(--bg-card); color: var(--ink); border: 1px solid var(--line); box-shadow: var(--shadow-sm); }
@@ -331,7 +331,7 @@
         .tp-input[data-key] { background: var(--brand-soft); box-shadow: inset 0 0 0 1px var(--brand-soft-2); }
         .tp-panel.left .tp-input.manual { background: var(--bg-card); }
 
-        .tp-radio-group { display: inline-flex; gap: 2px; margin-bottom: 16px; background: var(--line-2); padding: 2px; border-radius: var(--radius-lg); }
+        .tp-radio-group { display: inline-flex; gap: 2px; margin-bottom: 16px; background: var(--line-2); padding: 2px; border-radius: 8px; }
         .tp-radio-btn { display: flex; align-items: center; gap: 6px; cursor: pointer; padding: 6px 14px; border-radius: var(--radius-md); transition: background .15s; }
         .tp-radio-btn input { position: absolute; opacity: 0; pointer-events: none; }
         .tp-radio-btn span { font-size: 0.82rem; font-weight: 500; color: var(--muted); }
@@ -531,7 +531,7 @@
         .fz-app { display: flex; flex-direction: column; gap: 18px; }
         .fz-header h2 { margin: 0 0 4px; font-size: 1.3rem; font-weight: 700; letter-spacing: -0.015em; color: var(--fz-fg); }
         .fz-header p { margin: 0; font-size: 0.9rem; color: var(--fz-muted-fg); line-height: 1.6; }
-        .fz-sub { display: inline-flex; gap: 2px; background: var(--fz-secondary); padding: 2px; border-radius: var(--radius-lg); align-self: flex-start; }
+        .fz-sub { display: inline-flex; gap: 2px; background: var(--fz-secondary); padding: 2px; border-radius: 8px; align-self: flex-start; }
         .fz-sub button { padding: 7px 14px; font-size: 0.84rem; font-weight: 500; border-radius: var(--radius-md); border: none; background: transparent; cursor: pointer; color: var(--fz-muted-fg); transition: background .15s; white-space: nowrap; }
         .fz-sub button.active { background: var(--fz-card); color: var(--fz-fg); font-weight: 600; box-shadow: var(--shadow-sm); }
         .fz-section { background: var(--fz-card); border: 1px solid var(--fz-border); border-radius: var(--radius-lg); padding: 22px; box-shadow: var(--fz-shadow); }
@@ -723,7 +723,7 @@
     <!-- Startup Selection Modal -->
     <div class="welcome-overlay" id="welcomeModal">
         <div class="welcome-modal">
-            <div class="welcome-logo"><svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="bmgW" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF7A1A"/><stop offset="1" stop-color="#E30613"/></linearGradient></defs><rect width="32" height="32" rx="6" fill="url(#bmgW)"/><rect x="8" y="8" width="6.5" height="6.5" rx="1" fill="#fff" fill-opacity=".45"/><rect x="17.5" y="8" width="6.5" height="6.5" rx="1" fill="#fff" fill-opacity=".45"/><rect x="8" y="17.5" width="6.5" height="6.5" rx="1" fill="#fff" fill-opacity=".45"/><rect x="17.5" y="17.5" width="6.5" height="6.5" rx="1" fill="#fff"/></svg><span>BirCalc</span></div>
+            <div class="welcome-logo"><svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="bmgW" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF7A1A"/><stop offset="1" stop-color="#E30613"/></linearGradient></defs><rect width="32" height="32" rx="7" fill="url(#bmgW)"/><rect x="8" y="8" width="6.5" height="6.5" rx="1" fill="#fff" fill-opacity=".45"/><rect x="17.5" y="8" width="6.5" height="6.5" rx="1" fill="#fff" fill-opacity=".45"/><rect x="8" y="17.5" width="6.5" height="6.5" rx="1" fill="#fff" fill-opacity=".45"/><rect x="17.5" y="17.5" width="6.5" height="6.5" rx="1" fill="#fff"/></svg><span>BirCalc</span></div>
             <h2 class="welcome-title">Xoş gəlmisiniz!</h2>
             <p class="welcome-sub">Davam etmək üçün hesablama məqsədini seçin</p>
             <div class="choice-grid">
@@ -744,7 +744,7 @@
     <header class="topbar">
         <div class="topbar-inner">
             <div class="logo">
-                <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="bmgN" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF7A1A"/><stop offset="1" stop-color="#E30613"/></linearGradient></defs><rect width="32" height="32" rx="6" fill="url(#bmgN)"/><rect x="8" y="8" width="6.5" height="6.5" rx="1" fill="#fff" fill-opacity=".45"/><rect x="17.5" y="8" width="6.5" height="6.5" rx="1" fill="#fff" fill-opacity=".45"/><rect x="8" y="17.5" width="6.5" height="6.5" rx="1" fill="#fff" fill-opacity=".45"/><rect x="17.5" y="17.5" width="6.5" height="6.5" rx="1" fill="#fff"/></svg>
+                <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="bmgN" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF7A1A"/><stop offset="1" stop-color="#E30613"/></linearGradient></defs><rect width="32" height="32" rx="7" fill="url(#bmgN)"/><rect x="8" y="8" width="6.5" height="6.5" rx="1" fill="#fff" fill-opacity=".45"/><rect x="17.5" y="8" width="6.5" height="6.5" rx="1" fill="#fff" fill-opacity=".45"/><rect x="8" y="17.5" width="6.5" height="6.5" rx="1" fill="#fff" fill-opacity=".45"/><rect x="17.5" y="17.5" width="6.5" height="6.5" rx="1" fill="#fff"/></svg>
                 <div class="brand-text">
                     <span class="brand-name">BirCalc</span>
                     <span class="brand-sub">Əmək haqqı kalkulyatoru</span>
@@ -1855,10 +1855,10 @@
         if (isRecruitmentN2G) {
             document.getElementById('label-k1').innerText = "Yemək Pulu";
             document.getElementById('val-k1').innerText = meal.toFixed(2);
-            document.getElementById('val-k1').style.color = "#ed8936";
+            document.getElementById('val-k1').style.color = "var(--brand-orange)";
             document.getElementById('label-k2').innerText = "Baza Net";
             document.getElementById('val-k2').innerText = baseNet.toFixed(2);
-            document.getElementById('val-k2').style.color = "#48bb78";
+            document.getElementById('val-k2').style.color = "var(--ok)";
         } else {
             document.getElementById('label-k1').innerText = "Cəmi Tutulmalar";
             document.getElementById('val-k1').innerText = res.total.toFixed(2);
