@@ -1,4 +1,4 @@
-// Maya (MyAI) — Groq API proxy.
+// Maya (MyAI) - Groq API proxy.
 // GROQ_API_KEY mühit dəyişəni Vercel-də təyin olunmalıdır.
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
