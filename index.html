@@ -8,7 +8,7 @@
     
     <meta name="theme-color" content="#E30613">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23FF7A1A'/%3E%3Cstop offset='1' stop-color='%23E30613'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='8' fill='url(%23g)'/%3E%3Cpath d='M11 8h6a4 4 0 0 1 0 8h-6zM11 16h7a4 4 0 0 1 0 8h-7z' fill='none' stroke='%23fff' stroke-width='2.6' stroke-linejoin='round'/%3E%3C/svg%3E" sizes="any">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23FF7A1A'/%3E%3Cstop offset='1' stop-color='%23E30613'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='8' fill='url(%23g)'/%3E%3Crect x='8' y='8' width='6.5' height='6.5' rx='1.6' fill='%23fff' fill-opacity='.45'/%3E%3Crect x='17.5' y='8' width='6.5' height='6.5' rx='1.6' fill='%23fff' fill-opacity='.45'/%3E%3Crect x='8' y='17.5' width='6.5' height='6.5' rx='1.6' fill='%23fff' fill-opacity='.45'/%3E%3Crect x='17.5' y='17.5' width='6.5' height='6.5' rx='1.6' fill='%23fff'/%3E%3C/svg%3E" sizes="any">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -698,6 +698,13 @@
         ::-webkit-scrollbar-thumb { background: #D3D5DA; border-radius: 10px; border: 3px solid transparent; background-clip: content-box; }
         ::-webkit-scrollbar-thumb:hover { background-color: #B9BCC3; }
         ::-webkit-scrollbar-track { background: transparent; }
+
+        /* Inline arrow icons inside labels */
+        .ic-arrow, svg.ic-arrow { width: 14px; height: 14px; stroke-width: 2; vertical-align: -2px; margin: 0 6px; opacity: .7; flex-shrink: 0; }
+        .choice-desc .ic-arrow { margin: 0 1px; }
+        .fz-sub button { display: inline-flex; align-items: center; }
+        .fz-sub button .ic-arrow { margin: 0 6px; }
+        .cselect-btn span, .cselect-txt { display: inline-flex; align-items: center; }
     </style>
 </head>
 <body>
@@ -705,14 +712,14 @@
     <!-- Startup Selection Modal -->
     <div class="welcome-overlay" id="welcomeModal">
         <div class="welcome-modal">
-            <div class="welcome-logo"><svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="bmgW" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF7A1A"/><stop offset="1" stop-color="#E30613"/></linearGradient></defs><rect width="32" height="32" rx="8" fill="url(#bmgW)"/><path d="M11 8h6a4 4 0 0 1 0 8h-6zM11 16h7a4 4 0 0 1 0 8h-7z" fill="none" stroke="#fff" stroke-width="2.6" stroke-linejoin="round"/></svg><span>BirCalc</span></div>
+            <div class="welcome-logo"><svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="bmgW" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF7A1A"/><stop offset="1" stop-color="#E30613"/></linearGradient></defs><rect width="32" height="32" rx="8" fill="url(#bmgW)"/><rect x="8" y="8" width="6.5" height="6.5" rx="1.6" fill="#fff" fill-opacity=".45"/><rect x="17.5" y="8" width="6.5" height="6.5" rx="1.6" fill="#fff" fill-opacity=".45"/><rect x="8" y="17.5" width="6.5" height="6.5" rx="1.6" fill="#fff" fill-opacity=".45"/><rect x="17.5" y="17.5" width="6.5" height="6.5" rx="1.6" fill="#fff"/></svg><span>BirCalc</span></div>
             <h2 class="welcome-title">Xoş gəlmisiniz!</h2>
             <p class="welcome-sub">Davam etmək üçün hesablama məqsədini seçin</p>
             <div class="choice-grid">
                 <div class="choice-card general" onclick="selectStartOption('general')">
                     <div class="choice-icon"><i data-lucide="calculator"></i></div>
                     <div class="choice-title">Ümumi hesablamalar</div>
-                    <div class="choice-desc">GROSS ↔ NETT çevrilmələri, toplu hesablamalar, transfer, promotion və kütləvi artımlar üçün standart kalkulyator rejimi.</div>
+                    <div class="choice-desc">GROSS <i data-lucide="arrow-left-right" class="ic-arrow"></i> NETT çevrilmələri, toplu hesablamalar, transfer, promotion və kütləvi artımlar üçün standart kalkulyator rejimi.</div>
                 </div>
                 <div class="choice-card recruitment" onclick="selectStartOption('recruitment')">
                     <div class="choice-icon"><i data-lucide="briefcase-business"></i></div>
@@ -726,7 +733,7 @@
     <header class="topbar">
         <div class="topbar-inner">
             <div class="logo">
-                <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="bmgN" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF7A1A"/><stop offset="1" stop-color="#E30613"/></linearGradient></defs><rect width="32" height="32" rx="8" fill="url(#bmgN)"/><path d="M11 8h6a4 4 0 0 1 0 8h-6zM11 16h7a4 4 0 0 1 0 8h-7z" fill="none" stroke="#fff" stroke-width="2.6" stroke-linejoin="round"/></svg>
+                <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="bmgN" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF7A1A"/><stop offset="1" stop-color="#E30613"/></linearGradient></defs><rect width="32" height="32" rx="8" fill="url(#bmgN)"/><rect x="8" y="8" width="6.5" height="6.5" rx="1.6" fill="#fff" fill-opacity=".45"/><rect x="17.5" y="8" width="6.5" height="6.5" rx="1.6" fill="#fff" fill-opacity=".45"/><rect x="8" y="17.5" width="6.5" height="6.5" rx="1.6" fill="#fff" fill-opacity=".45"/><rect x="17.5" y="17.5" width="6.5" height="6.5" rx="1.6" fill="#fff"/></svg>
                 <div class="brand-text">
                     <span class="brand-name">BirCalc</span>
                     <span class="brand-sub">Əmək haqqı kalkulyatoru</span>
@@ -1427,8 +1434,8 @@
                 </div>
 
                 <div class="fz-sub">
-                    <button class="active" id="fzTabA" onclick="fzSwitchMode('A', this)">Aylıq/Rüblük → İllik</button>
-                    <button id="fzTabB" onclick="fzSwitchMode('B', this)">İllik → Aylıq/Rüblük</button>
+                    <button class="active" id="fzTabA" onclick="fzSwitchMode('A', this)">Aylıq/Rüblük <i data-lucide="arrow-right" class="ic-arrow"></i> İllik</button>
+                    <button id="fzTabB" onclick="fzSwitchMode('B', this)">İllik <i data-lucide="arrow-right" class="ic-arrow"></i> Aylıq/Rüblük</button>
                 </div>
 
                 <!-- Mode A: Aylıq/Rüblük bonus → İllik bonus -->
@@ -3468,6 +3475,9 @@ Status: ${r.status}`;
         const desc = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value');
         const idxDesc = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'selectedIndex');
         let openWrap = null;
+        const ARROW_SVG = '<svg class="ic-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>';
+        const esc = t => t.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+        const fmt = t => esc(t).replace(/\s*→\s*/g, ARROW_SVG);
 
         function closeAll() { if (openWrap) { openWrap.classList.remove('open', 'up'); openWrap.querySelector('.cselect-btn').setAttribute('aria-expanded', 'false'); openWrap = null; } }
 
@@ -3490,14 +3500,14 @@ Status: ${r.status}`;
                     const li = document.createElement('li');
                     li.className = 'cselect-opt' + (o.selected ? ' selected' : '') + (o.disabled ? ' disabled' : '');
                     li.setAttribute('role', 'option'); li.setAttribute('aria-selected', o.selected);
-                    li.textContent = o.text; li.dataset.i = i;
+                    li.innerHTML = '<span class="cselect-txt">' + fmt(o.text) + '</span>'; li.dataset.i = i;
                     li.addEventListener('mousedown', e => e.preventDefault());
                     li.addEventListener('click', () => choose(i));
                     li.addEventListener('mousemove', () => setActive(i));
                     list.appendChild(li);
                 });
                 const cur = sel.options[sel.selectedIndex];
-                label.textContent = cur ? cur.text : '';
+                label.innerHTML = cur ? fmt(cur.text) : '';
             }
             function setActive(i) {
                 active = i;
