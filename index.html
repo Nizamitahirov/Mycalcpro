@@ -4,11 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BirCalc — Əmək haqqı kalkulyatoru</title>
+    <title>BirCalc - Əmək haqqı kalkulyatoru</title>
     
     <meta name="theme-color" content="#E30613">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23FF7A1A'/%3E%3Cstop offset='1' stop-color='%23E30613'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='8' fill='url(%23g)'/%3E%3Cpath d='M11 8h6a4 4 0 0 1 0 8h-6zM11 16h7a4 4 0 0 1 0 8h-7z' fill='none' stroke='%23fff' stroke-width='2.6' stroke-linejoin='round'/%3E%3C/svg%3E" sizes="any">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23FF7A1A'/%3E%3Cstop offset='1' stop-color='%23E30613'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='8' fill='url(%23g)'/%3E%3Crect x='8' y='8' width='6.5' height='6.5' rx='1.6' fill='%23fff' fill-opacity='.45'/%3E%3Crect x='17.5' y='8' width='6.5' height='6.5' rx='1.6' fill='%23fff' fill-opacity='.45'/%3E%3Crect x='8' y='17.5' width='6.5' height='6.5' rx='1.6' fill='%23fff' fill-opacity='.45'/%3E%3Crect x='17.5' y='17.5' width='6.5' height='6.5' rx='1.6' fill='%23fff'/%3E%3C/svg%3E" sizes="any">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -17,7 +17,7 @@
 
     <style>
         /* =========================================================
-           BirCalc — Kapital Bank palette (orange → red)
+           BirCalc - Kapital Bank palette (orange → red)
         ========================================================= */
         :root {
             --brand-orange: #FF7A1A;
@@ -628,6 +628,83 @@
             body { background: #fff; }
             .card { box-shadow: none; }
         }
+
+        /* =================== Custom select =================== */
+        .cselect { position: relative; width: 100%; }
+        .cselect > select { position: absolute; inset: 0; opacity: 0; pointer-events: none; }
+        .cselect-btn {
+            width: 100%; height: 40px; padding: 0 34px 0 12px; border: 1px solid var(--line); border-radius: var(--radius-md);
+            background: var(--bg-card); color: var(--ink); font-size: 0.9rem; font-weight: 500; text-align: left; cursor: pointer;
+            display: flex; align-items: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            position: relative; transition: border-color .15s, box-shadow .15s;
+        }
+        .cselect-btn span { overflow: hidden; text-overflow: ellipsis; }
+        .cselect-btn::after {
+            content: ''; position: absolute; right: 12px; top: 50%; width: 12px; height: 12px; margin-top: -6px;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236B6F78' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") center / contain no-repeat;
+            transition: transform .15s;
+        }
+        .cselect-btn:hover { border-color: #D3D5DA; }
+        .cselect.open .cselect-btn, .cselect-btn:focus-visible { border-color: var(--brand-orange); box-shadow: var(--focus); outline: none; }
+        .cselect.open .cselect-btn::after { transform: rotate(180deg); }
+        .cselect-list {
+            position: absolute; z-index: 200; top: calc(100% + 6px); left: 0; min-width: 100%;
+            background: var(--bg-card); border: 1px solid var(--line); border-radius: 10px; padding: 4px; margin: 0; list-style: none;
+            box-shadow: 0 12px 32px -8px rgba(22,23,27,0.18), 0 2px 6px rgba(22,23,27,0.06);
+            display: none; max-height: 280px; overflow-y: auto;
+        }
+        .cselect.up .cselect-list { top: auto; bottom: calc(100% + 6px); }
+        .cselect.open .cselect-list { display: block; animation: csIn .12s ease; }
+        @keyframes csIn { from { opacity: 0; transform: translateY(-3px); } to { opacity: 1; transform: none; } }
+        .cselect-opt {
+            display: flex; align-items: center; justify-content: space-between; gap: 12px;
+            padding: 8px 10px; border-radius: 6px; font-size: 0.88rem; color: var(--ink-2); cursor: pointer; white-space: nowrap;
+        }
+        .cselect-opt::after { content: ''; width: 14px; height: 14px; flex-shrink: 0; }
+        .cselect-opt.active { background: var(--line-2); color: var(--ink); }
+        .cselect-opt.selected { color: var(--brand-red); font-weight: 600; }
+        .cselect-opt.selected::after {
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23E30613' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center / contain no-repeat;
+        }
+        .cselect-opt.disabled { opacity: .4; pointer-events: none; }
+
+        /* =================== Native control polish =================== */
+        input[type=number] { -moz-appearance: textfield; appearance: textfield; }
+        input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        ::placeholder { color: var(--muted-2); opacity: 1; }
+        :focus { outline: none; }
+        button:focus-visible, .benefit-item:has(input:focus-visible), .tp-radio-btn:has(input:focus-visible) { outline: none; box-shadow: var(--focus); }
+        ::selection { background: var(--brand-soft-2); color: var(--ink); }
+
+        input[type=radio], input[type=checkbox] {
+            -webkit-appearance: none; appearance: none; margin: 0; flex-shrink: 0; cursor: pointer;
+            width: 16px; height: 16px; border: 1.5px solid #C3C6CC; background: var(--bg-card);
+            display: inline-grid; place-content: center; transition: border-color .15s, background .15s;
+        }
+        input[type=radio] { border-radius: 50%; }
+        input[type=checkbox] { border-radius: 4px; }
+        input[type=radio]::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #fff; transform: scale(0); transition: transform .12s; }
+        input[type=checkbox]::before {
+            content: ''; width: 10px; height: 10px; transform: scale(0); transition: transform .12s;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center / contain no-repeat;
+        }
+        input[type=radio]:checked, input[type=checkbox]:checked { border-color: var(--brand-red); background: var(--brand-red); }
+        input[type=radio]:checked::before, input[type=checkbox]:checked::before { transform: scale(1); }
+        input[type=radio]:hover, input[type=checkbox]:hover { border-color: var(--brand-orange); }
+        .benefit-item input { margin-top: 2px; }
+
+        * { scrollbar-width: thin; scrollbar-color: #D3D5DA transparent; }
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
+        ::-webkit-scrollbar-thumb { background: #D3D5DA; border-radius: 10px; border: 3px solid transparent; background-clip: content-box; }
+        ::-webkit-scrollbar-thumb:hover { background-color: #B9BCC3; }
+        ::-webkit-scrollbar-track { background: transparent; }
+
+        /* Inline arrow icons inside labels */
+        .ic-arrow, svg.ic-arrow { width: 14px; height: 14px; stroke-width: 2; vertical-align: -2px; margin: 0 6px; opacity: .7; flex-shrink: 0; }
+        .choice-desc .ic-arrow { margin: 0 1px; }
+        .fz-sub button { display: inline-flex; align-items: center; }
+        .fz-sub button .ic-arrow { margin: 0 6px; }
+        .cselect-btn span, .cselect-txt { display: inline-flex; align-items: center; }
     </style>
 </head>
 <body>
@@ -635,19 +712,19 @@
     <!-- Startup Selection Modal -->
     <div class="welcome-overlay" id="welcomeModal">
         <div class="welcome-modal">
-            <div class="welcome-logo"><svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="bmgW" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF7A1A"/><stop offset="1" stop-color="#E30613"/></linearGradient></defs><rect width="32" height="32" rx="8" fill="url(#bmgW)"/><path d="M11 8h6a4 4 0 0 1 0 8h-6zM11 16h7a4 4 0 0 1 0 8h-7z" fill="none" stroke="#fff" stroke-width="2.6" stroke-linejoin="round"/></svg><span>BirCalc</span></div>
+            <div class="welcome-logo"><svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="bmgW" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF7A1A"/><stop offset="1" stop-color="#E30613"/></linearGradient></defs><rect width="32" height="32" rx="8" fill="url(#bmgW)"/><rect x="8" y="8" width="6.5" height="6.5" rx="1.6" fill="#fff" fill-opacity=".45"/><rect x="17.5" y="8" width="6.5" height="6.5" rx="1.6" fill="#fff" fill-opacity=".45"/><rect x="8" y="17.5" width="6.5" height="6.5" rx="1.6" fill="#fff" fill-opacity=".45"/><rect x="17.5" y="17.5" width="6.5" height="6.5" rx="1.6" fill="#fff"/></svg><span>BirCalc</span></div>
             <h2 class="welcome-title">Xoş gəlmisiniz!</h2>
             <p class="welcome-sub">Davam etmək üçün hesablama məqsədini seçin</p>
             <div class="choice-grid">
                 <div class="choice-card general" onclick="selectStartOption('general')">
                     <div class="choice-icon"><i data-lucide="calculator"></i></div>
                     <div class="choice-title">Ümumi hesablamalar</div>
-                    <div class="choice-desc">GROSS ↔ NETT çevrilmələri, toplu hesablamalar, transfer, promotion və kütləvi artımlar üçün standart kalkulyator rejimi.</div>
+                    <div class="choice-desc">GROSS <i data-lucide="arrow-left-right" class="ic-arrow"></i> NETT çevrilmələri, toplu hesablamalar, transfer, promotion və kütləvi artımlar üçün standart kalkulyator rejimi.</div>
                 </div>
                 <div class="choice-card recruitment" onclick="selectStartOption('recruitment')">
                     <div class="choice-icon"><i data-lucide="briefcase-business"></i></div>
                     <div class="choice-title">İşə qəbul məqsədləri üçün</div>
-                    <div class="choice-desc">Namizədlərə təklif olunan əmək haqqının hesablanması — Recruitment qaydaları, limitlər və yemək pulu məntiqi avtomatik tətbiq olunur.</div>
+                    <div class="choice-desc">Namizədlərə təklif olunan əmək haqqının hesablanması - Recruitment qaydaları, limitlər və yemək pulu məntiqi avtomatik tətbiq olunur.</div>
                 </div>
             </div>
         </div>
@@ -656,7 +733,7 @@
     <header class="topbar">
         <div class="topbar-inner">
             <div class="logo">
-                <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="bmgN" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF7A1A"/><stop offset="1" stop-color="#E30613"/></linearGradient></defs><rect width="32" height="32" rx="8" fill="url(#bmgN)"/><path d="M11 8h6a4 4 0 0 1 0 8h-6zM11 16h7a4 4 0 0 1 0 8h-7z" fill="none" stroke="#fff" stroke-width="2.6" stroke-linejoin="round"/></svg>
+                <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="bmgN" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF7A1A"/><stop offset="1" stop-color="#E30613"/></linearGradient></defs><rect width="32" height="32" rx="8" fill="url(#bmgN)"/><rect x="8" y="8" width="6.5" height="6.5" rx="1.6" fill="#fff" fill-opacity=".45"/><rect x="17.5" y="8" width="6.5" height="6.5" rx="1.6" fill="#fff" fill-opacity=".45"/><rect x="8" y="17.5" width="6.5" height="6.5" rx="1.6" fill="#fff" fill-opacity=".45"/><rect x="17.5" y="17.5" width="6.5" height="6.5" rx="1.6" fill="#fff"/></svg>
                 <div class="brand-text">
                     <span class="brand-name">BirCalc</span>
                     <span class="brand-sub">Əmək haqqı kalkulyatoru</span>
@@ -886,12 +963,12 @@
                 <div class="tp-intro">
                     <div class="tp-intro-title">
                         <i data-lucide="arrow-left-right"></i>
-                        Transfer &amp; Promotion — Hesablama Qaydaları
+                        Transfer &amp; Promotion - Hesablama Qaydaları
                     </div>
                     <ul>
-                        <li>Rotasiyalar zamanı cəm net <strong>dəyişmirsə</strong> — əmək haqqı eyni saxlanılmaqla rotasiya icra edilsin.</li>
-                        <li>Maaş <strong>artırsa</strong> — yeni gross cari grossdan az olmamalıdır.</li>
-                        <li>Maaş <strong>azalırsa</strong> — yemək pulu sabit saxlanılmaqla yeni gross təyin edilsin.</li>
+                        <li>Rotasiyalar zamanı cəm net <strong>dəyişmirsə</strong> - əmək haqqı eyni saxlanılmaqla rotasiya icra edilsin.</li>
+                        <li>Maaş <strong>artırsa</strong> - yeni gross cari grossdan az olmamalıdır.</li>
+                        <li>Maaş <strong>azalırsa</strong> - yemək pulu sabit saxlanılmaqla yeni gross təyin edilsin.</li>
                     </ul>
                 </div>
 
@@ -991,19 +1068,19 @@
                 <div id="tp-result-bar" class="tp-result-bar" style="display:none;">
                     <div class="tp-result-item">
                         <div class="r-label">Cari Gross</div>
-                        <div class="r-val" id="tr-cur-gross-disp">—</div>
+                        <div class="r-val" id="tr-cur-gross-disp">-</div>
                     </div>
                     <div class="tp-result-item green">
                         <div class="r-label">Yeni Gross (Müqavilə) <span id="tr-gross-badge"></span></div>
-                        <div class="r-val" id="tr-new-gross-disp">—</div>
+                        <div class="r-val" id="tr-new-gross-disp">-</div>
                     </div>
                     <div class="tp-result-item">
                         <div class="r-label">Cari Total Net</div>
-                        <div class="r-val" id="tr-cur-total-disp">—</div>
+                        <div class="r-val" id="tr-cur-total-disp">-</div>
                     </div>
                     <div class="tp-result-item highlight">
                         <div class="r-label">Yeni Total Net <span id="tr-net-badge"></span></div>
-                        <div class="r-val" id="tr-new-total-disp">—</div>
+                        <div class="r-val" id="tr-new-total-disp">-</div>
                     </div>
                 </div>
 
@@ -1018,12 +1095,12 @@
                 <div class="tp-intro">
                     <div class="tp-intro-title">
                         <i data-lucide="trending-up"></i>
-                        Kütləvi artımlar — Hesablama Qaydaları
+                        Kütləvi artımlar - Hesablama Qaydaları
                     </div>
                     <ul>
                         <li>Yuxarıdakı tənzimləmələr (İl, Sektor, İş Yeri, Həmkar, Güzəşt) fərdi hesablama üçün istifadə olunur.</li>
                         <li>Bulk yükləmədə hər sətir üçün <strong>İl, İş Növü, HİK və İş Yeri</strong> sütunları göstərilərsə, hesablama o sətirin öz tənzimləməsinə uyğun aparılır (göstərilməyənlər üçün yuxarıdakı tənzimləmə istifadə edilir).</li>
-                        <li>Əgər <strong>cari yemək pulu + artım net</strong> ≤ 100 AZN olarsa, gross dəyişmir — bütün artım yemək puluna gedir.</li>
+                        <li>Əgər <strong>cari yemək pulu + artım net</strong> ≤ 100 AZN olarsa, gross dəyişmir - bütün artım yemək puluna gedir.</li>
                         <li>Əgər 100-ü keçirsə, yemək pulu 100-ə çatdırılır, qalan hissə gross-a əlavə olunur.</li>
                         <li>Lakin yeni gross − cari gross fərqi <strong>Filial</strong> üçün 20 AZN-dən, <strong>Baş ofis</strong> üçün 50 AZN-dən az ola bilməz.</li>
                         <li>Əgər meal = 100 ilə bu minimum fərq təmin olunmursa, yemək pulu kifayət qədər azaldılır ki, gross artım minimum şərti ödəsin.</li>
@@ -1104,19 +1181,19 @@
                 <div id="mg-result-bar" class="tp-result-bar" style="display:none;">
                     <div class="tp-result-item">
                         <div class="r-label">Cari Gross</div>
-                        <div class="r-val" id="mg-r-cur-gross">—</div>
+                        <div class="r-val" id="mg-r-cur-gross">-</div>
                     </div>
                     <div class="tp-result-item green">
                         <div class="r-label">Yeni Gross <span id="mg-r-gross-badge"></span></div>
-                        <div class="r-val" id="mg-r-new-gross">—</div>
+                        <div class="r-val" id="mg-r-new-gross">-</div>
                     </div>
                     <div class="tp-result-item">
                         <div class="r-label">Cari Yemək</div>
-                        <div class="r-val" id="mg-r-cur-meal">—</div>
+                        <div class="r-val" id="mg-r-cur-meal">-</div>
                     </div>
                     <div class="tp-result-item highlight">
                         <div class="r-label">Yeni Yemək <span id="mg-r-meal-badge"></span></div>
-                        <div class="r-val" id="mg-r-new-meal">—</div>
+                        <div class="r-val" id="mg-r-new-meal">-</div>
                     </div>
                 </div>
 
@@ -1185,7 +1262,7 @@
                 <div class="tp-intro">
                     <div class="tp-intro-title">
                         <i data-lucide="cpu"></i>
-                        Texnopar — Hesablama Qaydaları
+                        Texnopar - Hesablama Qaydaları
                     </div>
                     <ul>
                         <li>Yemək pulu + gross artım məntiqi <strong>Kütləvi artımlar</strong> ilə eynidir (yemək 100-ə qədər, sonra gross-a; Filial 20 AZN / Baş ofis 50 AZN min fərq).</li>
@@ -1276,19 +1353,19 @@
                 <div id="tx-result-bar" class="tp-result-bar" style="display:none;">
                     <div class="tp-result-item">
                         <div class="r-label">Cari Gross</div>
-                        <div class="r-val" id="tx-r-cur-gross">—</div>
+                        <div class="r-val" id="tx-r-cur-gross">-</div>
                     </div>
                     <div class="tp-result-item green">
                         <div class="r-label">Yeni Gross <span id="tx-r-gross-badge"></span></div>
-                        <div class="r-val" id="tx-r-new-gross">—</div>
+                        <div class="r-val" id="tx-r-new-gross">-</div>
                     </div>
                     <div class="tp-result-item">
                         <div class="r-label">Cari Yemək</div>
-                        <div class="r-val" id="tx-r-cur-meal">—</div>
+                        <div class="r-val" id="tx-r-cur-meal">-</div>
                     </div>
                     <div class="tp-result-item highlight">
                         <div class="r-label">Yeni Yemək <span id="tx-r-meal-badge"></span></div>
-                        <div class="r-val" id="tx-r-new-meal">—</div>
+                        <div class="r-val" id="tx-r-new-meal">-</div>
                     </div>
                 </div>
 
@@ -1357,8 +1434,8 @@
                 </div>
 
                 <div class="fz-sub">
-                    <button class="active" id="fzTabA" onclick="fzSwitchMode('A', this)">Aylıq/Rüblük → İllik</button>
-                    <button id="fzTabB" onclick="fzSwitchMode('B', this)">İllik → Aylıq/Rüblük</button>
+                    <button class="active" id="fzTabA" onclick="fzSwitchMode('A', this)">Aylıq/Rüblük <i data-lucide="arrow-right" class="ic-arrow"></i> İllik</button>
+                    <button id="fzTabB" onclick="fzSwitchMode('B', this)">İllik <i data-lucide="arrow-right" class="ic-arrow"></i> Aylıq/Rüblük</button>
                 </div>
 
                 <!-- Mode A: Aylıq/Rüblük bonus → İllik bonus -->
@@ -1442,7 +1519,7 @@
         <button class="maya-close" onclick="mayaToggle(false)"><i data-lucide="x"></i></button>
     </div>
     <div class="maya-body" id="mayaBody">
-        <div class="maya-msg bot">Salam! Mən <b>Maya</b> — BirCalc-ın AI assistentiyəm.<br>Platformanın <b>bütün hesablama metodları</b> üzrə kömək edirəm: <b>GROSS ↔ NET</b>, <b>SUPERGROSS</b>, <b>İşə qəbul</b> (yemək pulu ilə), <b>Transfer & Promotion</b>, <b>Kütləvi artımlar</b> və <b>Texnopar</b>. Sualınızı sərbəst formada yazın.</div>
+        <div class="maya-msg bot">Salam! Mən <b>Maya</b> - BirCalc-ın AI assistentiyəm.<br>Platformanın <b>bütün hesablama metodları</b> üzrə kömək edirəm: <b>GROSS ↔ NET</b>, <b>SUPERGROSS</b>, <b>İşə qəbul</b> (yemək pulu ilə), <b>Transfer & Promotion</b>, <b>Kütləvi artımlar</b> və <b>Texnopar</b>. Sualınızı sərbəst formada yazın.</div>
         <div class="maya-chips" id="mayaChips">
             <button class="maya-chip chip-platform" onclick="platformExplain()"><i data-lucide="info"></i> Platformanı izah et</button>
             <button class="maya-chip" onclick="mayaChip(this)">2500 gross nə qədər net edir?</button>
@@ -1460,7 +1537,7 @@
 <div class="maya-auth" id="mayaAuth">
     <div class="maya-auth-box">
         <div class="maya-auth-icon"><i data-lucide="lock"></i></div>
-        <div class="maya-auth-title">Maya AI — Girişi qorunur</div>
+        <div class="maya-auth-title">Maya AI - Girişi qorunur</div>
         <div class="maya-auth-sub">Davam etmək üçün parolu daxil edin</div>
         <input type="password" class="maya-auth-input" id="mayaAuthInput" placeholder="Parol" autocomplete="off"
                onkeydown="if(event.key==='Enter'){ mayaAuthSubmit(); }">
@@ -1549,7 +1626,7 @@
     function isNewRegime(year) {
         return Number(year) >= 2026;
     }
-    // Qeyri-neft özəl sektor, VM m.101 — 2500-dək dərəcə, 2500 və 8000 həddində sabit məbləğ
+    // Qeyri-neft özəl sektor, VM m.101 - 2500-dək dərəcə, 2500 və 8000 həddində sabit məbləğ
     const PRIVATE_TAX_BANDS = {
         '2026': { low: 0.03, mid: 75,  top: 625 },
         '2027': { low: 0.05, mid: 125, top: 675 },
@@ -1557,7 +1634,7 @@
     function getPrivateTaxBands(year) {
         return PRIVATE_TAX_BANDS[normYear(year)] || PRIVATE_TAX_BANDS['2026'];
     }
-    // Texnopark rezidentində işçinin gəlir vergisi: 2026 — 5%, 2027-dən 20 il 0% (VM m.101.7)
+    // Texnopark rezidentində işçinin gəlir vergisi: 2026 - 5%, 2027-dən 20 il 0% (VM m.101.7)
     function getTexnoparkTaxRate(year) {
         return (Number(normYear(year)) >= 2027) ? 0 : 0.05;
     }
@@ -1612,7 +1689,7 @@
 
     function getDeductions(gross, benefit, unionPct, workplace, sector, year) {
         if (sector === 'texnopark') {
-            // Texnopark rezidenti (əsas iş yeri, yerli işçi) — mövcud Texnopar düsturu ilə
+            // Texnopark rezidenti (əsas iş yeri, yerli işçi) - mövcud Texnopar düsturu ilə
             const r = getDeductionsTexnopar(gross, 'local', unionPct, year);
             r.taxable = (getTexnoparkTaxRate(year) > 0 && gross <= 2500) ? Math.max(0, gross - 200) : gross;
             return r;
@@ -1843,7 +1920,7 @@
 
         if (sector === 'texnopark') {
             const tpTax = (getTexnoparkTaxRate(year) === 0)
-                ? `<span class="izahat-sub">Gəlir vergisi (VM m.101.7 — 2027-ci ildən 20 il):</span>
+                ? `<span class="izahat-sub">Gəlir vergisi (VM m.101.7 - 2027-ci ildən 20 il):</span>
                 <ul><li>Texnopark rezidentində muzdlu işdən aylıq gəlir: <b>0%</b></li>
                 <li>İri sahibkarlıq subyektləri üçün ixrac payı şərtləri tətbiq olunur.</li></ul>`
                 : `<span class="izahat-sub">Gəlir vergisi (güzəştli 5% dərəcə):</span>
@@ -1864,7 +1941,7 @@
         if (sector === 'private' && isNewRegime(year)) {
             const tb = getPrivateTaxBands(year);
             const pct = Math.round(tb.low * 100);
-            const exempt = (workplace === 'main') ? ' (əsas iş yerində gəlir 2500-dək olduqda 200 AZN vergidən azaddır — VM m.102.1.6)' : '';
+            const exempt = (workplace === 'main') ? ' (əsas iş yerində gəlir 2500-dək olduqda 200 AZN vergidən azaddır - VM m.102.1.6)' : '';
             return `<b>İzahat (Qeyri-dövlət və qeyri-neft sektoru, ${wp}, ${year}):</b>
                 <span class="izahat-sub">${year} üçün pilləli gəlir vergisi qaydası (VM m.101)${exempt}:</span>
                 <ul><li>Vergiyə cəlb olunan ≤ 2500: <b>${pct}%</b></li>
@@ -1921,10 +1998,10 @@
         const wpLabel = (c.workplace === 'main') ? 'əsas iş yeri' : 'əlavə iş yeri';
         let ctx;
         if (c.mode === 'g2sg') {
-            ctx = `Bu SUPERGROSS hesablamasını sadə dildə, addım-addım izah et. Parametrlər: il ${c.year}, sektor ${sectorLabel}. GROSS ${c.gross.toFixed(2)} AZN. İşəgötürən ödənişləri — DSMF ${c.emp.dsmf.toFixed(2)}, işsizlik ${c.emp.unemp.toFixed(2)}, İTS ${c.emp.med.toFixed(2)}. SUPERGROSS ${c.supergross.toFixed(2)} AZN. Hər tutulmanın hansı düsturla alındığını izah et. Yenidən calculate_salary çağırma, sadəcə mövcud rəqəmləri izah et.`;
+            ctx = `Bu SUPERGROSS hesablamasını sadə dildə, addım-addım izah et. Parametrlər: il ${c.year}, sektor ${sectorLabel}. GROSS ${c.gross.toFixed(2)} AZN. İşəgötürən ödənişləri - DSMF ${c.emp.dsmf.toFixed(2)}, işsizlik ${c.emp.unemp.toFixed(2)}, İTS ${c.emp.med.toFixed(2)}. SUPERGROSS ${c.supergross.toFixed(2)} AZN. Hər tutulmanın hansı düsturla alındığını izah et. Yenidən calculate_salary çağırma, sadəcə mövcud rəqəmləri izah et.`;
         } else {
             const modeLabel = (c.mode === 'n2g') ? 'NET→GROSS' : 'GROSS→NET';
-            ctx = `Bu ${modeLabel} hesablamasını sadə dildə, addım-addım izah et. Parametrlər: il ${c.year}, sektor ${sectorLabel}, ${wpLabel}, həmkar ${c.unionPct}%, vergi güzəşti ${c.benefit} AZN. GROSS ${c.gross.toFixed(2)} AZN, vergiyə cəlb olunan ${c.res.taxable.toFixed(2)} AZN. Tutulmalar — gəlir vergisi ${c.res.tax.toFixed(2)}, DSMF ${c.res.dsmf.toFixed(2)}, işsizlik ${c.res.unemp.toFixed(2)}, İTS ${c.res.med.toFixed(2)}, həmkar haqqı ${c.res.union.toFixed(2)}. NET ${c.nett.toFixed(2)} AZN. Hər tutulmanın hansı düsturla və hansı pillə ilə alındığını izah et. Yenidən calculate_salary çağırma, sadəcə mövcud rəqəmləri izah et.`;
+            ctx = `Bu ${modeLabel} hesablamasını sadə dildə, addım-addım izah et. Parametrlər: il ${c.year}, sektor ${sectorLabel}, ${wpLabel}, həmkar ${c.unionPct}%, vergi güzəşti ${c.benefit} AZN. GROSS ${c.gross.toFixed(2)} AZN, vergiyə cəlb olunan ${c.res.taxable.toFixed(2)} AZN. Tutulmalar - gəlir vergisi ${c.res.tax.toFixed(2)}, DSMF ${c.res.dsmf.toFixed(2)}, işsizlik ${c.res.unemp.toFixed(2)}, İTS ${c.res.med.toFixed(2)}, həmkar haqqı ${c.res.union.toFixed(2)}. NET ${c.nett.toFixed(2)} AZN. Hər tutulmanın hansı düsturla və hansı pillə ilə alındığını izah et. Yenidən calculate_salary çağırma, sadəcə mövcud rəqəmləri izah et.`;
         }
         // Parol qapısından keçsin; açıldıqdan sonra izahı göndər
         if (!mayaAuthed) {
@@ -1944,10 +2021,10 @@
     }
 
     /* ============================================================
-       PLATFORMA — AI ilə izah (modal)
+       PLATFORMA - AI ilə izah (modal)
     ============================================================ */
     const PLATFORM_FALLBACK = `<h3>BirCalc nədir?</h3>
-        BirCalc — Azərbaycan üzrə <b>əmək haqqı hesablama</b> platformasıdır. 2025, 2026 və 2027 vergi qaydaları ilə GROSS, NET və SUPERGROSS arasında çevrilmələr aparır.
+        BirCalc - Azərbaycan üzrə <b>əmək haqqı hesablama</b> platformasıdır. 2025, 2026 və 2027 vergi qaydaları ilə GROSS, NET və SUPERGROSS arasında çevrilmələr aparır.
         <h3>Nələr etmək olar?</h3>
         <ul>
         <li><b>Fərdi hesablama:</b> GROSS→NET, NET→GROSS və GROSS→SUPERGROSS. Sektor (özəl, dövlət/neft-qaz, Texnopark), iş yeri, həmkar ittifaqı və VM m.102 güzəştləri nəzərə alınır.</li>
@@ -1958,7 +2035,7 @@
         <li><b>İşə qəbul rejimi (Recruitment):</b> Namizədlərə təklif üçün şkala uyğunluğu və yemək pulu məntiqi.</li>
         </ul>
         <h3>Maya (MyAI) AI Assistenti</h3>
-        Sərbəst dildə sual verə bilərsiniz — məsələn "2500 gross nə qədər net edir?". Maya lazım olduqda dəqiqləşdirici sual verir və nəticəni detalları ilə göstərir.
+        Sərbəst dildə sual verə bilərsiniz - məsələn "2500 gross nə qədər net edir?". Maya lazım olduqda dəqiqləşdirici sual verir və nəticəni detalları ilə göstərir.
         <h3>Şirkət profilləri</h3>
         Birbank, Pashapay və Birmarket üçün fərqli baza dəyərləri dəstəklənir.`;
 
@@ -1974,7 +2051,7 @@
                 body: JSON.stringify({
                     messages: [
                         { role: 'system', content: 'Sən Maya-san, BirCalc əmək haqqı kalkulyatorunun AI assistenti. Yalnız Azərbaycan dilində cavab ver.' },
-                        { role: 'user', content: `BirCalc platformasını istifadəçiyə ətraflı izah et. Bu bölmələri əhatə et və hər başlığı <h3> teqi ilə ver: 1) BirCalc nədir və nəyə yarayır; 2) Hansı hesablamaları aparır (GROSS→NET, NET→GROSS, GROSS→SUPERGROSS); 3) Tablar — Fərdi, Toplu (Excel), Transfer & Promotion, Kütləvi artımlar, Texnopar; 4) Sektorlar (özəl/qeyri-neft, dövlət/neft-qaz, Texnopark), həmkar ittifaqı, VM m.102 vergi güzəştləri; 5) İşə qəbul (Recruitment) rejimi; 6) Maya AI assistenti nə edir; 7) Birbank/Pashapay/Birmarket profilləri. Aydın, səmimi dildə, <b> və <ul><li> istifadə et. Markdown deyil, HTML teqləri ilə yaz.` }
+                        { role: 'user', content: `BirCalc platformasını istifadəçiyə ətraflı izah et. Bu bölmələri əhatə et və hər başlığı <h3> teqi ilə ver: 1) BirCalc nədir və nəyə yarayır; 2) Hansı hesablamaları aparır (GROSS→NET, NET→GROSS, GROSS→SUPERGROSS); 3) Tablar - Fərdi, Toplu (Excel), Transfer & Promotion, Kütləvi artımlar, Texnopar; 4) Sektorlar (özəl/qeyri-neft, dövlət/neft-qaz, Texnopark), həmkar ittifaqı, VM m.102 vergi güzəştləri; 5) İşə qəbul (Recruitment) rejimi; 6) Maya AI assistenti nə edir; 7) Birbank/Pashapay/Birmarket profilləri. Aydın, səmimi dildə, <b> və <ul><li> istifadə et. Markdown deyil, HTML teqləri ilə yaz.` }
                     ]
                 })
             });
@@ -2209,7 +2286,7 @@
             status = 'Artım yoxdur';
         } else if (curMeal + incNet <= 100) {
             // Meal absorbs the full increase. Round meal to a whole AZN and
-            // recompute gross so the total net stays exact — gross absorbs
+            // recompute gross so the total net stays exact - gross absorbs
             // the sub-AZN rounding remainder.
             newMeal = Math.round(curMeal + incNet);
             newGross = solve(newTotalNet - newMeal);
@@ -2668,18 +2745,18 @@
     }
 
     /* ============================================================
-       MAYA (MyAI) — AI ASSISTANT
+       MAYA (MyAI) - AI ASSISTANT
     ============================================================ */
-    const MAYA_SYSTEM = `Sən Maya-san — BirCalc əmək haqqı kalkulyatorunun AI assistenti (Azərbaycan, 2025/2026/2027). Yalnız Azərbaycan dilində cavab ver.
+    const MAYA_SYSTEM = `Sən Maya-san - BirCalc əmək haqqı kalkulyatorunun AI assistenti (Azərbaycan, 2025/2026/2027). Yalnız Azərbaycan dilində cavab ver.
 
 QAYDALAR:
 1. Rəqəmsal hesablama üçün MÜTLƏQ uyğun aləti çağır, özün riyaziyyat etmə:
-• calculate_salary — GROSS→NET, NET→GROSS, GROSS→SUPERGROSS.
-• calculate_recruitment — işə qəbul: təklif olunan CƏMİ net → baza net + yemək pulu (max 100) + baza gross. "namizəd/təklif/HİK X, N net üçün gross və yemək pulu" tipli suallarda.
-• calculate_transfer — Transfer & Promotion (cari gross+yemək; təklif net və ya gross).
-• calculate_mass_growth — kütləvi net artım.
-• calculate_texnopar_transfer — Texnopar net artım.
-2. Defolt: il ${getDefaultYear()} (istifadəçi il deməyibsə year göndərmə — filtrdəki il götürülür), sektor private, əsas iş yeri, güzəşt 0. Fərziyyələri qısaca qeyd et. 2027-də 2500-dək gəlir vergisi 5%, Texnopark işçiləri üçün 0%.
+• calculate_salary - GROSS→NET, NET→GROSS, GROSS→SUPERGROSS.
+• calculate_recruitment - işə qəbul: təklif olunan CƏMİ net → baza net + yemək pulu (max 100) + baza gross. "namizəd/təklif/HİK X, N net üçün gross və yemək pulu" tipli suallarda.
+• calculate_transfer - Transfer & Promotion (cari gross+yemək; təklif net və ya gross).
+• calculate_mass_growth - kütləvi net artım.
+• calculate_texnopar_transfer - Texnopar net artım.
+2. Defolt: il ${getDefaultYear()} (istifadəçi il deməyibsə year göndərmə - filtrdəki il götürülür), sektor private, əsas iş yeri, güzəşt 0. Fərziyyələri qısaca qeyd et. 2027-də 2500-dək gəlir vergisi 5%, Texnopark işçiləri üçün 0%.
 3. Həmkar (yalnız net↔gross): istifadəçi deməyibsə soruş (var/yox, faiz); "yoxdur" desə 0 ilə hesabla; verilibsə soruşma. Supergross üçün soruşma.
 4. Parametrlər: dövlət/neft→state, Texnopark→texnopark, əlavə iş→secondary. Güzəşt AZN: 800/400/200/100/50 (cəmlənə bilər, məs. 450).
 5. CAVAB: alətin qaytardığı 'answer_text' sətirlərini OLDUĞU KİMI göstər (vacib rəqəmləri **qalın** et, qısa giriş cümləsi olar). Özün heç bir hesablama etmə, olmayan rəqəm yazma. Recruitment-də: cəmi net = baza net + yemək; gross yalnız baza netdən; namizədin əlinə keçən cəmi net = təklif. Şirkət deyilməyibsə Birbank.
@@ -2753,7 +2830,7 @@ QAYDALAR:
         type: "function",
         function: {
             name: "calculate_texnopar_transfer",
-            description: "Texnopar net artım (vergi: 2026 — 5%, 2027 — 0%): cari gross+yemək+net artım → yeni gross/yemək.",
+            description: "Texnopar net artım (vergi: 2026 - 5%, 2027 - 0%): cari gross+yemək+net artım → yeni gross/yemək.",
             parameters: {
                 type: "object",
                 properties: {
@@ -2851,7 +2928,7 @@ NET: ${mayaF(net)} AZN
         };
     }
 
-    // Recruitment NET→GROSS (yemək pulu məntiqi) — calc()-dəki isRecruitmentN2G ilə eyni
+    // Recruitment NET→GROSS (yemək pulu məntiqi) - calc()-dəki isRecruitmentN2G ilə eyni
     function mayaCalcRecruitment(a) {
         const r2 = v => Math.round((v + Number.EPSILON) * 100) / 100;
         const totalNet = Number(a.total_net);
@@ -2867,7 +2944,7 @@ NET: ${mayaF(net)} AZN
         const res = getDeductions(gross, p.benefit, p.unionPct, p.workplace, p.sector, p.year);
         const netFromGross = gross - res.total;
         const answer_text =
-`İşə qəbul (NET → GROSS) — ${company}, ${mayaWp(p.workplace)}, ${p.year}
+`İşə qəbul (NET → GROSS) - ${company}, ${mayaWp(p.workplace)}, ${p.year}
 Təklif olunan cəmi NET: ${mayaF(totalNet)} AZN
 • Baza NET: ${mayaF(baseNet)} AZN
 • Yemək pulu: ${mayaF(meal)} AZN
@@ -2892,7 +2969,7 @@ Yoxlama: Baza GROSS (${mayaF(gross)}) − tutulmalar (${mayaF(res.total)}) = baz
         };
     }
 
-    // Transfer & Promotion — tpCalc() məntiqi ilə eyni
+    // Transfer & Promotion - tpCalc() məntiqi ilə eyni
     function mayaCalcTransfer(a) {
         const r2 = v => Math.round((v + Number.EPSILON) * 100) / 100;
         const curGross = Number(a.current_gross);
@@ -2918,7 +2995,7 @@ Yoxlama: Baza GROSS (${mayaF(gross)}) − tutulmalar (${mayaF(res.total)}) = baz
                 newGross = solve(propNet - curMeal);
             }
             const answer_text =
-`Transfer & Promotion (təklif olunan NET-dən) — ${p.year}, ${MAYA_SECLBL[p.sector]}
+`Transfer & Promotion (təklif olunan NET-dən) - ${p.year}, ${MAYA_SECLBL[p.sector]}
 Cari: GROSS ${mayaF(curGross)} AZN, yemək ${mayaF(curMeal)} AZN, cəmi net ${mayaF(curTotal)} AZN
 Təklif olunan cəmi NET: ${mayaF(propNet)} AZN
 → Yeni GROSS: ${mayaF(newGross)} AZN
@@ -2944,7 +3021,7 @@ Təklif olunan cəmi NET: ${mayaF(propNet)} AZN
                 newGross = solve(newBaseNet);
             }
             const answer_text =
-`Transfer & Promotion (təklif olunan GROSS-dan) — ${p.year}, ${MAYA_SECLBL[p.sector]}
+`Transfer & Promotion (təklif olunan GROSS-dan) - ${p.year}, ${MAYA_SECLBL[p.sector]}
 Cari: GROSS ${mayaF(curGross)} AZN, yemək ${mayaF(curMeal)} AZN, cəmi net ${mayaF(curTotal)} AZN
 Təklif olunan GROSS: ${mayaF(propGross)} AZN (bu grossdan cəmi net ${mayaF(totalNetFromPropGross)} AZN)
 → Yeni GROSS: ${mayaF(newGross)} AZN
@@ -2962,7 +3039,7 @@ Təklif olunan GROSS: ${mayaF(propGross)} AZN (bu grossdan cəmi net ${mayaF(tot
         }
     }
 
-    // Kütləvi artımlar — mgComputeOne() birbaşa
+    // Kütləvi artımlar - mgComputeOne() birbaşa
     function mayaCalcMassGrowth(a) {
         const r2 = v => Math.round((v + Number.EPSILON) * 100) / 100;
         const curGross = Number(a.current_gross);
@@ -2973,7 +3050,7 @@ Təklif olunan GROSS: ${mayaF(propGross)} AZN (bu grossdan cəmi net ${mayaF(tot
         const p = mayaP(a);
         const r = mgComputeOne(curGross, curMeal, incNet, isHead, p);
         const answer_text =
-`Kütləvi artım — ${p.year}, ${MAYA_SECLBL[p.sector]}, ${isHead ? 'baş ofis' : 'filial'}
+`Kütləvi artım - ${p.year}, ${MAYA_SECLBL[p.sector]}, ${isHead ? 'baş ofis' : 'filial'}
 Cari: GROSS ${mayaF(curGross)} AZN, yemək ${mayaF(curMeal)} AZN, cari net ${mayaF(r.curNet)} AZN
 Net artım: ${mayaF(incNet)} AZN → yeni cəmi net ${mayaF(r.newTotalNet)} AZN
 → Yeni GROSS: ${mayaF(r.newGross)} AZN
@@ -2988,7 +3065,7 @@ Status: ${r.status}`;
         };
     }
 
-    // Texnopar transfer — txComputeOne() birbaşa
+    // Texnopar transfer - txComputeOne() birbaşa
     function mayaCalcTexnopar(a) {
         const r2 = v => Math.round((v + Number.EPSILON) * 100) / 100;
         const curGross = Number(a.current_gross);
@@ -3001,7 +3078,7 @@ Status: ${r.status}`;
         const year = normYear(a.year);
         const r = txComputeOne(curGross, curMeal, incNet, isHead, type, unionPct, year);
         const answer_text =
-`Texnopar — ${year}, ${type === 'expat' ? 'əcnəbi işçi' : 'yerli işçi'}, ${isHead ? 'baş ofis' : 'filial'}, həmkar ${unionPct}%
+`Texnopar - ${year}, ${type === 'expat' ? 'əcnəbi işçi' : 'yerli işçi'}, ${isHead ? 'baş ofis' : 'filial'}, həmkar ${unionPct}%
 Cari: GROSS ${mayaF(curGross)} AZN, yemək ${mayaF(curMeal)} AZN, cari net ${mayaF(r.curNet)} AZN
 Net artım: ${mayaF(incNet)} AZN → yeni cəmi net ${mayaF(r.newTotalNet)} AZN
 → Yeni GROSS: ${mayaF(r.newGross)} AZN
@@ -3212,13 +3289,13 @@ Status: ${r.status}`;
     }
 
     /* ============================================================
-       TRANSFER BY FIRUZA — rotasiya hesablaması
+       TRANSFER BY FIRUZA - rotasiya hesablaması
        (New Text Document (2).txt məntiqi ilə eyni)
     ============================================================ */
     const fzFmt = e => (typeof e === 'number' && isFinite(e))
-        ? e.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' AZN' : '—';
+        ? e.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' AZN' : '-';
 
-    // Üst parametrləri (İl/Sektor/İş yeri/Həmkar/Güzəşt) oxu — hesablamaya təsir edir
+    // Üst parametrləri (İl/Sektor/İş yeri/Həmkar/Güzəşt) oxu - hesablamaya təsir edir
     function fzParams() {
         return {
             year: document.getElementById('year').value,
@@ -3228,7 +3305,7 @@ Status: ${r.status}`;
             unionPct: parseFloat(document.getElementById('union').value),
         };
     }
-    // Tək məbləğin neti — mövcud BirCalc tutulma düsturu ilə (bütün parametrləri nəzərə alır).
+    // Tək məbləğin neti - mövcud BirCalc tutulma düsturu ilə (bütün parametrləri nəzərə alır).
     // Qeyd: default (Özəl/2026/əsas iş yeri/həmkar 1%/güzəştsiz) halda bu, txt-dəki si() ilə eynidir.
     // 2027 seçiləndə getDeductions() 2027 dərəcələrini tətbiq edir.
     function fzNetP(amount, p) {
@@ -3236,7 +3313,7 @@ Status: ${r.status}`;
         const r = getDeductions(amount, p.benefit, p.unionPct, p.workplace, p.sector, p.year);
         return amount - r.total;
     }
-    // Net əsas əməkhaqqıdan gross-a tərs (dəqiq, binary search) — txt-dəki Gt/di ilə eyni nəticə
+    // Net əsas əməkhaqqıdan gross-a tərs (dəqiq, binary search) - txt-dəki Gt/di ilə eyni nəticə
     function fzGrossP(targetNet, p) {
         if (!(targetNet > 0)) return 0;
         return solveGross(targetNet, p.benefit, p.unionPct, p.workplace, p.sector, p.year);
@@ -3392,6 +3469,89 @@ Status: ${r.status}`;
             </details>`;
         box.style.display = 'block';
     }
+
+    // ===== Custom select (keeps native <select> as source of truth) =====
+    (function () {
+        const desc = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value');
+        const idxDesc = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'selectedIndex');
+        let openWrap = null;
+        const ARROW_SVG = '<svg class="ic-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>';
+        const esc = t => t.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+        const fmt = t => esc(t).replace(/\s*→\s*/g, ARROW_SVG);
+
+        function closeAll() { if (openWrap) { openWrap.classList.remove('open', 'up'); openWrap.querySelector('.cselect-btn').setAttribute('aria-expanded', 'false'); openWrap = null; } }
+
+        function enhance(sel) {
+            if (sel.closest('.cselect')) return;
+            const wrap = document.createElement('div'); wrap.className = 'cselect';
+            const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'cselect-btn';
+            btn.setAttribute('aria-haspopup', 'listbox'); btn.setAttribute('aria-expanded', 'false');
+            const label = document.createElement('span'); btn.appendChild(label);
+            const list = document.createElement('ul'); list.className = 'cselect-list'; list.setAttribute('role', 'listbox');
+            sel.parentNode.insertBefore(wrap, sel); wrap.append(sel, btn, list);
+            sel.tabIndex = -1;
+            let active = -1;
+
+            function render() {
+                const lbl = sel.closest('.form-group, .tp-field')?.querySelector('label');
+                if (lbl) btn.setAttribute('aria-label', lbl.textContent.trim());
+                list.innerHTML = '';
+                Array.from(sel.options).forEach((o, i) => {
+                    const li = document.createElement('li');
+                    li.className = 'cselect-opt' + (o.selected ? ' selected' : '') + (o.disabled ? ' disabled' : '');
+                    li.setAttribute('role', 'option'); li.setAttribute('aria-selected', o.selected);
+                    li.innerHTML = '<span class="cselect-txt">' + fmt(o.text) + '</span>'; li.dataset.i = i;
+                    li.addEventListener('mousedown', e => e.preventDefault());
+                    li.addEventListener('click', () => choose(i));
+                    li.addEventListener('mousemove', () => setActive(i));
+                    list.appendChild(li);
+                });
+                const cur = sel.options[sel.selectedIndex];
+                label.innerHTML = cur ? fmt(cur.text) : '';
+            }
+            function setActive(i) {
+                active = i;
+                list.querySelectorAll('.cselect-opt').forEach((li, j) => li.classList.toggle('active', j === i));
+                const el = list.children[i]; if (el) el.scrollIntoView({ block: 'nearest' });
+            }
+            function choose(i) {
+                const changed = sel.selectedIndex !== i;
+                idxDesc.set.call(sel, i); render(); closeAll(); btn.focus();
+                if (changed) sel.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+            function open() {
+                closeAll(); render(); wrap.classList.add('open'); openWrap = wrap;
+                btn.setAttribute('aria-expanded', 'true');
+                const r = btn.getBoundingClientRect();
+                if (window.innerHeight - r.bottom < 220 && r.top > 220) wrap.classList.add('up');
+                setActive(sel.selectedIndex);
+            }
+            btn.addEventListener('click', () => wrap.classList.contains('open') ? closeAll() : open());
+            btn.addEventListener('keydown', e => {
+                const n = sel.options.length, isOpen = wrap.classList.contains('open');
+                const step = d => { let i = active; do { i = (i + d + n) % n; } while (sel.options[i].disabled && i !== active); return i; };
+                if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    if (!isOpen) open(); else setActive(step(e.key === 'ArrowDown' ? 1 : -1));
+                } else if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault(); isOpen ? choose(active) : open();
+                } else if (e.key === 'Escape' || e.key === 'Tab') { closeAll(); }
+                else if (e.key === 'Home' && isOpen) { e.preventDefault(); setActive(0); }
+                else if (e.key === 'End' && isOpen) { e.preventDefault(); setActive(n - 1); }
+            });
+
+            // keep the button in sync when JS sets .value / .selectedIndex or options change
+            Object.defineProperty(sel, 'value', { configurable: true, get() { return desc.get.call(this); }, set(v) { desc.set.call(this, v); render(); } });
+            Object.defineProperty(sel, 'selectedIndex', { configurable: true, get() { return idxDesc.get.call(this); }, set(v) { idxDesc.set.call(this, v); render(); } });
+            new MutationObserver(render).observe(sel, { childList: true, subtree: true, attributes: true });
+            sel.addEventListener('change', render);
+            render();
+        }
+
+        document.addEventListener('mousedown', e => { if (openWrap && !openWrap.contains(e.target)) closeAll(); });
+        window.addEventListener('resize', closeAll);
+        document.querySelectorAll('select').forEach(enhance);
+    })();
 
     // Defolt il: cari tarixə görə (2027-ci il gələndə avtomatik 2027)
     document.getElementById('year').value = getDefaultYear();
