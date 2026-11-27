@@ -729,6 +729,7 @@
                 <div class="form-group w-year">
                     <label>İl</label>
                     <select id="year" onchange="calc()">
+                        <option value="2027">2027</option>
                         <option value="2026" selected>2026</option>
                         <option value="2025">2025</option>
                     </select>
@@ -834,7 +835,7 @@
                 <div class="izahat-note">
                     <b>Qeyd:</b> Bu alət təxmini hesablar verir. Dəqiqlik tələb olunan hallarda rəsmi mənbələrə istinad tövsiyyə olunur.<br>
                     Vergi qanunvericiliyi və limitlər dəyişdikdə nəticələr dəyişə bilər.<br>
-                    Vergi Məcəlləsinə son uyğunlaşma tarixi: 13 fevral 2026
+                    Vergi Məcəlləsinə son uyğunlaşma tarixi: 27 noyabr 2026 (2027 qaydaları əlavə edildi)
                 </div>
             </div>
         </div>
@@ -1182,7 +1183,7 @@
                     </div>
                     <ul>
                         <li>Yemək pulu + gross artım məntiqi <strong>Kütləvi artımlar</strong> ilə eynidir (yemək 100-ə qədər, sonra gross-a; Filial 20 AZN / Baş ofis 50 AZN min fərq).</li>
-                        <li><strong>Local</strong>: Gəlir vergisi gross ≤ 2500 → (gross − 200) × 5%; gross > 2500 → gross × 5%. DSMF, İşsizlik, İTS, HİK adi qaydada.</li>
+                        <li><strong>Local</strong>: Gəlir vergisi <strong>2026</strong>: gross ≤ 2500 → (gross − 200) × 5%; gross > 2500 → gross × 5%. <strong>2027-dən</strong>: 0% (VM m.101.7). İl yuxarıdakı filtrdən götürülür. DSMF, İşsizlik, İTS, HİK adi qaydada.</li>
                         <li><strong>Expat</strong>: Gəlir vergisi Local ilə eynidir. <strong>DSMF = 0%</strong> (məbləğdən asılı olmadan). Qalan tutulmalar adi qaydada.</li>
                         <li>Bulk-da hər sətir öz <strong>Type</strong> (Local/Expat), <strong>HİK</strong>, <strong>İş Yeri</strong> (Filial/Baş ofis) dəyərlərinə görə hesablanır.</li>
                     </ul>
@@ -1516,18 +1517,63 @@
     function toggleMode() { alertSkipped = false; calc(); }
     function selectBenefit(id) { document.getElementById(id).checked = true; calc(); tpCalc(); mgCalc(); mgBulkRecalc(); txCalc(); txBulkRecalc(); }
 
-    function getBaseRefFor(workplace, company) {
-        const isMain = workplace === 'main';
-        if (company === 'Birbank') return isMain ? 354 : 348;
-        return isMain ? 358 : 352;
+    /* ============================================================
+       İL QAYDALARI (2025 / 2026 / 2027)
+       Defolt il cari tarixə görə seçilir: 2027-ci il gələndə avtomatik 2027.
+    ============================================================ */
+    const SUPPORTED_YEARS = ['2025', '2026', '2027'];
+
+    function getDefaultYear() {
+        return (new Date().getFullYear() >= 2027) ? '2027' : '2026';
     }
-    function getBaseRef(workplace) {
-        return getBaseRefFor(workplace, currentCompany);
+    function getSelectedYear() {
+        const el = document.getElementById('year');
+        return (el && SUPPORTED_YEARS.includes(el.value)) ? el.value : getDefaultYear();
+    }
+    // İstənilən il dəyərini dəstəklənən ilə gətirir; boşdursa filtrdəki il götürülür
+    function normYear(y) {
+        const s = String(y === undefined || y === null ? '' : y).trim().replace(/\.0$/, '');
+        if (SUPPORTED_YEARS.includes(s)) return s;
+        const n = parseInt(s, 10);
+        if (!isNaN(n) && n > 2027) return '2027';
+        if (!isNaN(n) && n < 2025) return '2025';
+        return getSelectedYear();
+    }
+    // 2026-cı ildən qüvvədə olan yeni rejim (pilləli vergi, yeni DSMF/İTS hədləri)
+    function isNewRegime(year) {
+        return Number(year) >= 2026;
+    }
+    // Qeyri-neft özəl sektor, VM m.101 — 2500-dək dərəcə, 2500 və 8000 həddində sabit məbləğ
+    const PRIVATE_TAX_BANDS = {
+        '2026': { low: 0.03, mid: 75,  top: 625 },
+        '2027': { low: 0.05, mid: 125, top: 675 },
+    };
+    function getPrivateTaxBands(year) {
+        return PRIVATE_TAX_BANDS[normYear(year)] || PRIVATE_TAX_BANDS['2026'];
+    }
+    // Texnopark rezidentində işçinin gəlir vergisi: 2026 — 5%, 2027-dən 20 il 0% (VM m.101.7)
+    function getTexnoparkTaxRate(year) {
+        return (Number(normYear(year)) >= 2027) ? 0 : 0.05;
+    }
+
+    // Recruitment baza net (400 AZN minimum əməkhaqqının neti)
+    const BASE_REF = {
+        '2025': { Birbank: { main: 354, secondary: 348 }, other: { main: 358, secondary: 352 } },
+        '2026': { Birbank: { main: 354, secondary: 348 }, other: { main: 358, secondary: 352 } },
+        '2027': { Birbank: { main: 350, secondary: 340 }, other: { main: 354, secondary: 344 } },
+    };
+    function getBaseRefFor(workplace, company, year) {
+        const t = BASE_REF[normYear(year)];
+        const c = (company === 'Birbank') ? t.Birbank : t.other;
+        return (workplace === 'main') ? c.main : c.secondary;
+    }
+    function getBaseRef(workplace, year) {
+        return getBaseRefFor(workplace, currentCompany, year);
     }
 
     function applyFix(type) {
         const workplace = document.getElementById('workplace').value;
-        const base = getBaseRef(workplace);
+        const base = getBaseRef(workplace, document.getElementById('year').value);
         document.getElementById('salaryInput').value = (type === 1) ? base : base + 10;
         alertSkipped = true;
         calc();
@@ -1546,7 +1592,7 @@
         if (sector === 'state') {
             dsmf = gross * 0.22;
             med = (gross <= 8000) ? gross * 0.02 : 160 + (gross - 8000) * 0.005;
-        } else if (year === '2026') {
+        } else if (isNewRegime(year)) {
             if (gross <= 200) dsmf = gross * 0.22;
             else if (gross <= 8000) dsmf = 44 + (gross - 200) * 0.15;
             else dsmf = 1214 + (gross - 8000) * 0.11;
@@ -1561,23 +1607,25 @@
     function getDeductions(gross, benefit, unionPct, workplace, sector, year) {
         if (sector === 'texnopark') {
             // Texnopark rezidenti (əsas iş yeri, yerli işçi) — mövcud Texnopar düsturu ilə
-            const r = getDeductionsTexnopar(gross, 'local', unionPct);
-            r.taxable = (gross <= 2500) ? Math.max(0, gross - 200) : gross;
+            const r = getDeductionsTexnopar(gross, 'local', unionPct, year);
+            r.taxable = (getTexnoparkTaxRate(year) > 0 && gross <= 2500) ? Math.max(0, gross - 200) : gross;
             return r;
         }
         let tax = 0, dsmf = 0, unemp = 0, med = 0, union = 0;
         let taxable = Math.max(0, gross - benefit);
 
-        if (sector === 'private' && year === '2026') {
+        if (sector === 'private' && isNewRegime(year)) {
+            // VM m.101 (pilləli dərəcə) + m.102.1.6 (əsas iş yerində 2500-dək gəlirin 200 AZN-i azad)
+            const tb = getPrivateTaxBands(year);
             if (workplace === 'main') {
                 if (taxable <= 200) tax = 0;
-                else if (taxable <= 2500) tax = (taxable - 200) * 0.03;
-                else if (taxable <= 8000) tax = 75 + (taxable - 2500) * 0.10;
-                else tax = 625 + (taxable - 8000) * 0.14;
+                else if (taxable <= 2500) tax = (taxable - 200) * tb.low;
+                else if (taxable <= 8000) tax = tb.mid + (taxable - 2500) * 0.10;
+                else tax = tb.top + (taxable - 8000) * 0.14;
             } else {
-                if (taxable <= 2500) tax = taxable * 0.03;
-                else if (taxable <= 8000) tax = 75 + (taxable - 2500) * 0.10;
-                else tax = 625 + (taxable - 8000) * 0.14;
+                if (taxable <= 2500) tax = taxable * tb.low;
+                else if (taxable <= 8000) tax = tb.mid + (taxable - 2500) * 0.10;
+                else tax = tb.top + (taxable - 8000) * 0.14;
             }
             dsmf = (gross <= 200) ? gross * 0.03 : (6 + (gross - 200) * 0.10);
             unemp = gross * 0.005;
@@ -1592,7 +1640,7 @@
             if (bt <= 2500) tax = bt * 0.14;
             else tax = 350 + (bt - 2500) * 0.25;
             
-            if (year === '2026') {
+            if (isNewRegime(year)) {
                 dsmf = gross * 0.03;
                 med = (gross <= 2500) ? gross * 0.02 : (50 + (gross - 2500) * 0.005);
             } else {
@@ -1656,6 +1704,7 @@
             window.lastCalc = { mode: 'g2sg', year, sector, workplace, gross: val, supergross, emp };
             document.getElementById('izahatBox').innerHTML = buildIzahat(year, sector, workplace, mode);
 
+            if (typeof tpCalc === 'function') tpCalc();
             if (typeof mgCalc === 'function') mgCalc();
             if (typeof mgBulkRecalc === 'function') mgBulkRecalc();
             if (typeof txCalc === 'function') txCalc();
@@ -1671,7 +1720,7 @@
         let finalGross, finalNett, res, meal = 0, baseNet = 0;
 
         if (isRecruitmentN2G) {
-            const minRef = getBaseRef(workplace);
+            const minRef = getBaseRef(workplace, year);
             const maxRef = minRef + 10;
             if (val > minRef && val < maxRef && !alertSkipped) {
                 document.getElementById('salaryAlert').style.display = 'flex';
@@ -1747,6 +1796,7 @@
         window.lastCalc = { mode, year, sector, workplace, benefit, unionPct, gross: finalGross, nett: finalNett, res, meal, baseNet, isRecruitmentN2G };
         document.getElementById('izahatBox').innerHTML = buildIzahat(year, sector, workplace, mode);
 
+        if (typeof tpCalc === 'function') tpCalc();
         if (typeof mgCalc === 'function') mgCalc();
         if (typeof mgBulkRecalc === 'function') mgBulkRecalc();
         if (typeof txCalc === 'function') txCalc();
@@ -1771,10 +1821,10 @@
             }
             const empDsmf = (sector === 'state')
                 ? `Gross × 22%`
-                : (year === '2026'
+                : (isNewRegime(year)
                     ? `200-dək 22%; 200–8000: 44 + (Gross − 200) × 15%; 8000-dən çox: 1214 + (Gross − 8000) × 11%`
                     : `200-dək 22%; 200-dən çox: 44 + (Gross − 200) × 15%`);
-            const empMed = (sector === 'state' || year !== '2026')
+            const empMed = (sector === 'state' || !isNewRegime(year))
                 ? `8000-dək Gross × 2%; 8000-dən çox: 160 + (Gross − 8000) × 0.5%`
                 : `2500-dək Gross × 2%; 2500-dən çox: 50 + (Gross − 2500) × 0.5%`;
             return `<b>Supergross (${year}):</b> İşəgötürənin işçiyə görə çəkdiyi cəmi xərc.
@@ -1786,10 +1836,15 @@
         }
 
         if (sector === 'texnopark') {
-            return `<b>İzahat (Texnopark rezidenti, ${year}):</b>
-                <span class="izahat-sub">Gəlir vergisi (güzəştli 5% dərəcə):</span>
+            const tpTax = (getTexnoparkTaxRate(year) === 0)
+                ? `<span class="izahat-sub">Gəlir vergisi (VM m.101.7 — 2027-ci ildən 20 il):</span>
+                <ul><li>Texnopark rezidentində muzdlu işdən aylıq gəlir: <b>0%</b></li>
+                <li>İri sahibkarlıq subyektləri üçün ixrac payı şərtləri tətbiq olunur.</li></ul>`
+                : `<span class="izahat-sub">Gəlir vergisi (güzəştli 5% dərəcə):</span>
                 <ul><li>Vergiyə cəlb olunan ≤ 2500: (Gross − 200) × 5%</li>
-                <li>Vergiyə cəlb olunan > 2500: Gross × 5%</li></ul>
+                <li>Vergiyə cəlb olunan > 2500: Gross × 5%</li></ul>`;
+            return `<b>İzahat (Texnopark rezidenti, ${year}):</b>
+                ${tpTax}
                 <span class="izahat-sub">DSMF:</span>
                 <ul><li>200 manatadək: Əməkhaqqı × 3%</li>
                 <li>200 manatdan çox: 6 + (Əməkhaqqı − 200) × 10%</li></ul>
@@ -1800,13 +1855,15 @@
                 <hr><b>Yekun Net = Gross − (Vergi + DSMF + İşsizlik + Tibbi sığorta + Həmkar haqqı)</b>`;
         }
 
-        if (sector === 'private' && year === '2026') {
-            const exempt = (workplace === 'main') ? ' (əsas iş yeri üçün ilk 200 AZN vergidən azaddır)' : '';
-            return `<b>İzahat (Qeyri-dövlət və qeyri-neft sektoru, ${wp}, 2026):</b>
-                <span class="izahat-sub">2026 üçün yeni pilləli gəlir vergisi qaydası${exempt}:</span>
-                <ul><li>Vergiyə cəlb olunan ≤ 2500: <b>3%</b></li>
-                <li>2500 < Vergiyə cəlb olunan ≤ 8000: <b>75 AZN + 10%</b> (2500-dən artıq hissənin 10%-i)</li>
-                <li>Vergiyə cəlb olunan > 8000: <b>625 AZN + 14%</b> (8000-dən artıq hissənin 14%-i)</li></ul>
+        if (sector === 'private' && isNewRegime(year)) {
+            const tb = getPrivateTaxBands(year);
+            const pct = Math.round(tb.low * 100);
+            const exempt = (workplace === 'main') ? ' (əsas iş yerində gəlir 2500-dək olduqda 200 AZN vergidən azaddır — VM m.102.1.6)' : '';
+            return `<b>İzahat (Qeyri-dövlət və qeyri-neft sektoru, ${wp}, ${year}):</b>
+                <span class="izahat-sub">${year} üçün pilləli gəlir vergisi qaydası (VM m.101)${exempt}:</span>
+                <ul><li>Vergiyə cəlb olunan ≤ 2500: <b>${pct}%</b></li>
+                <li>2500 < Vergiyə cəlb olunan ≤ 8000: <b>${tb.mid} AZN + 10%</b> (2500-dən artıq hissənin 10%-i)</li>
+                <li>Vergiyə cəlb olunan > 8000: <b>${tb.top} AZN + 14%</b> (8000-dən artıq hissənin 14%-i)</li></ul>
                 <span class="izahat-sub">DSMF:</span>
                 <ul><li>200 manatadək: Əməkhaqqı × 3%</li>
                 <li>200 manatdan çox: 6 + (Əməkhaqqı − 200) × 10%</li></ul>
@@ -1833,10 +1890,10 @@
         }
 
         // Dövlət / Neft-Qaz
-        const dsmfState = (year === '2026')
+        const dsmfState = isNewRegime(year)
             ? `Əməkhaqqı × 3%`
             : `200 manatadək 3%; 200-dən çox: 6 + (Əməkhaqqı − 200) × 10%`;
-        const medState = (year === '2026')
+        const medState = isNewRegime(year)
             ? `2500-dək Əməkhaqqı × 2%; 2500-dən çox: 50 + (Əməkhaqqı − 2500) × 0.5%`
             : `8000-dək Əməkhaqqı × 2%; 8000-dən çox: 160 + (Əməkhaqqı − 8000) × 0.5%`;
         const exemptS = (workplace === 'main') ? 'Vergiyə cəlb olunan məbləğ = Gross − Güzəşt − 200 (əsas iş yeri)' : 'Vergiyə cəlb olunan məbləğ = Gross − Güzəşt';
@@ -1884,7 +1941,7 @@
        PLATFORMA — AI ilə izah (modal)
     ============================================================ */
     const PLATFORM_FALLBACK = `<h3>BirCalc nədir?</h3>
-        BirCalc — Azərbaycan üzrə <b>əmək haqqı hesablama</b> platformasıdır. 2025 və 2026 vergi qaydaları ilə GROSS, NET və SUPERGROSS arasında çevrilmələr aparır.
+        BirCalc — Azərbaycan üzrə <b>əmək haqqı hesablama</b> platformasıdır. 2025, 2026 və 2027 vergi qaydaları ilə GROSS, NET və SUPERGROSS arasında çevrilmələr aparır.
         <h3>Nələr etmək olar?</h3>
         <ul>
         <li><b>Fərdi hesablama:</b> GROSS→NET, NET→GROSS və GROSS→SUPERGROSS. Sektor (özəl, dövlət/neft-qaz, Texnopark), iş yeri, həmkar ittifaqı və VM m.102 güzəştləri nəzərə alınır.</li>
@@ -2074,7 +2131,7 @@
                 if(val === 0) return;
                 let g, n, res, meal = 0, baseNet = 0;
                 if (useBulkRec && mode === 'n2g') {
-                    const minRef = getBaseRef(workplace);
+                    const minRef = getBaseRef(workplace, year);
                     meal = Math.max(0, val - minRef);
                     if (meal > 0 && meal < 10) meal = 10;
                     if (meal > 100) meal = 100;
@@ -2268,7 +2325,7 @@
         if (v === undefined || v === null || v === '') return null;
         const s = String(v).trim().replace(/\.0$/, '');
         if (!/^\d{4}$/.test(s)) return null;
-        return s;
+        return normYear(s);
     }
 
     function mgHandleFile(e) {
@@ -2366,17 +2423,19 @@
 
     /* ============================================================
        TEXNOPAR LOGIC
-       Income tax: gross ≤ 2500 → (gross−200)×5%, gross > 2500 → gross×5%
+       Income tax (2026): gross ≤ 2500 → (gross−200)×5%, gross > 2500 → gross×5%
+       Income tax (2027-dən, VM m.101.7): 0%
        DSMF: Local = standart, Expat = 0%
        Unemp 0.5%, Med standart, HİK konfiqurasiya olunan
     ============================================================ */
-    function getDeductionsTexnopar(gross, type, unionPct) {
+    function getDeductionsTexnopar(gross, type, unionPct, year) {
         let tax, dsmf, unemp, med, union;
+        const rate = getTexnoparkTaxRate(year);
 
         if (gross <= 2500) {
-            tax = Math.max(0, gross - 200) * 0.05;
+            tax = Math.max(0, gross - 200) * rate;
         } else {
-            tax = gross * 0.05;
+            tax = gross * rate;
         }
 
         dsmf = (type === 'expat')
@@ -2390,16 +2449,16 @@
         return { tax, dsmf, unemp, med, union, total: tax + dsmf + unemp + med + union };
     }
 
-    function txNetFromGross(gross, type, unionPct) {
-        const r = getDeductionsTexnopar(gross, type, unionPct);
+    function txNetFromGross(gross, type, unionPct, year) {
+        const r = getDeductionsTexnopar(gross, type, unionPct, year);
         return gross - r.total;
     }
 
-    function solveGrossTexnopar(targetNet, type, unionPct) {
+    function solveGrossTexnopar(targetNet, type, unionPct, year) {
         let low = targetNet, high = Math.max(targetNet * 3, targetNet + 100), iter = 0;
         while (iter < 38) {
             const mid = (low + high) / 2;
-            const res = getDeductionsTexnopar(mid, type, unionPct);
+            const res = getDeductionsTexnopar(mid, type, unionPct, year);
             if (mid - res.total < targetNet) low = mid;
             else high = mid;
             iter++;
@@ -2407,7 +2466,7 @@
         return high;
     }
 
-    function txComputeOne(curGross, curMeal, incNet, isHead, type, unionPct) {
+    function txComputeOne(curGross, curMeal, incNet, isHead, type, unionPct, year) {
         if (curGross <= 0) {
             return { newGross: 0, newMeal: 0, curNet: 0, newTotalNet: 0, status: 'Cari gross daxil edilməyib' };
         }
@@ -2415,9 +2474,9 @@
         if (curMeal < 0) curMeal = 0;
 
         const minGrossInc = isHead ? 50 : 20;
-        const curNet = txNetFromGross(curGross, type, unionPct);
+        const curNet = txNetFromGross(curGross, type, unionPct, year);
         const newTotalNet = curNet + curMeal + incNet;
-        const solve = (bn) => bn > 0 ? solveGrossTexnopar(bn, type, unionPct) : 0;
+        const solve = (bn) => bn > 0 ? solveGrossTexnopar(bn, type, unionPct, year) : 0;
 
         let newGross, newMeal, status;
 
@@ -2434,7 +2493,7 @@
             newGross = solve(newTotalNet - newMeal);
             if (newGross - curGross < minGrossInc) {
                 const minNewGross = curGross + minGrossInc;
-                const minNewBaseNet = txNetFromGross(minNewGross, type, unionPct);
+                const minNewBaseNet = txNetFromGross(minNewGross, type, unionPct, year);
                 newMeal = Math.max(0, Math.min(100, Math.floor(newTotalNet - minNewBaseNet)));
                 newGross = solve(newTotalNet - newMeal);
                 status = `Gross minimumu (${minGrossInc} AZN) tətbiq edildi`;
@@ -2592,9 +2651,9 @@
 
     function mgDownloadTemplate() {
         const sample = [
-            { 'Employee Badge': 'B1001', 'İl': 2026, 'İş Növü': 'Əsas',  'HİK': 1, 'İş Yeri': 'Filial',   'Cari Gross': 1000, 'Cari Yemek Pulu': 50,  'Net Artim': 80  },
-            { 'Employee Badge': 'B1002', 'İl': 2026, 'İş Növü': 'Əsas',  'HİK': 1, 'İş Yeri': 'Baş ofis', 'Cari Gross': 1500, 'Cari Yemek Pulu': 100, 'Net Artim': 120 },
-            { 'Employee Badge': 'B1003', 'İl': 2026, 'İş Növü': 'Əlavə', 'HİK': 0, 'İş Yeri': 'Filial',   'Cari Gross': 800,  'Cari Yemek Pulu': 0,   'Net Artim': 60  },
+            { 'Employee Badge': 'B1001', 'İl': Number(getSelectedYear()), 'İş Növü': 'Əsas',  'HİK': 1, 'İş Yeri': 'Filial',   'Cari Gross': 1000, 'Cari Yemek Pulu': 50,  'Net Artim': 80  },
+            { 'Employee Badge': 'B1002', 'İl': Number(getSelectedYear()), 'İş Növü': 'Əsas',  'HİK': 1, 'İş Yeri': 'Baş ofis', 'Cari Gross': 1500, 'Cari Yemek Pulu': 100, 'Net Artim': 120 },
+            { 'Employee Badge': 'B1003', 'İl': Number(getSelectedYear()), 'İş Növü': 'Əlavə', 'HİK': 0, 'İş Yeri': 'Filial',   'Cari Gross': 800,  'Cari Yemek Pulu': 0,   'Net Artim': 60  },
         ];
         const ws = XLSX.utils.json_to_sheet(sample);
         const wb = XLSX.utils.book_new();
@@ -2605,7 +2664,7 @@
     /* ============================================================
        MAYA (MyAI) — AI ASSISTANT
     ============================================================ */
-    const MAYA_SYSTEM = `Sən Maya-san — BirCalc əmək haqqı kalkulyatorunun AI assistenti (Azərbaycan, 2025/2026). Yalnız Azərbaycan dilində cavab ver.
+    const MAYA_SYSTEM = `Sən Maya-san — BirCalc əmək haqqı kalkulyatorunun AI assistenti (Azərbaycan, 2025/2026/2027). Yalnız Azərbaycan dilində cavab ver.
 
 QAYDALAR:
 1. Rəqəmsal hesablama üçün MÜTLƏQ uyğun aləti çağır, özün riyaziyyat etmə:
@@ -2614,7 +2673,7 @@ QAYDALAR:
 • calculate_transfer — Transfer & Promotion (cari gross+yemək; təklif net və ya gross).
 • calculate_mass_growth — kütləvi net artım.
 • calculate_texnopar_transfer — Texnopar net artım.
-2. Defolt: il 2026, sektor private, əsas iş yeri, güzəşt 0. Fərziyyələri qısaca qeyd et.
+2. Defolt: il ${getDefaultYear()} (istifadəçi il deməyibsə year göndərmə — filtrdəki il götürülür), sektor private, əsas iş yeri, güzəşt 0. Fərziyyələri qısaca qeyd et. 2027-də 2500-dək gəlir vergisi 5%, Texnopark işçiləri üçün 0%.
 3. Həmkar (yalnız net↔gross): istifadəçi deməyibsə soruş (var/yox, faiz); "yoxdur" desə 0 ilə hesabla; verilibsə soruşma. Supergross üçün soruşma.
 4. Parametrlər: dövlət/neft→state, Texnopark→texnopark, əlavə iş→secondary. Güzəşt AZN: 800/400/200/100/50 (cəmlənə bilər, məs. 450).
 5. CAVAB: alətin qaytardığı 'answer_text' sətirlərini OLDUĞU KİMI göstər (vacib rəqəmləri **qalın** et, qısa giriş cümləsi olar). Özün heç bir hesablama etmə, olmayan rəqəm yazma. Recruitment-də: cəmi net = baza net + yemək; gross yalnız baza netdən; namizədin əlinə keçən cəmi net = təklif. Şirkət deyilməyibsə Birbank.
@@ -2622,7 +2681,7 @@ QAYDALAR:
 
     const N = { type: ["number", "string"] };
     const B = { type: ["boolean", "string"] };
-    const E_YEAR = { type: ["string", "number"], description: "2025 və ya 2026 (defolt 2026)" };
+    const E_YEAR = { type: ["string", "number"], description: "2025, 2026 və ya 2027 (defolt: filtrdə seçilmiş il)" };
     const E_SECTOR = { type: "string", enum: ["private", "state", "texnopark"] };
     const E_WP = { type: "string", enum: ["main", "secondary"] };
     const MAYA_TOOLS = [{
@@ -2688,14 +2747,14 @@ QAYDALAR:
         type: "function",
         function: {
             name: "calculate_texnopar_transfer",
-            description: "Texnopar net artım (5% vergi): cari gross+yemək+net artım → yeni gross/yemək.",
+            description: "Texnopar net artım (vergi: 2026 — 5%, 2027 — 0%): cari gross+yemək+net artım → yeni gross/yemək.",
             parameters: {
                 type: "object",
                 properties: {
                     current_gross: N, current_meal: N, net_increase: N,
                     is_head_office: B,
                     worker_type: { type: "string", enum: ["local", "expat"] },
-                    union_percent: N
+                    union_percent: N, year: E_YEAR
                 },
                 required: ["current_gross", "net_increase"]
             }
@@ -2709,7 +2768,7 @@ QAYDALAR:
     function mayaCalculate(a) {
         const r2 = v => Math.round((v + Number.EPSILON) * 100) / 100;
         const amount = Number(a.amount);
-        const year = (String(a.year) === '2025') ? '2025' : '2026';
+        const year = normYear(a.year);
         const sector = (a.sector === 'state' || a.sector === 'texnopark') ? a.sector : 'private';
         const workplace = (a.workplace === 'secondary' || a.workplace === 'additional') ? 'secondary' : 'main';
         const unionPct = Math.min(30, Math.max(0, Number(a.union_percent) || 0));
@@ -2778,7 +2837,7 @@ NET: ${mayaF(net)} AZN
     // Ümumi parametr obyekti (year/sector/workplace/benefit/unionPct)
     function mayaP(a) {
         return {
-            year: (String(a.year) === '2025') ? '2025' : '2026',
+            year: normYear(a.year),
             sector: (a.sector === 'state' || a.sector === 'texnopark') ? a.sector : 'private',
             workplace: (a.workplace === 'secondary' || a.workplace === 'additional') ? 'secondary' : 'main',
             benefit: Math.max(0, Number(a.benefit) || 0),
@@ -2793,7 +2852,7 @@ NET: ${mayaF(net)} AZN
         if (!isFinite(totalNet) || totalNet <= 0) return { error: 'Cəmi net məbləği müsbət olmalıdır.' };
         const p = mayaP(a);
         const company = ['Birbank', 'Pashapay', 'Birmarket'].includes(a.company) ? a.company : 'Birbank';
-        const minRef = getBaseRefFor(p.workplace, company);
+        const minRef = getBaseRefFor(p.workplace, company, p.year);
         let meal = Math.max(0, totalNet - minRef);
         if (meal > 0 && meal < 10) meal = 10;
         if (meal > 100) meal = 100;
@@ -2933,16 +2992,17 @@ Status: ${r.status}`;
         const type = (a.worker_type === 'expat') ? 'expat' : 'local';
         const unionPct = Math.min(30, Math.max(0, Number(a.union_percent) || 0));
         if (!isFinite(curGross) || curGross <= 0) return { error: 'Cari gross müsbət olmalıdır.' };
-        const r = txComputeOne(curGross, curMeal, incNet, isHead, type, unionPct);
+        const year = normYear(a.year);
+        const r = txComputeOne(curGross, curMeal, incNet, isHead, type, unionPct, year);
         const answer_text =
-`Texnopar — ${type === 'expat' ? 'əcnəbi işçi' : 'yerli işçi'}, ${isHead ? 'baş ofis' : 'filial'}, həmkar ${unionPct}%
+`Texnopar — ${year}, ${type === 'expat' ? 'əcnəbi işçi' : 'yerli işçi'}, ${isHead ? 'baş ofis' : 'filial'}, həmkar ${unionPct}%
 Cari: GROSS ${mayaF(curGross)} AZN, yemək ${mayaF(curMeal)} AZN, cari net ${mayaF(r.curNet)} AZN
 Net artım: ${mayaF(incNet)} AZN → yeni cəmi net ${mayaF(r.newTotalNet)} AZN
 → Yeni GROSS: ${mayaF(r.newGross)} AZN
 → Yeni yemək pulu: ${mayaF(r.newMeal)} AZN
 Status: ${r.status}`;
         return {
-            method: 'texnopar_transfer', worker_type: type, is_head_office: isHead, union_percent: unionPct,
+            method: 'texnopar_transfer', year, worker_type: type, is_head_office: isHead, union_percent: unionPct,
             current_gross: r2(curGross), current_meal: r2(curMeal), current_net: r2(r.curNet),
             net_increase: r2(incNet), new_total_net: r2(r.newTotalNet),
             new_gross: r2(r.newGross), new_meal: r2(r.newMeal), status: r.status,
@@ -3164,6 +3224,7 @@ Status: ${r.status}`;
     }
     // Tək məbləğin neti — mövcud BirCalc tutulma düsturu ilə (bütün parametrləri nəzərə alır).
     // Qeyd: default (Özəl/2026/əsas iş yeri/həmkar 1%/güzəştsiz) halda bu, txt-dəki si() ilə eynidir.
+    // 2027 seçiləndə getDeductions() 2027 dərəcələrini tətbiq edir.
     function fzNetP(amount, p) {
         if (!amount || amount <= 0) return 0;
         const r = getDeductions(amount, p.benefit, p.unionPct, p.workplace, p.sector, p.year);
@@ -3326,6 +3387,8 @@ Status: ${r.status}`;
         box.style.display = 'block';
     }
 
+    // Defolt il: cari tarixə görə (2027-ci il gələndə avtomatik 2027)
+    document.getElementById('year').value = getDefaultYear();
     calc();
 </script>
 </body>
